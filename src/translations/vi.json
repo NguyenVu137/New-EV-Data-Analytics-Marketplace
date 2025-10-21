@@ -1,4 +1,23 @@
 {
+    "homeheader": {
+        "homepage": "Trang chủ",
+        "datalist": "Danh mục dữ liệu",
+        "provider": "Nhà cung cấp",
+        "about": "Giới thiệu",
+        "support": "Hỗ trợ"
+    },
+
+    "banner": {
+        "title1": "NỀN TẢNG KẾT NỐI",
+        "title2": "KHÁM PHÁ VÀ QUẢN LÍ DỮ LIỆU XE ĐIỆN",
+        "child1": "Hành vi lái xe",
+        "child2": "Hiệu suất pin",
+        "child3": "Dữ liệu môi trường",
+        "child4": "Dữ liệu nhà cung cấp",
+        "child5": "Sử dụng trạm sạc"
+
+    },
+
     "common": {
         "add": "Thêm",
         "edit": "Sửa",

@@ -94,7 +94,7 @@ class UserManage extends Component {
             let res = await editUserService(user);
             if(res && res.errCode === 0) {
                 this.setState({
-                    isOpenModalUser: false
+                    isOpenModalEditUser: false
                 })
 
                 await this.getAllUsersFromReact()

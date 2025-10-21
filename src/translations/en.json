@@ -1,4 +1,24 @@
 {
+     "homeheader": {
+        "homepage": "Home Page",
+        "datalist": "Data List",
+        "provider": "Provider",
+        "about": "About",
+        "support": "Support"
+    },
+
+    "banner": {
+        "title1": "CONNECTING PLATFORM",
+        "title2": "DISCOVER AND MANAGE ELECTRIC VEHICLE DATA",
+        "child1": "Driving behavior",
+        "child2": "Battery performance",
+        "child3": "Environmental data",
+        "child4": "Provider data",
+        "child5": "Use the charging station"
+
+    },
+
+
     "common": {
         "add": "Add",
         "edit": "Edit",
