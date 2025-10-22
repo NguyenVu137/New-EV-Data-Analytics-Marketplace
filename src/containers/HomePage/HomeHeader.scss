@@ -58,18 +58,36 @@
 
             .language-vi {
                 cursor: pointer;
+                opacity: 0.2;
 
                 &.active {
-                    color: #0ebae3;
+                    opacity: 1;
+
+                    span {
+                        color: #0ebae3;
+                    }
+                }
+
+                &:hover {
+                    opacity: 0.8;
                 }
             }
 
             .language-en {
                 margin: 0 10px;
+                opacity: 0.2;
                 cursor: pointer;
 
                 &.active {
-                    color: #0ebae3;
+                    opacity: 1;
+
+                    span {
+                        color: #0ebae3;
+                    }
+                }
+
+                &:hover {
+                    opacity: 0.8;
                 }
             }
         }
@@ -137,6 +155,7 @@
         display: flex;
         justify-content: center;
         background-image: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 1));
+        padding-bottom: 10px;
 
         .options {
             text-align: center;
