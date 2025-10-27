@@ -1,0 +1,176 @@
+.slick-prev {
+    left: -10px !important;
+    z-index: 1000 !important;
+    height: 48px !important;
+    width: 44px !important;
+    background-color: #0ebae3 !important;
+    border-radius: 5px !important;
+
+    &:hover {
+        background-color: #369eb8 !important;
+    }
+}
+
+.slick-prev:before {
+    font-family: FontAwesome !important;
+    content: "\f053" !important;
+}
+
+.slick-next {
+    right: -10px !important;
+    z-index: 1000 !important;
+    height: 48px !important;
+    width: 44px !important;
+    background-color: #0ebae3 !important;
+    border-radius: 5px !important;
+
+    &:hover {
+        background-color: #369eb8 !important;
+    }
+}
+
+.slick-next:before {
+    font-family: FontAwesome !important;
+    content: "\f054" !important;
+}
+
+.section-share {
+    &.section-specialty {
+        background: #f5f5f5;
+    }
+
+    &.section-featured-data {
+        background: #f5f5f5;
+    }
+
+    &.section-about {
+        height: 600px !important;
+        border-top: 1px solid #f5f5f5;
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+    .section-body {
+        .section-customize {
+            .bg-image {
+                width: 278px;
+                height: 150px;
+                background-position: center center;
+                background-repeat: no-repeat;
+                background-size: cover;
+                background-color: #eee;
+                margin: auto;
+
+                &.section-specialty {
+                    background-image: url('../../assets/data/Tesla_Model_3.jpg');
+                }
+
+                &.section-car-brands {
+                    background-image: url('../../assets/car-brands/BMW.svg');
+                    // background-color: #fff !important;
+                    width: 180px;
+                    height: 180px;
+                    margin: 0 auto 10px;
+                    border-radius: 50%
+                }
+
+                &.section-featured-data {
+                    background-image: url('../../assets/featured-data/Zeekr_7X_2024-01-thumb.jpg');
+                }
+            }
+
+            .specialty-title {
+                display: flex;
+                justify-content: center;
+            }
+        }
+    }
+}
+
+.section-share {
+    height: 330px;
+
+    .section-container {
+        margin: 0 100px;
+        display: flex;
+        flex-direction: column;
+
+        .section-header {
+            height: 60px;
+            margin-bottom: 30px;
+            padding-top: 30px;
+
+            .title-section {
+                font-size: 22px;
+                font-weight: 600;
+            }
+
+            .btn-section {
+                float: right;
+                padding: 10px 15px;
+                border: none;
+                outline: none;
+                display: block;
+                background-color: #0ebae3;
+                color: #fff;
+                font-weight: 550;
+                cursor: pointer;
+                text-transform: uppercase;
+            }
+
+            .btn-section:hover {
+                background-color: #369eb8;
+            }
+        }
+
+
+    }
+}
+
+.section-car-brands {
+    .section-customize {
+        padding: 5px;
+
+        .customize-border {
+            padding: 10px;
+        }
+    }
+}
+
+.home-footer {
+    text-align: center;
+    padding-top: 8px;
+
+    a {
+        text-decoration: none;
+    }
+
+}
+
+.section-about {
+    padding: 0 100px;
+
+    .section-about-header {
+        padding: 20px 10px;
+        font-size: 22px;
+        font-weight: 600;
+    }
+
+    .section-about-content {
+        display: flex;
+        gap: 15px;
+        width: 100%;
+
+        .content-left {
+            width: 60%;
+        }
+        .content-right {
+            width:40%;
+            p {
+                text-align: justify;
+                font-style: italic;
+                padding: 15px;
+            }
+        }
+    }
+    
+}
