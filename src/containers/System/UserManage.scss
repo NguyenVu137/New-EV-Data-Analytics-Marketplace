@@ -17,12 +17,12 @@ tr:nth-child(even) {
 tr:hover {
   background-color: #ddd;
 }
- 
+
 th {
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: left;
-  background-color: #04AA6D;
+  background-color: #0ebae3;
   color: white;
 }
 
@@ -49,6 +49,14 @@ th {
   &:hover {
     background-color: transparent !important;
     color: orange !important;
+  }
+}
+
+.btn-outline-info {
+  border: 1px solid;
+
+  &:hover {
+    color: #fff;
   }
 }
 

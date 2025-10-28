@@ -1,15 +1,54 @@
 export const adminMenu = [
-    { //hệ thống
-        name: 'menu.system.header', menus: [
+    { // Quản lí người dùng
+        name: 'menu.admin.manage-user',
+        menus: [
             {
-                name: 'menu.system.system-administrator.header',
-                subMenus: [
-                    { name: 'menu.system.system-administrator.user-manage', link: '/system/user-manage' },
-                    { name: 'menu.system.system-administrator.product-manage', link: '/system/product-manage' },
-                    { name: 'menu.system.system-administrator.register-package-group-or-account', link: '/system/register-package-group-or-account' },
-                ]
+                name: 'menu.admin.crud', link: '/system/user-manage',
             },
-            // { name: 'menu.system.system-parameter.header', link: '/system/system-parameter' },
+
+            {
+                name: 'menu.admin.crud-redux', link: '/system/user-redux',
+            },
+
+            {
+                name: 'menu.admin.manage-provider', link: '/system/user-provider',
+                // subMenus: [
+                //     { name: 'menu.system.system-administrator.user-manage', link: '/system/user-manage' },
+                //     { name: 'menu.system.system-administrator.user-redux', link: '/system/user-redux' },
+                // ]
+            },
+
+            {
+                name: 'menu.admin.manage-admin', link: '/system/user-admin',
+            },
+
+        ]
+    },
+    { // Quản lí dữ liệu
+        name: 'menu.admin.data',
+        menus: [
+            {
+                name: 'menu.admin.manage-data', link: '/system/manage-data',
+            },
+
+        ]
+    },
+    { // Quản lí bài đăng
+        name: 'menu.admin.post',
+        menus: [
+            {
+                name: 'menu.admin.manage-post', link: '/system/manage-post',
+            },
+
+        ]
+    },
+    { // Quản lí kiểm duyệt
+        name: 'menu.admin.censor',
+        menus: [
+            {
+                name: 'menu.admin.manage-censor', link: '/system/manage-censor',
+            },
+
         ]
     },
 ]; 
