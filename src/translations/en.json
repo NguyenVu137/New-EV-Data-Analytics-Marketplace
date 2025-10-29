@@ -25,10 +25,23 @@
             "crud-redux": "CRUD Redux",
             "data": "Datas",
             "manage-data": "Manage datas",
-            "post": "Post",
+            "post": "Posts",
             "manage-post": "Manage posts",
-            "censor": "Censor",
+            "censor": "Censors",
             "manage-censor": "Manage censors"
         }
+    },
+    "manage-user": {
+        "add": "Add new user",
+        "email": "Email",
+        "password": "Password",
+        "first-name": "First name",
+        "last-name": "Last name",
+        "phone-number": "Phone number",
+        "address": "Address",
+        "gender": "Gender",
+        "role": "Role",
+        "image": "Avatar",
+        "save": "Save"
     }
 }

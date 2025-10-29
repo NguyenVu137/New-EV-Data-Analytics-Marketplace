@@ -7,7 +7,6 @@
         "support": "Hỗ trợ",
         "welcome": "Xin chào, "
     },
-
     "banner": {
         "title1": "NỀN TẢNG KẾT NỐI",
         "title2": "KHÁM PHÁ VÀ QUẢN LÍ DỮ LIỆU XE ĐIỆN",
@@ -16,11 +15,9 @@
         "child3": "Dữ liệu môi trường",
         "child4": "Dữ liệu nhà cung cấp",
         "child5": "Sử dụng trạm sạc"
-
     },
-
     "menu": {
-         "admin": {
+        "admin": {
             "manage-user": "Người dùng",
             "manage-provider": "Quản lí nhà cung cấp",
             "manage-admin": "Quản lí admin",
@@ -33,5 +30,19 @@
             "censor": "Kiểm duyệt",
             "manage-censor": "Quản lí kiểm duyệt"
         }
+    },
+    "manage-user": {
+        "add": "Thêm mới người dùng",
+        "email": "Email",
+        "password": "Mật khẩu",
+        "first-name": "Tên",
+        "last-name": "Họ",
+        "phone-number": "Số điện thoại",
+        "address": "Địa chỉ",
+        "gender": "Giới tính",
+        "role": "Vai trò",
+        "image": "Ảnh đại diện",
+        "save": "Lưu người dùng"
     }
 }
+
