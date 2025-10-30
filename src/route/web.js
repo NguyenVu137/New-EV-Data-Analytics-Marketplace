@@ -24,7 +24,7 @@ let initWebRoutes = (app) => {
 
     router.post('/api/');
 
-    router.get('/allcode', userController.getAllCode)
+    router.get('/api/allcode', userController.getAllCode)
 
     return app.use("/", router);
 }
