@@ -1,36 +1,15 @@
-'use strict';
+'use strict'
+
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('allcodes', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      key: {
-        type: Sequelize.STRING
-      },
-      type: {
-        type: Sequelize.STRING
-      },
-      valueEn: {
-        type: Sequelize.STRING
-      },
-      valueVi: {
-        type: Sequelize.STRING 
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      }
-    });
+      key: { type: Sequelize.STRING, allowNull: false, primaryKey: true },
+      type: { type: Sequelize.STRING, allowNull: false },
+      valueEn: { type: Sequelize.STRING },
+      valueVi: { type: Sequelize.STRING }
+    })
   },
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('allcodes');
+  async down(queryInterface) {
+    await queryInterface.dropTable('allcodes')
   }
-};
+}

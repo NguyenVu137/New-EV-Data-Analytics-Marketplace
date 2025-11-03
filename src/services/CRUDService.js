@@ -3,42 +3,48 @@ import db from '../models/index';
 
 const salt = bcrypt.genSaltSync(10);
 
-let createNewUSer = async (data) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let hashPasswordFromBcrypt = await hashUserPassword(data.password);
-            await db.User.create({
-                email: data.email,
-                password: hashPasswordFromBcrypt,
-                firstName: data.firstName,
-                lastName: data.lastName,
-                address: data.address,
-                phonenumber: data.phonenumber,
-                gender: data.gender === '1' ? true : false,
-                roleId: data.roleId,
-            })
+let hashUserPassword = async (password) => {
+    try {
+        // bcrypt.hashSync là đồng bộ, bcrypt.hash mới là async
+        const hashPassword = await bcrypt.hash(password, salt);
+        return hashPassword;
+    } catch (e) {
+        throw e;
+    }
+};
 
-            resolve('Create a new user succeed!');
-
-        } catch (e) {
-            reject(e);
+let createNewUser = async (data) => {
+    try {
+        // Kiểm tra email đã tồn tại
+        const existingUser = await db.User.findOne({ where: { email: data.email } });
+        if (existingUser) {
+            return { errCode: 1, errMessage: 'Email already exists!' };
         }
-    })
-    console.log("data from service")
-    console.log(data)
-    console.log(hashPasswordFromBcrypt);
-}
 
-let hashUserPassword = (password) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let hashPassword = await bcrypt.hashSync(password, salt);
-            resolve(hashPassword);
-        } catch (e) {
-            reject(e);
-        }
-    })
-}
+        // Hash password
+        const hashedPassword = await hashUserPassword(data.password);
+
+        // Tạo user mới
+        await db.User.create({
+            email: data.email,
+            password: hashedPassword,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            address: data.address,
+            phonenumber: data.phonenumber,
+            gender: data.gender, // "M", "F", "O"
+            roleId: data.roleId,
+        });
+
+        console.log('User data:', data);
+        console.log('Hashed password:', hashedPassword);
+
+        return { errCode: 0, errMessage: 'User created successfully!' };
+    } catch (e) {
+        console.error('Create user error:', e);
+        return { errCode: -1, errMessage: 'Error from server' };
+    }
+};
 
 let getAllUser = () => {
     return new Promise(async (resolve, reject) => {
@@ -99,13 +105,13 @@ let updateUserData = (data) => {
 }
 
 let deleteUserById = (userId) => {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         try {
             let user = await db.User.findOne({
-                where: {id: userId}
+                where: { id: userId }
             })
 
-            if(user) {
+            if (user) {
                 await user.destroy();
             }
 
@@ -117,7 +123,7 @@ let deleteUserById = (userId) => {
 }
 
 module.exports = {
-    createNewUSer: createNewUSer,
+    createNewUser: createNewUser,
     getAllUser: getAllUser,
     getUserInfoById: getUserInfoById,
     updateUserData: updateUserData,

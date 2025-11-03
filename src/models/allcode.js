@@ -1,27 +1,28 @@
-'use strict';
-const {
-    Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
+'use strict'
+const { Model, DataTypes } = require('sequelize')
+
+module.exports = (sequelize) => {
     class Allcode extends Model {
-        /**
-         * Helper method for defining associations.
-         * This method is not a part of Sequelize lifecycle.
-         * The `models/index` file will call this method automatically.
-         */
         static associate(models) {
-            // define association here
         }
-    };
+    }
+
     Allcode.init({
-        key: DataTypes.STRING,
-        type: DataTypes.STRING,
-        valueEn: DataTypes.STRING,
-        valueVi: DataTypes.STRING,
+        key: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            primaryKey: true
+        },
+        type: { type: DataTypes.STRING, allowNull: false },
+        valueEn: { type: DataTypes.STRING, allowNull: true },
+        valueVi: { type: DataTypes.STRING, allowNull: true }
     }, {
         sequelize,
         modelName: 'Allcode',
-        tableName: 'allcodes'
-    });
-    return Allcode;
-};
+        tableName: 'allcodes',
+        timestamps: false,
+        freezeTableName: true
+    })
+
+    return Allcode
+}

@@ -1,54 +1,76 @@
 'use strict';
+
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Users', {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable('users', {
       id: {
-        allowNull: false,
-        autoIncrement: true,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        allowNull: false
       },
       email: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
       },
       password: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false
       },
       firstName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
       },
       lastName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
       },
       address: {
-        type: Sequelize.STRING
-      },
-      gender: {
-        type: Sequelize.BOOLEAN
-      },
-      roleId: {
-        type: Sequelize.STRING
+
+        type: Sequelize.STRING,
+        allowNull: true
       },
       phonenumber: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
       },
-      positionId: {
-        type: Sequelize.STRING
+      gender: {
+        type: Sequelize.STRING,
+        allowNull: true
       },
       image: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
       },
-      createdAt: {
+      roleId: {
+        type: Sequelize.STRING,
         allowNull: false,
-        type: Sequelize.DATE
+        references: {
+          model: 'allcodes', // bảng Allcode
+          key: 'key'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT' // hoặc 'SET NULL' nếu muốn
       },
-      updatedAt: {
+      positionId: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      created_at: {
+        type: Sequelize.DATE,
         allowNull: false,
-        type: Sequelize.DATE
+        defaultValue: Sequelize.NOW
+      },
+      updated_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.NOW
       }
     });
   },
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('Users');
+
+  async down(queryInterface, Sequelize) {
+    await queryInterface.dropTable('users');
   }
 };
