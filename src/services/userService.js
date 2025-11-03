@@ -1,4 +1,5 @@
 import axios from '../axios';
+
 const handleLoginApi = (userEmail, userPassword) => {
     return axios.post('/api/login', { email: userEmail, password: userPassword });
 }
@@ -21,11 +22,13 @@ const deleteUserService = (userId) => {
 }
 
 const editUserService = (inputData) => {
-    return axios.put('api/edit-user', inputData)
+    return axios.put('/api/edit-user', inputData)
 }
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const getAllCodeService = (inputType) => {
-    return axios.get(`/api/allcode?type=${inputType}`);
+    console.log(`${BACKEND_URL}/api/allcode?type=${inputType}`);
+    return axios.get(`${BACKEND_URL}/api/allcode?type=${inputType}`);
 }
-
 export { handleLoginApi, getAllUsers, createNewUserService, deleteUserService, editUserService, getAllCodeService }; 
