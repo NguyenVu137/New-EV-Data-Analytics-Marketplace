@@ -12,14 +12,18 @@ import "slick-carousel/slick/slick-theme.css";
 
 
 class HomePage extends Component {
+    // handleAfterChange = (event, slick, currentSlide) => {
+
+    // }
 
     render() {
         let settings = {
             dots: false,
-            infinite: true,
+            infinite: false,
             speed: 500,
             slidesToShow: 4,
             slidesToScroll: 1,
+            //afterChange: this.handleAfterChange
         }
         return (
             <div>
@@ -28,7 +32,7 @@ class HomePage extends Component {
                 <CarBrands settings={settings} />
                 <FeaturedData settings={settings} />
                 <About />
-                <HomeFooter/>
+                <HomeFooter />
             </div>
         );
     }

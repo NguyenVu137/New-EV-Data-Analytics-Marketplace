@@ -1,0 +1,61 @@
+#table-manage-user {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#table-manage-user td,
+#table-manage-user th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+#table-manage-user tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+#table-manage-user tr:hover {
+    background-color: #ddd;
+}
+
+#table-manage-user th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #0ebae3;
+    color: white;
+}
+
+#table-manage-user .btn-edit {
+    width: 50px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: green;
+
+    &:hover {
+        background-color: transparent !important;
+        color: #369eb8 !important;
+    }
+}
+
+#table-manage-user .btn-delete {
+    width: 50px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: red;
+
+    &:hover {
+        background-color: transparent !important;
+        color: #369eb8 !important;
+    }
+}
+
+#table-manage-user .btn-outline-info {
+    border: 1px solid;
+
+    &:hover {
+        color: #fff;
+    }
+}

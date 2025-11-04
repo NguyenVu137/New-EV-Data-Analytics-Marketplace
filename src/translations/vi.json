@@ -40,9 +40,15 @@
         "phone-number": "Số điện thoại",
         "address": "Địa chỉ",
         "gender": "Giới tính",
+        "position": "Hãng",
         "role": "Vai trò",
         "image": "Ảnh đại diện",
-        "save": "Lưu người dùng"
+        "save": "Lưu người dùng",
+        "edit": "Thay đổi"
+    },
+    "homepage": {
+        "featured-data": "Dữ liệu nổi bật tuần qua",
+        "more-info": "Xem thêm"
     }
 }
 
