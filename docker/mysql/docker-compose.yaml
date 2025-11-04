@@ -6,5 +6,6 @@ services:
     environment:
       - MYSQL_DATABASE=ev-data-analytics-marketplace
       - MYSQL_ROOT_PASSWORD=123456
+    command: --max_allowed_packet=64M
     ports:
       - "3307:3306"
