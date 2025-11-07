@@ -28,6 +28,8 @@ let initWebRoutes = (app) => {
     router.get('/api/allcode', userController.getAllCode);
     router.get('/api/top-data-home', dataController.getTopDataHome);
 
+    router.get('/api/get-all-datas', dataController.getAllDatas);
+
     return app.use("/", router);
 }
 

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon --exec babel-node src/server.js",
-    "build": "babel src -d build --copy-files"
+    "build-src": "babel src -d build --copy-files",
+    "build": "node build/server.js"
   },
   "repository": {
     "type": "git",
@@ -35,9 +36,10 @@
     "sequelize": "^6.6.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.10",
-    "@babel/node": "^7.28.0",
-    "@babel/preset-env": "^7.12.10",
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.5",
+    "@babel/node": "^7.12.10",
+    "@babel/preset-env": "^7.28.5",
     "nodemon": "^2.0.7",
     "sequelize-cli": "^6.2.0"
   }

@@ -1,3 +1,4 @@
+import e from "express";
 import db from "../models/index";
 
 let getTopDataHome = (limitInput) => {
@@ -8,7 +9,7 @@ let getTopDataHome = (limitInput) => {
                 where: { roleId: 'R2' },
                 order: [["createdAt", 'DESC']],
                 attributes: {
-                    exclude: ['password', 'image']
+                    exclude: ['password']
                 },
                 include: [
                     { model: db.Allcode, as: 'positionData', attibutes: ['valueEn', 'valueVi'] },
@@ -28,6 +29,27 @@ let getTopDataHome = (limitInput) => {
     })
 }
 
+let getAllDatas = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let datas = await db.User.findAll({
+                where: {roleId: 'R2'},
+                attributes: {
+                    exclude: ['password', 'image']
+                }
+            })
+
+            resolve ({
+                errCode: 0,
+                data: datas
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
-    getTopDataHome: getTopDataHome
+    getTopDataHome: getTopDataHome,
+    getAllDatas: getAllDatas
 }

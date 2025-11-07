@@ -15,6 +15,19 @@ let getTopDataHome = async (req, res) => {
     }
 }
 
+let getAllDatas = async (req, res) => {
+    try {
+        let datas = await dataService.getAllDatas();
+        return res.status(200).json(datas);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: "Error from server!"
+        })
+    }
+}
+
 module.exports = {
-    getTopDataHome: getTopDataHome
+    getTopDataHome: getTopDataHome,
+    getAllDatas: getAllDatas
 }
