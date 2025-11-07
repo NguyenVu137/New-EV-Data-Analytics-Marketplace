@@ -32,8 +32,12 @@ const getTopDataHomeService = (limit) => {
     return axios.get(`/api/top-data-home?limit=${limit}`)
 }
 
+const getAllDatas = () => {
+    return axios.get(`/api/get-all-datas`)
+}
+
 export {
     handleLoginApi, getAllUsers, createNewUserService,
     deleteUserService, editUserService, getAllCodeService,
-    getTopDataHomeService
+    getTopDataHomeService, getAllDatas
 }; 

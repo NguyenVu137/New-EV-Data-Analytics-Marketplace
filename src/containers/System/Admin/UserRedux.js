@@ -82,6 +82,7 @@ class UserRedux extends Component {
                 position: arrPositions && arrPositions.length > 0 ? arrPositions[0].keyMap : '',
                 avatar: '',
                 action: CRUD_ACTIONS.CREATE,
+                previewImgURL: ''
             })
         }
     }
@@ -177,6 +178,7 @@ class UserRedux extends Component {
         if (user.image) {
             imageBase64 = new Buffer(user.image, 'base64').toString('binary');
         }
+        console.log(imageBase64)
 
 
         this.setState({
@@ -189,7 +191,7 @@ class UserRedux extends Component {
             gender: user.gender,
             role: user.roleId,
             position: user.positionId,
-            avatar: imageBase64,
+            avatar: '',
             previewImgURL: imageBase64,
             action: CRUD_ACTIONS.EDIT,
             userEditId: user.id,

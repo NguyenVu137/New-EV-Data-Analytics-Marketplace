@@ -2,7 +2,7 @@ import actionTypes from './actionTypes';
 import {
     getAllCodeService, createNewUserService,
     getAllUsers, deleteUserService, editUserService,
-    getTopDataHomeService
+    getTopDataHomeService, getAllDatas
 } from '../../services/userService';
 import { toast } from "react-toastify";
 
@@ -220,6 +220,29 @@ export const fetchTopData = () => {
             console.log('FETCH_TOP_DATAS_FAILED: ', e)
             dispatch ({
                     type: actionTypes.FETCH_TOP_DATAS_FAILED
+                })
+        }
+    }
+}
+
+export const fetchAllDatas = () => {
+    return async (dispatch, getState) => {
+        try {
+            let res = await getAllDatas();
+            if (res && res.errCode === 0) {
+                dispatch({
+                    type: actionTypes.FETCH_ALL_DATAS_SUCCESS,
+                    datas: res.data
+                })
+            } else {
+                dispatch ({
+                    type: actionTypes.FETCH_ALL_DATAS_FAILED
+                })
+            }
+        } catch (e) {
+            console.log('FETCH_TOP_DATAS_FAILED: ', e)
+            dispatch ({
+                    type: actionTypes.FETCH_ALL_DATAS_FAILED
                 })
         }
     }

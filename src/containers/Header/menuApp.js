@@ -11,7 +11,7 @@ export const adminMenu = [
             },
 
             {
-                name: 'menu.admin.manage-provider', link: '/system/user-provider',
+                name: 'menu.admin.manage-data', link: '/system/manage-data',
                 // subMenus: [
                 //     { name: 'menu.system.system-administrator.user-manage', link: '/system/user-manage' },
                 //     { name: 'menu.system.system-administrator.user-redux', link: '/system/user-redux' },
