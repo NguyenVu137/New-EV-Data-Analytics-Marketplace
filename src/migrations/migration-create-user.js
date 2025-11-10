@@ -27,7 +27,6 @@ module.exports = {
         allowNull: true
       },
       address: {
-
         type: Sequelize.STRING,
         allowNull: true
       },
@@ -52,10 +51,6 @@ module.exports = {
         },
         onUpdate: 'CASCADE',
         onDelete: 'RESTRICT' // hoặc 'SET NULL' nếu muốn
-      },
-      positionId: {
-        type: Sequelize.STRING,
-        allowNull: true
       },
       created_at: {
         type: Sequelize.DATE,
