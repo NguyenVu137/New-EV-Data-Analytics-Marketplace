@@ -5,7 +5,10 @@
         "provider": "Nhà cung cấp",
         "about": "Giới thiệu",
         "support": "Hỗ trợ",
-        "welcome": "Xin chào, "
+        "welcome": "Xin chào, ",
+        "login": "Đăng nhập",
+        "logout": "Đăng xuất",
+        "register": "Đăng kí"
     },
     "banner": {
         "title1": "NỀN TẢNG KẾT NỐI",
@@ -45,4 +48,3 @@
         "save": "Lưu người dùng"
     }
 }
-

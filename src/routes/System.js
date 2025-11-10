@@ -4,6 +4,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import UserManage from '../containers/System/UserManage';
 import UserRedux from '../containers/System/Admin/UserRedux.js';
 import Header from '../containers/Header/Header';
+import RoleRoute from './RoleRoutes.js';
 
 class System extends Component {
     render() {
@@ -14,9 +15,9 @@ class System extends Component {
                 <div className="system-container">
                     <div className="system-list">
                         <Switch>
-                            <Route path="/system/user-manage" component={UserManage} />
-                            <Route path="/system/user-redux" component={UserRedux} />
-                            <Route component={() => { return (<Redirect to={systemMenuPath} />) }} />
+                            <RoleRoute path="/system/user-manage" allowedRoles={['R1']} component={UserManage} />
+                            <RoleRoute path="/system/user-redux" allowedRoles={['R1']} component={UserRedux} />
+                            <Route component={() => <Redirect to="/home" />} />
                         </Switch>
                     </div>
                 </div>

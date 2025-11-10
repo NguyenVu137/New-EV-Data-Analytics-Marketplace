@@ -28,7 +28,7 @@ class HomePage extends Component {
                 <CarBrands settings={settings} />
                 <FeaturedData settings={settings} />
                 <About />
-                <HomeFooter/>
+                <HomeFooter />
             </div>
         );
     }

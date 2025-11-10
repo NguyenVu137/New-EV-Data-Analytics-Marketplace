@@ -1,10 +1,11 @@
 .home-header-container {
     height: 60px;
     width: 100%;
-    padding: 0 40px;
+    padding: 0 20px;
     position: fixed;
     background-color: #fff;
     z-index: 10000;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 
     .home-header-content {
         width: 100%;
@@ -13,19 +14,25 @@
         font-size: 20px;
         text-shadow: 1px 1px 1px #ccc;
 
-
         .left-content {
-            width: 25%;
+            width: auto;
             display: flex;
             align-items: center;
+            gap: 10px;
 
             .header-logo {
                 background: url('../../assets/logo.jpg') center center no-repeat;
-                height: 100%;
-                width: 25%;
+                height: 40px;
+                width: 40px;
                 cursor: pointer;
                 background-size: contain;
-                margin: 0px 16px 6px;
+            }
+
+            .user-greeting {
+                font-weight: bold;
+                font-size: 16px;
+                font-family: Arial, sans-serif;
+                white-space: nowrap;
             }
 
             i {
@@ -36,23 +43,26 @@
         }
 
         .center-content {
-            width: 50%;
+            flex: 1;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
+            gap: 70px;
+            padding: 0 20px;
         }
 
         .right-content {
-            width: 25%;
+            width: auto;
             display: flex;
             justify-content: flex-end;
             align-items: center;
+            gap: 30px;
 
             .support {
-                padding-right: 50px;
                 display: flex;
                 align-items: center;
                 cursor: pointer;
+                white-space: nowrap;
 
                 i {
                     font-size: 15px;
@@ -60,39 +70,58 @@
                 }
             }
 
-            .language-vi {
+            .language-vi,
+            .language-en {
                 cursor: pointer;
-                opacity: 0.2;
+                opacity: 0.5;
+                transition: all 0.2s ease;
 
                 &.active {
                     opacity: 1;
 
                     span {
                         color: #0ebae3;
+                        font-weight: bold;
                     }
                 }
 
                 &:hover {
                     opacity: 0.8;
+                }
+
+                span {
+                    padding: 3px 6px;
                 }
             }
 
-            .language-en {
-                margin: 0 10px;
-                opacity: 0.2;
+            button {
+                padding: 6px 12px;
+                font-size: 14px;
+                border-radius: 6px;
+                font-weight: 600;
+                border: none;
                 cursor: pointer;
-
-                &.active {
-                    opacity: 1;
-
-                    span {
-                        color: #0ebae3;
-                    }
-                }
+                transition: background-color 0.3s ease, opacity 0.3s ease;
+                white-space: nowrap;
 
                 &:hover {
-                    opacity: 0.8;
+                    opacity: 0.9;
                 }
+            }
+
+            .btn-login {
+                background-color: #0069d9;
+                color: white;
+            }
+
+            .btn-register {
+                background-color: #28a745;
+                color: white;
+            }
+
+            .btn-logout {
+                background-color: #dc3545;
+                color: white;
             }
         }
     }
@@ -112,21 +141,13 @@
         height: 65%;
         padding-top: 15px;
 
-        .title1 {
-            text-align: center;
-            font-size: 30px;
-            text-shadow: 1px 1px 1px #333;
-            margin-bottom: 5px;
-            color: #fff;
-            margin-top: 45px;
-        }
-
+        .title1,
         .title2 {
             text-align: center;
             font-size: 30px;
-            text-shadow: 1px 1px 1px #333;
+            text-shadow: 1px 1px 2px #333;
             color: #fff;
-            margin-bottom: 15px;
+            margin: 5px 0;
         }
 
         .search {
@@ -134,13 +155,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0 auto;
-            padding: 10px;
+            margin: 10px auto 0;
+            padding: 10px 15px;
             border-radius: 25px;
-            background-color: #a8cee3;
+            background-color: rgba(168, 206, 227, 0.85);
 
             i {
-                margin: 0 5px;
+                margin-right: 8px;
+                color: #0d6efd;
             }
 
             input {
@@ -149,36 +171,43 @@
                 background: transparent;
                 border: none;
                 outline: none;
+                color: #000;
+                font-size: 14px;
+
+                &::placeholder {
+                    color: #555;
+                }
             }
         }
     }
 
     .content-down {
-        align-items: flex-end;
         height: 35%;
         display: flex;
+        align-items: flex-end;
         justify-content: center;
         background-image: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 1));
         padding-bottom: 10px;
 
         .options {
-            text-align: center;
             display: flex;
-            gap: 50px;
             justify-content: center;
+            align-items: center;
+            gap: 50px;
+            text-align: center;
 
             .option-child {
                 width: 100px;
                 cursor: pointer;
 
                 .icon-child {
-                    background: #fff;
                     width: 40px;
                     height: 40px;
+                    margin: 0 auto;
                     padding: 10px;
+                    background: #fff;
                     border-radius: 50%;
                     text-align: center;
-                    margin: 0 auto;
 
                     i {
                         font-size: 20px;
@@ -187,23 +216,19 @@
                 }
 
                 .text-child {
+                    margin-top: 5px;
                     font-size: 17px;
                     font-weight: 500;
-
-                    // &:hover {
-                    //     color: #a8cee3;
-                    // }
                 }
-            }
 
-            .option-child:hover {
-                color: #a8cee3;
+                &:hover {
+                    color: #0ebae3;
 
-                i {
-                    color: #a8cee3;
+                    i {
+                        color: #0ebae3;
+                    }
                 }
             }
         }
     }
-
 }

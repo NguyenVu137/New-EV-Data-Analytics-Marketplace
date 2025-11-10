@@ -1,34 +1,50 @@
 import axios from '../axios';
 
+
 const handleLoginApi = (userEmail, userPassword) => {
-    return axios.post('/api/login', { email: userEmail, password: userPassword });
+    return axios.post('/api/auth/login', { email: userEmail, password: userPassword });
 }
 
-const getAllUsers = (inputId) => {
-    //template string
-    return axios.get(`/api/get-all-users?id=${inputId}`, { id: inputId });
+const handleRegisterApi = (data) => {
+    return axios.post('/api/auth/register', {
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        address: data.address,
+        phoneNumber: data.phoneNumber,
+        gender: data.gender,
+        role: data.role,
+        image: data.image || null
+    });
+};
+
+const getAllUsers = () => {
+    return axios.get('/api/admin/users');
 }
 
 const createNewUserService = (data) => {
-    return axios.post('/api/create-new-user', data);
+    return axios.post('/api/admin/users', data);
 }
 
 const deleteUserService = (userId) => {
-    return axios.delete('/api/delete-user', {
-        data: {
-            id: userId
-        }
-    });
+    return axios.delete('/api/admin/users', { data: { id: userId } });
 }
 
 const editUserService = (inputData) => {
-    return axios.put('/api/edit-user', inputData)
+    return axios.put('/api/admin/users', inputData);
 }
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const getAllCodeService = (inputType) => {
-    console.log(`${BACKEND_URL}/api/allcode?type=${inputType}`);
-    return axios.get(`${BACKEND_URL}/api/allcode?type=${inputType}`);
+    return axios.get(`/api/allcode?type=${inputType}`);
 }
-export { handleLoginApi, getAllUsers, createNewUserService, deleteUserService, editUserService, getAllCodeService }; 
+
+export {
+    handleRegisterApi,
+    handleLoginApi,
+    getAllUsers,
+    createNewUserService,
+    deleteUserService,
+    editUserService,
+    getAllCodeService
+};

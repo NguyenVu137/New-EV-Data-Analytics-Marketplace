@@ -5,7 +5,10 @@
         "provider": "Provider",
         "about": "About",
         "support": "Support",
-        "welcome": "Welcome, "
+        "welcome": "Welcome, ",
+        "login": "Login",
+        "logout": "Logout",
+        "register": "Register"
     },
     "banner": {
         "title1": "CONNECTING PLATFORM",
