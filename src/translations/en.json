@@ -29,6 +29,9 @@
             "manage-post": "Manage posts",
             "censor": "Censors",
             "manage-censor": "Manage censors"
+        },
+        "provider": {
+            "manage-use-rights": "Manage use rights"
         }
     },
     "manage-user": {

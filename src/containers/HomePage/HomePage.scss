@@ -54,7 +54,11 @@
     }
 
     .section-body {
+
         .section-customize {
+            cursor: pointer;
+            border: 1px solid #0ebae3;
+
             .bg-image {
                 width: 278px;
                 height: 150px;
@@ -62,7 +66,7 @@
                 background-repeat: no-repeat;
                 background-size: cover;
                 background-color: #eee;
-                margin: auto;
+                margin: 20px auto;
 
                 &.section-specialty {
                     background-image: url('../../assets/data/Tesla_Model_3.jpg');
@@ -133,6 +137,7 @@
 .section-car-brands {
     .section-customize {
         padding: 5px;
+        cursor: pointer;
 
         .customize-border {
             padding: 10px;
@@ -167,8 +172,10 @@
         .content-left {
             width: 60%;
         }
+
         .content-right {
-            width:40%;
+            width: 40%;
+
             p {
                 text-align: justify;
                 font-style: italic;
@@ -176,5 +183,5 @@
             }
         }
     }
-    
+
 }

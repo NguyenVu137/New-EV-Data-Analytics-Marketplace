@@ -36,8 +36,17 @@ const getAllDatas = () => {
     return axios.get(`/api/get-all-datas`)
 }
 
+const saveDetailDataService = (data) => {
+    return axios.post('/api/save-infor-datas', data);
+}
+
+const getDetailInforData = (inputId) => {
+    return axios.get(`/api/get-detail-data-by-id?id=${inputId}`)
+}
+
 export {
     handleLoginApi, getAllUsers, createNewUserService,
     deleteUserService, editUserService, getAllCodeService,
-    getTopDataHomeService, getAllDatas
+    getTopDataHomeService, getAllDatas, saveDetailDataService,
+    getDetailInforData
 }; 

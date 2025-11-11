@@ -3,18 +3,13 @@ import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 import './TableManageUser.scss';
 import * as actions from "../../../store/actions";
-
 import MarkdownIt from 'markdown-it';
 import MdEditor from 'react-markdown-editor-lite';
 import 'react-markdown-editor-lite/lib/index.css';
 import './ManageData.scss';
 import Select from 'react-select';
-
-const options = [
-    { value: 'chocolate', label: 'chocolate' },
-    { value: 'matcha', label: 'matcha' },
-    { value: 'caramel', label: 'caramel' },
-];
+import { CRUD_ACTIONS, LANGUAGES } from '../../../utils';
+import { getDetailInforData } from '../../../services/userService';
 
 const mdParser = new MarkdownIt(/* Markdown-it options */);
 
@@ -26,16 +21,47 @@ class ManageData extends Component {
             contentMarkdown: '',
             contentHTML: '',
             selectedData: '',
-            description: ''
+            description: '',
+            listDatas: [],
+            hasOldData: false
         }
     }
 
     componentDidMount() {
-        
+        this.props.fetchAllDatas();
+    }
+
+    buildDataInputSelect = (inputData) => {
+        let result = [];
+        let { language } = this.props;
+        if (inputData && inputData.length > 0) {
+            inputData.map((item, index) => {
+                let object = {};
+                let labelVi = `${item.lastName} ${item.firstName}`;
+                let labelEn = `${item.firstName} ${item.lastName}`;
+                object.label = language === LANGUAGES.VI ? labelVi : labelEn;
+                object.value = item.id;
+                result.push(object);
+            })
+
+        }
+
+        return result;
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-
+        if (prevProps.allDatas !== this.props.allDatas) {
+            let dataSelect = this.buildDataInputSelect(this.props.allDatas)
+            this.setState({
+                listDatas: dataSelect
+            })
+        }
+        if (prevProps.language !== this.props.language) {
+            let dataSelect = this.buildDataInputSelect(this.props.allDatas)
+            this.setState({
+                listDatas: dataSelect
+            })
+        }
     }
 
     handleEditorChange = ({ html, text }) => {
@@ -46,12 +72,36 @@ class ManageData extends Component {
     }
 
     handleSaveContentMarkdown = () => {
-        console.log('check state: ', this.state)
+        let { hasOldData } = this.state
+        this.props.saveDetailData({
+            contentHTML: this.state.contentHTML,
+            contentMarkdown: this.state.contentMarkdown,
+            description: this.state.description,
+            dataId: this.state.selectedData.value,
+            action: hasOldData === true ? CRUD_ACTIONS.EDIT : CRUD_ACTIONS.CREATE
+        })
     }
 
-    handleChange = selectedData => {
+    handleChange = async selectedData => {
         this.setState({ selectedData });
-        // console.log(`Option selected: `, selectedData)
+
+        let res = await getDetailInforData(selectedData.value);
+        if (res && res.errCode === 0 && res.data && res.data.Markdown) {
+            let markdown = res.data.Markdown;
+            this.setState({
+                contentHTML: markdown.contentHTML,
+                contentMarkdown: markdown.contentMarkdown,
+                description: markdown.description,
+                hasOldData: true
+            })
+        } else {
+            this.setState({
+                contentHTML: '',
+                contentMarkdown: '',
+                description: '',
+                hasOldData: false
+            })
+        }
     }
 
     handleOnChangeDesc = (event) => {
@@ -61,6 +111,7 @@ class ManageData extends Component {
     }
 
     render() {
+        let { hasOldData } = this.state;
         return (
             <div className="manage-data-container">
                 <div className="manage-data-title">
@@ -72,13 +123,13 @@ class ManageData extends Component {
                         <Select
                             value={this.state.selectedData}
                             onChange={this.handleChange}
-                            options={options}
+                            options={this.state.listDatas}
                         />
                     </div>
                     <div className="content-right">
                         <label>Thông tin giới thiệu</label>
                         <textarea className="form-control" rows="4"
-                            onChange = { (event) => this.handleOnChangeDesc(event)}
+                            onChange={(event) => this.handleOnChangeDesc(event)}
                             value={this.state.description}
                         >
                             sdadsad
@@ -90,12 +141,15 @@ class ManageData extends Component {
                         style={{ height: '500px' }}
                         renderHTML={text => mdParser.render(text)}
                         onChange={this.handleEditorChange}
+                        value={this.state.contentMarkdown}
                     />
                 </div>
                 <button
                     onClick={() => this.handleSaveContentMarkdown()}
-                    className="save-content-data">
-                    Lưu thông tin
+                    className={hasOldData === true ? "save-content-data" : "create-content-data"}>
+                        {hasOldData === true ? 
+                            <span>Lưu thông tin</span> : <span>Tạo thông tin</span>
+                        }
                 </button>
             </div>
         );
@@ -105,14 +159,15 @@ class ManageData extends Component {
 
 const mapStateToProps = state => {
     return {
-        listUsers: state.admin.users
+        language: state.app.language,
+        allDatas: state.admin.allDatas
     };
 };
 
 const mapDispatchToProps = dispatch => {
     return {
-        fetchUserRedux: () => dispatch(actions.fetchAllUsersStart()),
-        deleteUserRedux: (id) => dispatch(actions.deleteUser(id))
+        fetchAllDatas: (id) => dispatch(actions.fetchAllDatas()),
+        saveDetailData: (data) => dispatch(actions.saveDetailData(data))
     };
 };
 

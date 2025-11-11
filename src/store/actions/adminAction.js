@@ -2,7 +2,7 @@ import actionTypes from './actionTypes';
 import {
     getAllCodeService, createNewUserService,
     getAllUsers, deleteUserService, editUserService,
-    getTopDataHomeService, getAllDatas
+    getTopDataHomeService, getAllDatas, saveDetailDataService
 } from '../../services/userService';
 import { toast } from "react-toastify";
 
@@ -212,15 +212,15 @@ export const fetchTopData = () => {
                     datas: res.data
                 })
             } else {
-                dispatch ({
+                dispatch({
                     type: actionTypes.FETCH_TOP_DATAS_FAILED
                 })
             }
         } catch (e) {
             console.log('FETCH_TOP_DATAS_FAILED: ', e)
-            dispatch ({
-                    type: actionTypes.FETCH_TOP_DATAS_FAILED
-                })
+            dispatch({
+                type: actionTypes.FETCH_TOP_DATAS_FAILED
+            })
         }
     }
 }
@@ -235,15 +235,41 @@ export const fetchAllDatas = () => {
                     datas: res.data
                 })
             } else {
-                dispatch ({
+                dispatch({
                     type: actionTypes.FETCH_ALL_DATAS_FAILED
                 })
             }
         } catch (e) {
             console.log('FETCH_TOP_DATAS_FAILED: ', e)
-            dispatch ({
-                    type: actionTypes.FETCH_ALL_DATAS_FAILED
+            dispatch({
+                type: actionTypes.FETCH_ALL_DATAS_FAILED
+            })
+        }
+    }
+}
+
+export const saveDetailData = (data) => {
+    return async (dispatch, getState) => {
+        try {
+            let res = await saveDetailDataService(data);
+            if (res && res.errCode === 0) {
+                toast.success("Save infor detail data succeed!")
+                dispatch({
+                    type: actionTypes.SAVE_DETAIL_DATA_SUCCESS,
                 })
+            } else {
+                console.log('error res', res)
+                toast.error("Save infor detail data failed!")
+                dispatch({
+                    type: actionTypes.SAVE_DETAIL_DATA_FAILED
+                })
+            }
+        } catch (e) {
+            toast.error("Save infor detail data failed!")
+            console.log('SAVE_DETAIL_DATA_FAILED: ', e)
+            dispatch({
+                type: actionTypes.SAVE_DETAIL_DATA_FAILED
+            })
         }
     }
 }

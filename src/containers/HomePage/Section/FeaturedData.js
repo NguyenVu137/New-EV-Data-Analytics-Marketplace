@@ -4,8 +4,10 @@ import Slider from "react-slick";
 import * as actions from '../../../store/actions';
 import { LANGUAGES } from '../../../utils';
 import { FormattedDate, FormattedMessage } from 'react-intl';
+import { withRouter } from 'react-router';
 
 class FeaturedData extends Component {
+
     constructor(props) {
         super(props)
         this.state = {
@@ -23,6 +25,11 @@ class FeaturedData extends Component {
 
     componentDidMount() {
         this.props.loadTopDatas();
+    }
+
+    handleViewDetailData = (data) => {
+        console.log("view info: ", data);
+        this.props.history.push(`/detail-data/${data.id}`)
     }
 
     render() {
@@ -52,7 +59,7 @@ class FeaturedData extends Component {
                                     let nameVi = `${item.positionData.valueVi}, ${item.lastName} ${item.firstName}`;
                                     let nameEn = `${item.positionData.valueEn}, ${item.firstName} ${item.lastName}`;
                                     return (
-                                        <div className="section-customize" key={index}>
+                                        <div className="section-customize" key={index} onClick={() => this.handleViewDetailData(item)}>
                                             <div className="bg-image section-featured-data"
                                                 style={{ backgroundImage: `url(${imageBase64})` }}
                                             />
@@ -88,4 +95,4 @@ const mapDispatchToProps = dispatch => {
     };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(FeaturedData);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(FeaturedData));

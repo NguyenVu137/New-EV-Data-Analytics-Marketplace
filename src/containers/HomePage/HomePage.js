@@ -27,7 +27,7 @@ class HomePage extends Component {
         }
         return (
             <div>
-                <HomeHeader />
+                <HomeHeader isShowBanner={true}/>
                 <Specialty settings={settings} />
                 <CarBrands settings={settings} />
                 <FeaturedData settings={settings} />

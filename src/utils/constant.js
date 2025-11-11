@@ -3,7 +3,8 @@ export const path = {
     HOMEPAGE: '/home',
     LOGIN: '/login',
     LOG_OUT: '/logout',
-    SYSTEM: '/system'
+    SYSTEM: '/system',
+    DETAIL_DATA: '/detail-data/:id'
 };
 
 export const LANGUAGES = {
@@ -26,3 +27,9 @@ export const YesNoObj = {
     YES: 'Y',
     NO: 'N'
 } 
+
+export const USER_ROLE = {
+    ADMIN: 'R1',
+    PROVIDER: 'R2',
+    CONSUMER: 'R3'
+}

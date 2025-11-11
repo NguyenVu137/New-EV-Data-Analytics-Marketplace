@@ -18,8 +18,12 @@ export const adminMenu = [
                 // ]
             },
 
-            {
-                name: 'menu.admin.manage-admin', link: '/system/user-admin',
+            // {
+            //     name: 'menu.admin.manage-admin', link: '/system/user-admin',
+            // },
+
+            { // Quản lí quyền sử dụng
+                name: 'menu.provider.manage-use-rights', link: '/provider/manage-use-rights',
             },
 
         ]
@@ -51,4 +55,18 @@ export const adminMenu = [
 
         ]
     },
+];
+
+
+export const providerMenu = [
+    { // Quản lí quyền sử dụng
+        name: 'menu.provider.manage-use-rights',
+        menus: [
+            {
+                name: 'menu.provider.manage-use-rights', link: '/provider/manage-use-rights',
+            },
+
+        ]
+    },
+
 ]; 

@@ -29,6 +29,9 @@
             "manage-post": "Quản lí bài đăng",
             "censor": "Kiểm duyệt",
             "manage-censor": "Quản lí kiểm duyệt"
+        },
+        "provider": {
+            "manage-use-rights": "Quản lí quyền sử dụng"
         }
     },
     "manage-user": {
