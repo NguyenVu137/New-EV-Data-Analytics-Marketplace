@@ -92,7 +92,7 @@ class UserManage extends Component {
     doEditUser = async (user) => {
         try {
             let res = await editUserService(user);
-            if(res && res.errCode === 0) {
+            if (res && res.errCode === 0) {
                 this.setState({
                     isOpenModalEditUser: false
                 })
@@ -140,7 +140,7 @@ class UserManage extends Component {
                     ><i className="fa-solid fa-plus"></i>Add new users</button>
                 </div>
                 <div className="users-table mt-3 mx-1">
-                    <table>
+                    <table id="customers">
                         <tbody>
                             <tr>
                                 <th>Email</th>

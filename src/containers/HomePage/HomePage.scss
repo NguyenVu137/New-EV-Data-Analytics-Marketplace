@@ -34,6 +34,10 @@
     content: "\f054" !important;
 }
 
+.slick-disabled {
+    display: none !important;
+}
+
 .section-share {
     &.section-specialty {
         background: #f5f5f5;
@@ -74,7 +78,7 @@
                 }
 
                 &.section-featured-data {
-                    background-image: url('../../assets/featured-data/Zeekr_7X_2024-01-thumb.jpg');
+                    // background-image: url('../../assets/featured-data/Zeekr_7X_2024-01-thumb.jpg');
                 }
             }
 
@@ -163,8 +167,10 @@
         .content-left {
             width: 60%;
         }
+
         .content-right {
-            width:40%;
+            width: 40%;
+
             p {
                 text-align: justify;
                 font-style: italic;
@@ -172,5 +178,5 @@
             }
         }
     }
-    
+
 }

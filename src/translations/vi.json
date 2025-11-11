@@ -5,7 +5,7 @@
         "provider": "Nhà cung cấp",
         "about": "Giới thiệu",
         "support": "Hỗ trợ",
-        "welcome": "Xin chào, ",
+        "welcome": "Xin chào, {name}",
         "login": "Đăng nhập",
         "logout": "Đăng xuất",
         "register": "Đăng kí"
@@ -45,6 +45,7 @@
         "gender": "Giới tính",
         "role": "Vai trò",
         "image": "Ảnh đại diện",
-        "save": "Lưu người dùng"
+        "save": "Lưu người dùng",
+        "edit": "Lưu thay đổi"
     }
 }

@@ -5,7 +5,7 @@
         "provider": "Provider",
         "about": "About",
         "support": "Support",
-        "welcome": "Welcome, ",
+        "welcome": "Welcome, {name}",
         "login": "Login",
         "logout": "Logout",
         "register": "Register"
@@ -45,6 +45,7 @@
         "gender": "Gender",
         "role": "Role",
         "image": "Avatar",
-        "save": "Save"
+        "save": "Save",
+        "edit": "Save Change"
     }
 }
