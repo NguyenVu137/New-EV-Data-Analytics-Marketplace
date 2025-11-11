@@ -3,7 +3,7 @@ const datasetService = require('../services/datasetService');
 
 const getAllUsers = async (req, res) => {
     try {
-        const users = await userService.getAllUser();
+        const users = await userService.getAllUsers();
         return res.status(200).json({ errCode: 0, users });
     } catch (e) {
         console.log(e);

@@ -26,7 +26,7 @@ let validateUser = async (email, password) => {
 };
 
 // --- Admin: Get all users hoặc 1 user ---
-let getAllUsers = async (userId) => {
+let getAllUsers = async (userId = "ALL") => {
     if (userId === "ALL") {
         return await db.User.findAll({ attributes: { exclude: ["password"] } });
     }
