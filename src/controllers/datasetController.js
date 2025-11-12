@@ -1,7 +1,6 @@
 const datasetService = require('../services/datasetService');
 
 // --- Consumer routes ---
-// Get approved datasets
 const getApprovedDatasets = async (req, res) => {
     try {
         const datasets = await datasetService.getApprovedDatasets();
@@ -12,7 +11,6 @@ const getApprovedDatasets = async (req, res) => {
     }
 };
 
-// Search datasets
 const searchDatasets = async (req, res) => {
     try {
         const filters = req.query;
@@ -25,10 +23,9 @@ const searchDatasets = async (req, res) => {
 };
 
 // --- Admin routes ---
-// Approve dataset
 const approveDataset = async (req, res) => {
     try {
-        const { datasetId } = req.body;
+        const datasetId = req.params.id;
         const result = await datasetService.approveDataset(datasetId);
         return res.status(200).json(result);
     } catch (e) {
@@ -37,10 +34,9 @@ const approveDataset = async (req, res) => {
     }
 };
 
-// Reject dataset
 const rejectDataset = async (req, res) => {
     try {
-        const { datasetId } = req.body;
+        const datasetId = req.params.id;
         const { reason } = req.body;
         const result = await datasetService.rejectDataset(datasetId, reason);
         return res.status(200).json(result);
@@ -50,7 +46,6 @@ const rejectDataset = async (req, res) => {
     }
 };
 
-// Get all datasets for admin (including pending)
 const getAllDatasetsForAdmin = async (req, res) => {
     try {
         const datasets = await datasetService.getAllDatasets();

@@ -1,5 +1,4 @@
 const userService = require('../services/userService');
-const datasetService = require('../services/datasetService');
 
 const getAllUsers = async (req, res) => {
     try {
@@ -42,21 +41,10 @@ const deleteUser = async (req, res) => {
     }
 };
 
-const approveDataset = async (req, res) => {
-    try {
-        const { datasetId } = req.body;
-        const dataset = await datasetService.approveDataset(datasetId);
-        return res.status(200).json({ errCode: 0, dataset });
-    } catch (e) {
-        console.log(e);
-        return res.status(500).json({ errCode: -1, message: 'Server error' });
-    }
-};
 
 module.exports = {
     getAllUsers,
     createUser,
     updateUser,
     deleteUser,
-    approveDataset
 };
