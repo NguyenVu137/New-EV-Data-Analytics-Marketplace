@@ -3,7 +3,12 @@ import actionTypes from '../actions/actionTypes';
 const initialState = {
     isLoadingGender: false,
     genders: [],
-    roles: []
+    roles: [],
+    users: [],
+    datasets: [],
+    categories: [],
+    formats: [],
+    statuses: []
 };
 
 const adminReducer = (state = initialState, action) => {
@@ -54,7 +59,54 @@ const adminReducer = (state = initialState, action) => {
             return {
                 ...state
             };
+        case actionTypes.FETCH_ALL_DATASETS_SUCCESS:
+            return {
+                ...state,
+                datasets: action.datasets
+            };
+
+        case actionTypes.FETCH_ALL_DATASETS_FAILED:
+            return {
+                ...state,
+                datasets: []
+            };
+        case actionTypes.FETCH_CATEGORY_SUCCESS:
+            return {
+                ...state,
+                categories: action.data
+            };
+        case actionTypes.FETCH_CATEGORY_FAILED:
+            return {
+                ...state,
+                categories: []
+            };
+
+        case actionTypes.FETCH_FORMAT_SUCCESS:
+            return {
+                ...state,
+                formats: action.data
+            };
+
+        case actionTypes.FETCH_FORMAT_FAILED:
+            return {
+                ...state,
+                formats: []
+            };
+
+        case actionTypes.FETCH_STATUS_SUCCESS:
+            return {
+                ...state,
+                statuses: action.data
+            };
+
+        case actionTypes.FETCH_STATUS_FAILED:
+            return {
+                ...state,
+                statuses: []
+            };
+
     }
+
 };
 
 export default adminReducer;

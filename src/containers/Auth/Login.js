@@ -49,7 +49,7 @@ class Login extends Component {
                 const role = data.user.roleId;
                 switch (role) {
                     case 'R1': this.props.navigate('/system/user-manage'); break;
-                    case 'R2': this.props.navigate('/provider'); break;
+                    case 'R2': this.props.navigate('/system/manage-data'); break;
                     case 'R3': this.props.navigate('/home'); break;
                     default: this.props.navigate('/'); break;
                 }

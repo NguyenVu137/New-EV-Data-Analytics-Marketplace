@@ -5,7 +5,7 @@ import UserManage from '../containers/System/UserManage';
 import UserRedux from '../containers/System/Admin/UserRedux.js';
 import Header from '../containers/Header/Header';
 import RoleRoute from './RoleRoutes.js';
-
+import DataManage from '../containers/System/Provider/DataManage.js';
 class System extends Component {
     render() {
         const { systemMenuPath, isLoggedIn } = this.props;
@@ -17,6 +17,7 @@ class System extends Component {
                         <Switch>
                             <RoleRoute path="/system/user-manage" allowedRoles={['R1']} component={UserManage} />
                             <RoleRoute path="/system/user-redux" allowedRoles={['R1']} component={UserRedux} />
+                            <RoleRoute path="/system/manage-data" allowedRoles={['R1', 'R2']} component={DataManage} />
                             <Route component={() => <Redirect to="/home" />} />
                         </Switch>
                     </div>
