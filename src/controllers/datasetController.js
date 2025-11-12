@@ -1,7 +1,7 @@
 const datasetService = require('../services/datasetService');
-const consumerController = require('./consumerController');
 
 // --- Consumer routes ---
+// Get approved datasets
 const getApprovedDatasets = async (req, res) => {
     try {
         const datasets = await datasetService.getApprovedDatasets();
@@ -12,6 +12,7 @@ const getApprovedDatasets = async (req, res) => {
     }
 };
 
+// Search datasets
 const searchDatasets = async (req, res) => {
     try {
         const filters = req.query;
@@ -23,24 +24,37 @@ const searchDatasets = async (req, res) => {
     }
 };
 
-// --- Provider routes ---
-const uploadDataset = async (req, res) => {
+// --- Admin routes ---
+// Approve dataset
+const approveDataset = async (req, res) => {
     try {
-        const providerId = req.user.id;
-        const dataset = await datasetService.createDataset(providerId, req.body);
-        return res.status(201).json({ errCode: 0, dataset });
+        const { datasetId } = req.body;
+        const result = await datasetService.approveDataset(datasetId);
+        return res.status(200).json(result);
     } catch (e) {
         console.log(e);
         return res.status(500).json({ errCode: -1, message: 'Server error' });
     }
 };
 
-// --- Admin routes ---
-const approveDataset = async (req, res) => {
+// Reject dataset
+const rejectDataset = async (req, res) => {
     try {
         const { datasetId } = req.body;
-        const dataset = await datasetService.approveDataset(datasetId);
-        return res.status(200).json({ errCode: 0, dataset });
+        const { reason } = req.body;
+        const result = await datasetService.rejectDataset(datasetId, reason);
+        return res.status(200).json(result);
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ errCode: -1, message: 'Server error' });
+    }
+};
+
+// Get all datasets for admin (including pending)
+const getAllDatasetsForAdmin = async (req, res) => {
+    try {
+        const datasets = await datasetService.getAllDatasets();
+        return res.status(200).json({ errCode: 0, data: datasets });
     } catch (e) {
         console.log(e);
         return res.status(500).json({ errCode: -1, message: 'Server error' });
@@ -50,6 +64,7 @@ const approveDataset = async (req, res) => {
 module.exports = {
     getApprovedDatasets,
     searchDatasets,
-    uploadDataset,
-    approveDataset
+    approveDataset,
+    rejectDataset,
+    getAllDatasetsForAdmin
 };
