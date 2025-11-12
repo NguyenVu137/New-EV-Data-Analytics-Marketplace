@@ -4,55 +4,103 @@
     z-index: 99;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     background-color: #0ebae3;
     color: $common-text-color;
-    height: 40px;
-    position: relative;
+    height: 50px;
+    padding: 0 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+    .left-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    // Home icon
+    .home-icon {
+        font-size: 22px;
+        color: lighten($common-text-color, 20%);
+        cursor: pointer;
+        transition: color 0.3s ease;
+
+        &:hover {
+            color: white;
+        }
+    }
 
     .btn-logout {
         color: $common-text-color;
-        line-height: 40px;
-        height: 40px;
-        padding: 0 10px;
+        line-height: 50px;
+        height: 50px;
+        padding: 0 15px;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
 
         &:hover {
-            background-color: darken($colormain, 5);
+            background-color: darken(#0ebae3, 10%);
         }
 
         i {
-            font-size: $base-size + 1px;
+            font-size: $base-size + 2px;
+            vertical-align: middle;
+            margin-right: 6px;
         }
     }
 
     .languages {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        font-size: 14px;
+
         .welcome {
-            margin-right: 10px;
-        }
-
-        .language-en {
             margin-right: 15px;
-            margin-left: 10px;
-            cursor: pointer;
-            opacity: 0.5;
-
-            &.active {
-                border-radius: 50%;
-                opacity: 1;
-                border: 1px solid;
-                padding: 4px;
-            }
+            color: lighten($common-text-color, 30%);
         }
 
+        .language-en,
         .language-vi {
             cursor: pointer;
-            opacity: 0.5;
+            opacity: 0.6;
+            margin: 0 5px;
+            padding: 6px 10px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            user-select: none;
 
             &.active {
-                border-radius: 50%;
                 opacity: 1;
-                border: 1px solid;
-                padding: 4px;
+                background-color: lighten(#0ebae3, 15%);
+                border: 1.5px solid white;
+                color: white;
             }
+
+            &:hover {
+                opacity: 0.85;
+                background-color: rgba(255, 255, 255, 0.15);
+            }
+        }
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        margin-right: 15px;
+        color: white;
+    }
+
+    .logout-icon {
+        margin-left: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: color 0.3s ease;
+
+        &:hover {
+            color: darken(white, 30%);
         }
     }
 }

@@ -24,24 +24,6 @@ export const adminMenu = [
 
         ]
     },
-    { // Quản lí dữ liệu
-        name: 'menu.admin.data',
-        menus: [
-            {
-                name: 'menu.admin.manage-data', link: '/system/manage-data',
-            },
-
-        ]
-    },
-    { // Quản lí bài đăng
-        name: 'menu.admin.post',
-        menus: [
-            {
-                name: 'menu.admin.manage-post', link: '/system/manage-post',
-            },
-
-        ]
-    },
     { // Quản lí kiểm duyệt
         name: 'menu.admin.censor',
         menus: [
@@ -51,4 +33,17 @@ export const adminMenu = [
 
         ]
     },
-]; 
+];
+export const providerMenu = [
+    { // Quản lí dữ liệu
+        name: 'menu.admin.data',
+        menus: [
+            {
+                name: 'menu.admin.manage-data', link: '/system/manage-data',
+            },
+
+        ]
+    },
+
+
+];

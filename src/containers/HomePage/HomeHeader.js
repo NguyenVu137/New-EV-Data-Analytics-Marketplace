@@ -34,7 +34,19 @@ class HomeHeader extends Component {
                         <div className="left-content">
                             <i className="fa-solid fa-bars"></i>
                             <img src="" />
-                            <div className="header-logo"></div>
+                            <div
+                                className="header-logo"
+                                onClick={() => {
+                                    const { userInfo } = this.props;
+                                    if (userInfo?.user?.roleId === 'R1') {
+                                        this.props.history.push('/system/user-redux');
+                                    } else if (userInfo?.user?.roleId === 'R2') {
+                                        this.props.history.push('/system/manage-data');
+                                    } else {
+                                        this.props.history.push('/home');
+                                    }
+                                }}
+                            ></div>
                             {userInfo?.user?.email && (
                                 <span className='user-greeting'>
                                     <FormattedMessage

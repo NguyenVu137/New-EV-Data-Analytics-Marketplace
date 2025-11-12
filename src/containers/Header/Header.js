@@ -1,28 +1,62 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
+import _ from 'lodash'
 import * as actions from "../../store/actions";
 import Navigator from '../../components/Navigator';
-import { adminMenu } from './menuApp';
+import { adminMenu, providerMenu } from './menuApp';
 import './Header.scss';
-import { LANGUAGES } from "../../utils";
+import { LANGUAGES, USER_ROLE } from "../../utils";
 import { FormattedMessage } from 'react-intl';
+import { withRouter } from 'react-router-dom';
 
 
 class Header extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            MenuApp: []
+        }
+    }
 
     handleChangeLanguage = (language) => {
         this.props.changeLanguageAppRedux(language)
+    }
+    componentDidMount() {
+
+        let { userInfo } = this.props;
+        let menu = [];
+        if (userInfo && !_.isEmpty(userInfo)) {
+            let role = userInfo.user?.roleId
+            if (role === USER_ROLE.ADMIN) {
+                menu = [...adminMenu, ...providerMenu];
+            }
+            if (role === USER_ROLE.PROVIDER) {
+                menu = providerMenu;
+            }
+        }
+        this.setState({
+            MenuApp: menu
+        })
     }
     render() {
         const { processLogout, language, userInfo } = this.props;
         return (
             <div className="header-container">
-                {/* thanh navigator */}
-                <div className="header-tabs-container">
-                    <Navigator menus={adminMenu} />
-                </div>
+                <div className="left-header">
+                    {/* Home*/}
+                    <div
+                        className="btn-home"
+                        onClick={() => this.props.history.push('/home')}
+                        title="Home"
+                    >
+                        <i className="fas fa-home"></i>
+                    </div>
 
+                    {/* thanh navigator */}
+                    <div className="header-tabs-container">
+                        <Navigator menus={this.state.MenuApp} />
+                    </div>
+                </div>
                 <div className="languages">
                     <span className="welcome">
                         <FormattedMessage
@@ -64,4 +98,4 @@ const mapDispatchToProps = dispatch => {
     };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Header);
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(Header));

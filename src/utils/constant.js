@@ -26,4 +26,9 @@ export const dateFormat = {
 export const YesNoObj = {
     YES: 'Y',
     NO: 'N'
-} 
+}
+export const USER_ROLE = {
+    ADMIN: 'R1',
+    PROVIDER: 'R2',
+    CONSUMER: 'R3'
+}
