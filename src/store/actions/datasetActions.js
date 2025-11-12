@@ -2,12 +2,17 @@ import actionTypes from './actionTypes';
 import {
     getAllCodeService,
     getAllDatasetsService,
+    getAllDatasetsForAdminService,
     createDatasetService,
     updateDatasetService,
-    deleteDatasetService
+    deleteDatasetService,
+    approveDatasetService,
+    rejectDatasetService
 } from '../../services/datasetService';
 
-// Fetch all datasets
+
+// PROVIDER ACTIONS
+
 export const fetchAllDatasets = () => {
     return async (dispatch) => {
         try {
@@ -36,7 +41,6 @@ export const fetchAllDatasetsFailed = () => ({
     type: actionTypes.FETCH_ALL_DATASETS_FAILED
 })
 
-// Create dataset
 export const createDataset = (data) => {
     return async (dispatch) => {
         try {
@@ -65,7 +69,6 @@ export const createDatasetFailed = () => ({
     type: actionTypes.CREATE_DATASET_FAILED
 })
 
-// Update dataset
 export const updateDataset = (id, data) => {
     return async (dispatch) => {
         try {
@@ -94,7 +97,6 @@ export const updateDatasetFailed = () => ({
     type: actionTypes.UPDATE_DATASET_FAILED
 })
 
-// Delete dataset
 export const deleteDataset = (id) => {
     return async (dispatch) => {
         try {
@@ -122,7 +124,62 @@ export const deleteDatasetSuccess = () => ({
 export const deleteDatasetFailed = () => ({
     type: actionTypes.DELETE_DATASET_FAILED
 })
-// Category
+
+// ADMIN ACTIONS
+export const fetchAllDatasetsForAdmin = () => {
+    return async (dispatch) => {
+        try {
+            let res = await getAllDatasetsForAdminService();
+            if (res && res.errCode === 0) {
+                dispatch(fetchAllDatasetsSuccess(res.data));
+                return { success: true, data: res.data };
+            } else {
+                dispatch(fetchAllDatasetsFailed());
+                return { success: false, message: res?.errMessage || 'Failed to fetch datasets' };
+            }
+        } catch (e) {
+            dispatch(fetchAllDatasetsFailed());
+            console.log('fetchAllDatasetsForAdmin error', e);
+            return { success: false, message: 'Server error' };
+        }
+    }
+}
+
+export const approveDataset = (id) => {
+    return async (dispatch) => {
+        try {
+            let res = await approveDatasetService(id);
+            if (res && res.errCode === 0) {
+                await dispatch(fetchAllDatasetsForAdmin());
+                return { success: true, message: res.errMessage || 'Dataset approved successfully' };
+            } else {
+                return { success: false, message: res?.errMessage || 'Failed to approve dataset' };
+            }
+        } catch (e) {
+            console.log('approveDataset error', e);
+            return { success: false, message: 'Server error' };
+        }
+    }
+}
+
+export const rejectDataset = (id, reason) => {
+    return async (dispatch) => {
+        try {
+            let res = await rejectDatasetService(id, reason);
+            if (res && res.errCode === 0) {
+                await dispatch(fetchAllDatasetsForAdmin());
+                return { success: true, message: res.errMessage || 'Dataset rejected successfully' };
+            } else {
+                return { success: false, message: res?.errMessage || 'Failed to reject dataset' };
+            }
+        } catch (e) {
+            console.log('rejectDataset error', e);
+            return { success: false, message: 'Server error' };
+        }
+    }
+}
+
+//Lấy categories, formats, statuses
 export const fetchCategoryStart = () => {
     return async (dispatch) => {
         try {
@@ -148,7 +205,6 @@ export const fetchCategoryFailed = () => ({
     type: actionTypes.FETCH_CATEGORY_FAILED
 });
 
-// Format
 export const fetchFormatStart = () => {
     return async (dispatch) => {
         try {
@@ -165,7 +221,6 @@ export const fetchFormatStart = () => {
     }
 }
 
-
 export const fetchFormatSuccess = (data) => ({
     type: actionTypes.FETCH_FORMAT_SUCCESS,
     data: data
@@ -174,7 +229,7 @@ export const fetchFormatSuccess = (data) => ({
 export const fetchFormatFailed = () => ({
     type: actionTypes.FETCH_FORMAT_FAILED
 });
-// Dataset status
+
 export const fetchStatusStart = () => {
     return async (dispatch) => {
         try {

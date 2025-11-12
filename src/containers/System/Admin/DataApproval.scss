@@ -1,0 +1,320 @@
+.data-approval-container {
+    padding: 30px;
+    background-color: #f4f6f9;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+
+    .title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .data-approval-body {
+        background: #fff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+
+            .btn {
+                font-weight: 600;
+                border-radius: 6px;
+                padding: 8px 16px;
+                transition: all 0.2s ease;
+
+                &:hover {
+                    transform: translateY(-1px);
+                }
+            }
+
+            .btn-primary {
+                background: #007bff;
+                border: none;
+            }
+
+            .btn-warning {
+                background: #ffc107;
+                color: #212529;
+                border: none;
+            }
+
+            .btn-success {
+                background: #28a745;
+                border: none;
+            }
+
+            .btn-danger {
+                background: #dc3545;
+                border: none;
+            }
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            overflow: hidden;
+            border-radius: 10px;
+
+            thead {
+                background: #007bff;
+                color: #fff;
+
+                th {
+                    padding: 12px 10px;
+                    font-weight: 600;
+                    font-size: 15px;
+                    white-space: nowrap;
+                }
+            }
+
+            tbody {
+                background: #fff;
+
+                tr {
+                    transition: background 0.15s ease;
+
+                    &:hover {
+                        background: #f8f9fa;
+                    }
+
+                    &.table-warning {
+                        background: #fffbe6 !important;
+                    }
+
+                    &.table-success {
+                        background: #f6fff7 !important;
+                    }
+
+                    &.table-danger {
+                        background: #fff5f5 !important;
+                    }
+                }
+
+                td {
+                    padding: 10px;
+                    font-size: 14px;
+                    vertical-align: middle;
+                    color: #444;
+                    border-top: 1px solid #e9ecef;
+
+                    /* xử lý text quá dài */
+                    max-width: 220px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+
+                    &.actions {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 6px;
+
+                        .btn-sm {
+                            font-size: 13px;
+                            padding: 4px 10px;
+                            border-radius: 5px;
+
+                            i {
+                                margin-right: 4px;
+                            }
+                        }
+
+                        /* ✅ Nút Duyệt */
+                        .approve-btn {
+                            background-color: #22c55e;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            padding: 6px 12px;
+                            font-size: 13px;
+                            cursor: pointer;
+                            transition: background 0.2s ease;
+
+                            &:hover {
+                                background-color: #16a34a;
+                            }
+                        }
+
+                        /* ✅ Nút Từ chối - mở modal nhập lý do */
+                        .reject-btn {
+                            background-color: #dc2626;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            padding: 6px 12px;
+                            font-size: 13px;
+                            cursor: pointer;
+                            transition: background 0.2s ease;
+
+                            &:hover {
+                                background-color: #b91c1c;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Badge trạng thái */
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            font-size: 13px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-transform: capitalize;
+            min-width: 90px;
+
+            &.badge-warning {
+                background: #fff3cd;
+                color: #856404;
+            }
+
+            &.badge-success {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            &.badge-danger {
+                background: #f8d7da;
+                color: #721c24;
+            }
+        }
+
+        /* ✅ Modal từ chối (popup nhập lý do) */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+            z-index: 999;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 550px;
+            animation: slideDown 0.3s ease;
+
+            .modal-header {
+                border-bottom: 1px solid #e9ecef;
+                padding: 16px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                h5 {
+                    margin: 0;
+                    font-size: 18px;
+                    font-weight: 700;
+                }
+
+                button {
+                    border: none;
+                    background: none;
+                    font-size: 26px;
+                    color: #666;
+                    cursor: pointer;
+                    transition: 0.2s;
+
+                    &:hover {
+                        color: #000;
+                    }
+                }
+            }
+
+            .modal-body {
+                padding: 20px;
+
+                textarea {
+                    width: 100%;
+                    border-radius: 6px;
+                    border: 1px solid #ccc;
+                    padding: 8px;
+                    resize: vertical;
+                    font-size: 14px;
+                    transition: border-color 0.2s;
+
+                    &:focus {
+                        outline: none;
+                        border-color: #007bff;
+                    }
+                }
+            }
+
+            .modal-footer {
+                border-top: 1px solid #e9ecef;
+                padding: 12px 20px;
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+
+                button {
+                    border: none;
+                    border-radius: 6px;
+                    padding: 8px 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: background 0.2s ease;
+
+                    &.btn-cancel {
+                        background: #e5e7eb;
+                        color: #333;
+
+                        &:hover {
+                            background: #d1d5db;
+                        }
+                    }
+
+                    &.btn-submit {
+                        background: #ef4444;
+                        color: white;
+
+                        &:hover {
+                            background: #dc2626;
+                        }
+                    }
+                }
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-25px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    }
+}

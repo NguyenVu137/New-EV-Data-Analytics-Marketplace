@@ -54,6 +54,14 @@
         .table {
             margin-top: 20px;
 
+            th:nth-child(1),
+            td:nth-child(1) {
+                max-width: 250px; // Giới hạn chiều rộng cột tiêu đề
+                white-space: nowrap; // Không xuống dòng
+                overflow: hidden; // Ẩn text tràn ra ngoài
+                text-overflow: ellipsis; // Hiển thị dấu ... khi tràn
+            }
+
             thead {
                 background: #343a40;
                 color: white;
@@ -66,16 +74,19 @@
                 font-weight: 600;
 
                 &.badge-warning {
+                    width: 100%;
                     background: #ffc107;
                     color: #000;
                 }
 
                 &.badge-success {
+                    width: 100%;
                     background: #28a745;
                     color: #fff;
                 }
 
                 &.badge-danger {
+                    width: 100%;
                     background: #dc3545;
                     color: #fff;
                 }
