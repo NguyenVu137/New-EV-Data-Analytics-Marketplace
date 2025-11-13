@@ -2,6 +2,8 @@ import express from "express";
 import homeController from "../controllers/homeController";
 import userController from "../controllers/userController";
 import dataController from "../controllers/dataController";
+const analyticsRoute = require("../route/analyticsRoute");
+const datasetRouter = require("../routes/datasets");
 
 let router = express.Router();
 
@@ -29,6 +31,12 @@ let initWebRoutes = (app) => {
     router.get('/api/top-data-home', dataController.getTopDataHome);
 
     router.get('/api/get-all-datas', dataController.getAllDatas);
+
+    // Analytics routes
+    app.use("/api", analyticsRoute);
+
+    // Dataset routes
+    app.use("/api", datasetRouter);
 
     return app.use("/", router);
 }

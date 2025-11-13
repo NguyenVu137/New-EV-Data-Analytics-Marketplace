@@ -1,18 +1,21 @@
 FROM node:14-alpine
 
-WORKDIR /ev-data-analytics-marketplace/backend
+WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
 
+# Install all dependencies including dev dependencies (needed for babel)
 RUN npm install
 
-RUN npm install -g @babel/core @babel/cli
-
+# Copy all source files
 COPY . .
 
-RUN npm run build-src
+# Expose port
+EXPOSE 6969
 
-CMD [ "npm", "run", "build"]
+# Start the server using babel-node via npm start
+CMD ["npm", "start"]
 
 #docker build --tag node-docker
 #docker run -p 8080:8080 -d node-docker

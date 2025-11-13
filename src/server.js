@@ -3,7 +3,9 @@ import bodyParser from "body-parser";
 import viewEngine from "./config/viewEngine";
 import initWebRoutes from "./route/web";
 import connectDB from "./config/connectDB";
+import triggerAnalyticsRecalculation from "./middleware/analyticsMiddleware";
 import cors from "cors";
+const { Op } = require('sequelize');
 
 require('dotenv').config();
 
@@ -31,13 +33,23 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
+
+// Middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 //config app
 
 // app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+app.use(express.json());
 
+// Middleware to trigger analytics recalculation on dataset changes
+app.use(triggerAnalyticsRecalculation);
 
 viewEngine(app);
 initWebRoutes(app);

@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    image: ev_marketplace_backend:latest
+    ports:
+      - "6969:6969"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db-mysql
+      - DB_PORT=3306
+      - DB_DATABASE_NAME=ev-data-analytics-marketplace
+      - DB_USERNAME=root
+      - DB_PASSWORD=123456
+      - DB_DIALECT=mysql
+      - URL_REACT=http://localhost:3000
+      - PORT=6969
+    depends_on:
+      db-mysql:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  db-mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: ev-data-analytics-marketplace
+      MYSQL_ROOT_PASSWORD: 123456
+    command: --max_allowed_packet=64M
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+volumes:
+  db_data:
