@@ -22,6 +22,20 @@ const searchDatasets = async (req, res) => {
     }
 };
 
+let getTopDataHome = async (req, res) => {
+    let limit = req.query.limit;
+    if (!limit) limit = 10;
+    try {
+        let response = await datasetService.getTopDataHome(+limit);
+        return res.status(200).json(response);
+    } catch (e) {
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            message: "Error from server..."
+        })
+    }
+}
 // --- Admin routes ---
 const approveDataset = async (req, res) => {
     try {
@@ -56,10 +70,12 @@ const getAllDatasetsForAdmin = async (req, res) => {
     }
 };
 
+
 module.exports = {
     getApprovedDatasets,
     searchDatasets,
     approveDataset,
     rejectDataset,
-    getAllDatasetsForAdmin
+    getAllDatasetsForAdmin,
+    getTopDataHome: getTopDataHome
 };

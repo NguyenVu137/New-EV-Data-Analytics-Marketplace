@@ -9,6 +9,8 @@ const router = express.Router();
 // Consumer (R3)
 router.get('/', auth, checkRole(['R3', 'R2', 'R1']), datasetController.getApprovedDatasets);
 router.get('/search', auth, checkRole(['R3', 'R2', 'R1']), datasetController.searchDatasets);
+router.get('/top-data-home', auth, checkRole(['R3', 'R2', 'R1']), datasetController.getTopDataHome);
+
 
 //Admin(R1)
 router.get('/admin/all', auth, checkRole('R1'), datasetController.getAllDatasetsForAdmin);

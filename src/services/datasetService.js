@@ -149,6 +149,51 @@ let searchDatasets = async (query) => {
     });
 };
 
+let getTopDataHome = (limitInput) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let datasets = await db.Dataset.findAll({
+                limit: limitInput || 10,
+                where: { status_code: 'APPROVED' },
+                order: [['created_at', 'DESC']],
+                attributes: ['id', 'title', 'description', 'file_url', 'api_url', 'price_per_download', 'price_subscription'],
+                include: [
+                    {
+                        model: db.Allcode,
+                        as: 'category',
+                        attributes: ['key', 'valueVi', 'valueEn'],
+                        where: { type: 'DATASET_CATEGORY' },
+                        required: false
+                    },
+                    {
+                        model: db.Allcode,
+                        as: 'format',
+                        attributes: ['key', 'valueVi', 'valueEn'],
+                        where: { type: 'DATASET_FORMAT' },
+                        required: false
+                    },
+                    {
+                        model: db.User,
+                        as: 'provider',
+                        attributes: ['firstName', 'lastName']
+                    }
+                ],
+                raw: true,
+                nest: true
+            })
+
+            resolve({
+                errCode: 0,
+                data: datasets
+            })
+        } catch (e) {
+            reject(e)
+
+        }
+    })
+}
+
+
 // Get all datasets for admin
 let getAllDatasets = async () => {
     return await db.Dataset.findAll({
@@ -187,5 +232,6 @@ module.exports = {
     rejectDataset,
     getApprovedDatasets,
     searchDatasets,
-    getAllDatasets
+    getAllDatasets,
+    getTopDataHome
 };
