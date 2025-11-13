@@ -8,7 +8,8 @@ const initialState = {
     datasets: [],
     categories: [],
     formats: [],
-    statuses: []
+    statuses: [],
+    topDatas: []
 };
 
 const adminReducer = (state = initialState, action) => {
@@ -105,7 +106,21 @@ const adminReducer = (state = initialState, action) => {
                 statuses: []
             };
 
+        case actionTypes.FETCH_TOP_DATAS_SUCCESS:
+
+            return {
+                ...state,
+                topDatas: action.datas
+            };
+
+        case actionTypes.FETCH_TOP_DATAS_FAILED:
+            return {
+                ...state,
+                topDatas: []
+            };
+
     }
+
 
 };
 

@@ -47,5 +47,9 @@
         "image": "Avatar",
         "save": "Save",
         "edit": "Save Change"
+    },
+    "homepage": {
+        "featured-data": "Last week's featured data",
+        "more-info": "More info"
     }
 }

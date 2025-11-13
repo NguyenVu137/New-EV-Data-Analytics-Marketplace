@@ -7,8 +7,35 @@ import {
     updateDatasetService,
     deleteDatasetService,
     approveDatasetService,
-    rejectDatasetService
+    rejectDatasetService,
 } from '../../services/datasetService';
+import {
+    getTopDataHomeService
+} from '../../services/userService';
+// CONSUMER ACTIONS
+
+export const fetchTopData = () => {
+    return async (dispatch, getState) => {
+        try {
+            let res = await getTopDataHomeService('');
+            if (res && res.errCode === 0) {
+                dispatch({
+                    type: actionTypes.FETCH_TOP_DATAS_SUCCESS,
+                    datas: res.data
+                })
+            } else {
+                dispatch({
+                    type: actionTypes.FETCH_TOP_DATAS_FAILED
+                })
+            }
+        } catch (e) {
+            console.log('FETCH_TOP_DATAS_FAILED: ', e)
+            dispatch({
+                type: actionTypes.FETCH_TOP_DATAS_FAILED
+            })
+        }
+    }
+}
 
 
 // PROVIDER ACTIONS

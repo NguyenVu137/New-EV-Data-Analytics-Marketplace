@@ -38,7 +38,9 @@ const editUserService = (inputData) => {
 const getAllCodeService = (inputType) => {
     return axios.get(`/api/allcode?type=${inputType}`);
 }
-
+const getTopDataHomeService = (limit) => {
+    return axios.get(`/api/datasets/top-data-home?limit=${limit}`)
+}
 export {
     handleRegisterApi,
     handleLoginApi,
@@ -46,5 +48,6 @@ export {
     createNewUserService,
     deleteUserService,
     editUserService,
-    getAllCodeService
+    getAllCodeService,
+    getTopDataHomeService
 };
