@@ -44,7 +44,8 @@
     }
 
     &.section-featured-data {
-        background: #f5f5f5;
+        background: #ffffff;
+        height: auto;
     }
 
     &.section-about {
@@ -70,15 +71,10 @@
 
                 &.section-car-brands {
                     background-image: url('../../assets/car-brands/BMW.svg');
-                    // background-color: #fff !important;
                     width: 180px;
                     height: 180px;
                     margin: 0 auto 10px;
                     border-radius: 50%
-                }
-
-                &.section-featured-data {
-                    // background-image: url('../../assets/featured-data/Zeekr_7X_2024-01-thumb.jpg');
                 }
             }
 
@@ -91,15 +87,18 @@
 }
 
 .section-share {
-    height: 330px;
+    height: auto;
 
     .section-container {
-        margin: 0 100px;
+        margin: 0 auto;
+        padding: 0 16px;
+        max-width: 1200px;
         display: flex;
         flex-direction: column;
+        width: 100%;
 
         .section-header {
-            height: 60px;
+            height: auto;
             margin-bottom: 30px;
             padding-top: 30px;
 
@@ -125,8 +124,6 @@
                 background-color: #369eb8;
             }
         }
-
-
     }
 }
 

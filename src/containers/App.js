@@ -12,6 +12,10 @@ import System from '../routes/System';
 import { CustomToastCloseButton } from '../components/CustomToast';
 import HomePage from './HomePage/HomePage.js'
 import CustomScrollbars from '../components/CustomScrollbars.js';
+import DatasetDetailPage from './DatasetDetailPage/DatasetDetailPage';
+import SearchPage from '../components/search/SearchPage';
+import PaymentPage from '../components/Payment/PaymentPage';
+import Analytics from './System/Analytics/Dashboard.js';
 
 class App extends Component {
 
@@ -44,7 +48,12 @@ class App extends Component {
                                     <Route path={path.HOME} exact component={(Home)} />
                                     <Route path={path.LOGIN} component={userIsNotAuthenticated(Login)} />
                                     <Route path={path.SYSTEM} component={userIsAuthenticated(System)} />
+                                    <Route path={path.ANALYTICS} component={Analytics} />
                                     <Route path={path.HOMEPAGE} component={HomePage} />
+                                    <Route path={path.PAYMENT} component={PaymentPage} />
+                                    <Route path={path.DATASET_DETAIL} component={DatasetDetailPage} />
+                                    <Route path={path.SEARCH} component={SearchPage} />
+                                    <Route path={path.DATASETS} component={SearchPage} />
                                 </Switch>
                             </CustomScrollbars>
                         </div>

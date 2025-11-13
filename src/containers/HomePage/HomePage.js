@@ -12,6 +12,22 @@ import "slick-carousel/slick/slick-theme.css";
 
 
 class HomePage extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            filter: null
+        };
+        this.featuredDataRef = React.createRef();
+    }
+
+    handleFilterChange = (filterType, filterValue) => {
+        this.setState({ filter: { [filterType]: filterValue } });
+        // Call FeaturedData to apply filter
+        if (this.featuredDataRef.current) {
+            this.featuredDataRef.current.handleFilterChange(filterType, filterValue);
+        }
+    }
+
     // handleAfterChange = (event, slick, currentSlide) => {
 
     // }
@@ -27,10 +43,10 @@ class HomePage extends Component {
         }
         return (
             <div>
-                <HomeHeader />
+                <HomeHeader onFilterChange={this.handleFilterChange} />
+                <FeaturedData ref={this.featuredDataRef} settings={settings} />
                 <Specialty settings={settings} />
                 <CarBrands settings={settings} />
-                <FeaturedData settings={settings} />
                 <About />
                 <HomeFooter />
             </div>

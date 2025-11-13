@@ -3,7 +3,12 @@ export const path = {
     HOMEPAGE: '/home',
     LOGIN: '/login',
     LOG_OUT: '/logout',
-    SYSTEM: '/system'
+    SYSTEM: '/system',
+    ANALYTICS: '/analytics',
+    DATASET_DETAIL: '/home/:id',
+    DATASETS: '/home',
+    SEARCH: '/search',
+    PAYMENT: '/payment/:paymentId'
 };
 
 export const LANGUAGES = {
