@@ -8,6 +8,7 @@ import {
     deleteDatasetService,
     approveDatasetService,
     rejectDatasetService,
+    getDetailDatasetService,
 } from '../../services/datasetService';
 import {
     getTopDataHomeService
@@ -281,3 +282,33 @@ export const fetchStatusSuccess = (data) => ({
 export const fetchStatusFailed = () => ({
     type: actionTypes.FETCH_STATUS_FAILED
 });
+
+export const fetchDetailDataset = (datasetId) => {
+    return async (dispatch) => {
+        dispatch({ type: actionTypes.FETCH_DETAIL_DATASET_START });
+
+        try {
+            let res = await getDetailDatasetService(datasetId);
+            console.log('API response:', res.data);
+
+            // nếu API trả dataset trực tiếp
+            if (res && res.data) {
+                console.log('Dispatching dataset:', res.data);
+                dispatch({
+                    type: actionTypes.FETCH_DETAIL_DATASET_SUCCESS,
+                    payload: res.data
+                });
+            } else {
+                dispatch({
+                    type: actionTypes.FETCH_DETAIL_DATASET_FAILED,
+                    payload: 'Dataset not found'
+                });
+            }
+        } catch (error) {
+            dispatch({
+                type: actionTypes.FETCH_DETAIL_DATASET_FAILED,
+                payload: error.message
+            });
+        }
+    }
+};

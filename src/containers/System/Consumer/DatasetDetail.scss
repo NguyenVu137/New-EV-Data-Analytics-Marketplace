@@ -1,0 +1,403 @@
+.dataset-detail-kaggle {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+
+    // Hero Section
+    .dataset-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0 2rem;
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .breadcrumb {
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+
+            span {
+                &:last-child {
+                    font-weight: 600;
+                }
+            }
+        }
+
+        .dataset-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .dataset-description {
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        .hero-meta {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+
+            .meta-item {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+
+                .meta-label {
+                    opacity: 0.8;
+                    font-size: 0.875rem;
+                }
+
+                .meta-value {
+                    font-weight: 600;
+                    font-size: 0.875rem;
+
+                    &.status-badge {
+                        padding: 0.25rem 0.75rem;
+                        border-radius: 12px;
+                        background-color: rgba(255, 255, 255, 0.2);
+                    }
+                }
+            }
+        }
+    }
+
+    // Tabs Navigation
+    .dataset-tabs {
+        background-color: white;
+        border-bottom: 1px solid #e0e0e0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+
+        .tabs-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            gap: 0;
+
+            .tab {
+                background: none;
+                border: none;
+                padding: 1rem 1.5rem;
+                font-size: 0.875rem;
+                font-weight: 600;
+                color: #666;
+                cursor: pointer;
+                border-bottom: 3px solid transparent;
+                transition: all 0.2s;
+                position: relative;
+
+                &:hover {
+                    color: #333;
+                    background-color: #f8f8f8;
+                }
+
+                &.active {
+                    color: #20beff;
+                    border-bottom-color: #20beff;
+                }
+            }
+        }
+    }
+
+    // Main Body - 2 Column Layout
+    .dataset-body {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 2rem;
+
+        @media (max-width: 968px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    // Main Column
+    .main-column {
+        .section-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+            h2 {
+                font-size: 1.5rem;
+                font-weight: 700;
+                margin-bottom: 1.5rem;
+                color: #333;
+            }
+
+            p {
+                color: #666;
+                line-height: 1.6;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        // Overview Section
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+
+            .info-item {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+
+                .info-label {
+                    font-size: 0.875rem;
+                    color: #999;
+                    text-transform: uppercase;
+                    font-weight: 600;
+                }
+
+                .info-value {
+                    font-size: 1rem;
+                    color: #333;
+                    font-weight: 500;
+                }
+            }
+        }
+
+        .provider-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+
+            .provider-avatar {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: 700;
+                font-size: 1.25rem;
+            }
+
+            .provider-details {
+                h3 {
+                    font-size: 1.125rem;
+                    font-weight: 600;
+                    color: #333;
+                    margin-bottom: 0.25rem;
+                }
+
+                p {
+                    font-size: 0.875rem;
+                    color: #666;
+                    margin: 0;
+                }
+            }
+        }
+
+        // Data Section
+        .files-list {
+            .file-item {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem;
+                border: 1px solid #e0e0e0;
+                border-radius: 6px;
+                margin-bottom: 0.75rem;
+                transition: all 0.2s;
+
+                &:hover {
+                    border-color: #20beff;
+                    box-shadow: 0 2px 8px rgba(32, 190, 255, 0.1);
+                }
+
+                .file-icon {
+                    font-size: 1.5rem;
+                }
+
+                .file-info {
+                    flex: 1;
+
+                    .file-name {
+                        color: #20beff;
+                        text-decoration: none;
+                        font-weight: 500;
+
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+                }
+
+                .download-btn {
+                    padding: 0.5rem 1rem;
+                    background-color: #20beff;
+                    color: white;
+                    border-radius: 4px;
+                    text-decoration: none;
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    transition: all 0.2s;
+
+                    &:hover {
+                        background-color: #1ba3e0;
+                    }
+                }
+            }
+        }
+
+        // Metadata Section
+        .metadata-list {
+            .metadata-item {
+                display: grid;
+                grid-template-columns: 200px 1fr;
+                gap: 1rem;
+                padding: 1rem;
+                border-bottom: 1px solid #f0f0f0;
+
+                &:last-child {
+                    border-bottom: none;
+                }
+
+                .metadata-key {
+                    font-weight: 600;
+                    color: #333;
+                }
+
+                .metadata-value {
+                    color: #666;
+                }
+            }
+        }
+
+        .no-content {
+            color: #999;
+            text-align: center;
+            padding: 2rem;
+            font-style: italic;
+        }
+    }
+
+    // Sidebar Column
+    .side-column {
+        .sidebar-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 80px;
+
+            h3 {
+                font-size: 1.125rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+                color: #333;
+            }
+        }
+
+        // Pricing
+        .pricing-list {
+            .price-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem 0;
+                border-bottom: 1px solid #f0f0f0;
+
+                &:last-child {
+                    border-bottom: none;
+                }
+
+                .price-tier {
+                    font-weight: 600;
+                    color: #333;
+                }
+
+                .price-value {
+                    color: #20beff;
+                    font-weight: 700;
+                }
+            }
+        }
+
+        .purchase-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.2s;
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+        }
+
+        // Stats
+        .stats-list {
+            .stat-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem 0;
+                border-bottom: 1px solid #f0f0f0;
+
+                &:last-child {
+                    border-bottom: none;
+                }
+
+                .stat-label {
+                    color: #666;
+                    font-size: 0.875rem;
+                }
+
+                .stat-value {
+                    font-weight: 600;
+                    color: #333;
+                }
+            }
+        }
+    }
+
+    // Loading & Error States
+    .loading,
+    .error,
+    .no-data {
+        max-width: 1200px;
+        margin: 4rem auto;
+        padding: 3rem;
+        text-align: center;
+        background: white;
+        border-radius: 8px;
+        font-size: 1.125rem;
+    }
+
+    .error {
+        color: #d32f2f;
+    }
+
+    .loading {
+        color: #666;
+    }
+}

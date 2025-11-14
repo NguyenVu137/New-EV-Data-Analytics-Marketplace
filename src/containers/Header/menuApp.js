@@ -44,6 +44,14 @@ export const providerMenu = [
 
         ]
     },
+    { // Quản lí quyền sử dụng
+        name: 'menu.provider.manage-use-rights',
+        menus: [
+            {
+                name: 'menu.provider.manage-use-rights', link: '/provider/manage-use-rights',
+            },
 
+        ]
+    },
 
 ];

@@ -18,8 +18,9 @@ class DataManage extends Component {
             format_code: '',
             file_url: '',
             api_url: '',
-            price_per_download: 0,
-            price_subscription: 0,
+            basicPrice: 0,
+            standardPrice: 0,
+            premiumPrice: 0,
 
             action: CRUD_ACTIONS.CREATE,
             editId: '',
@@ -91,7 +92,7 @@ class DataManage extends Component {
         if (!this.checkValidation()) return;
 
         const { action, editId, title, description, category_code, format_code,
-            file_url, api_url, price_per_download, price_subscription } = this.state;
+            file_url, api_url, basicPrice, standardPrice, premiumPrice } = this.state;
 
         const datasetData = {
             title,
@@ -100,8 +101,9 @@ class DataManage extends Component {
             format_code,
             file_url,
             api_url,
-            price_per_download: parseFloat(price_per_download) || 0,
-            price_subscription: parseFloat(price_subscription) || 0,
+            basicPrice: parseFloat(basicPrice) || 0,
+            standardPrice: parseFloat(standardPrice) || 0,
+            premiumPrice: parseFloat(premiumPrice) || 0,
             status_code: this.state.status_code
         };
 
@@ -132,8 +134,9 @@ class DataManage extends Component {
             format_code: dataset.format_code,
             file_url: dataset.file_url || '',
             api_url: dataset.api_url || '',
-            price_per_download: dataset.price_per_download || 0,
-            price_subscription: dataset.price_subscription || 0,
+            basicPrice: dataset.basicPrice || 0,
+            standardPrice: dataset.standardPrice || 0,
+            premiumPrice: dataset.premiumPrice || 0,
             action: CRUD_ACTIONS.EDIT,
             editId: dataset.id
         });
@@ -161,8 +164,9 @@ class DataManage extends Component {
             status_code: statusArr && statusArr.length > 0 ? statusArr[0].key : '',
             file_url: '',
             api_url: '',
-            price_per_download: 0,
-            price_subscription: 0,
+            basicPrice: 0,
+            standardPrice: 0,
+            premiumPrice: 0,
             action: CRUD_ACTIONS.CREATE,
             editId: ''
         });
@@ -180,7 +184,7 @@ class DataManage extends Component {
 
     render() {
         const { datasets, categoryArr, formatArr, title, description, category_code,
-            format_code, file_url, api_url, price_per_download, price_subscription,
+            format_code, file_url, api_url, basicPrice, standardPrice, premiumPrice,
             action, notification, notificationType } = this.state;
         const { language } = this.props;
 
@@ -267,25 +271,37 @@ class DataManage extends Component {
                                 />
                             </div>
 
-                            <div className="col-6">
-                                <label>Giá mỗi lần tải (VNĐ)</label>
+                            <div className="col-4">
+                                <label>Giá cơ bản (VNĐ)</label>
                                 <input
                                     type="number"
                                     className="form-control"
-                                    value={price_per_download}
-                                    onChange={(e) => this.onChangeInput(e, 'price_per_download')}
+                                    value={basicPrice}
+                                    onChange={(e) => this.onChangeInput(e, 'basicPrice')}
                                     placeholder="0"
                                     min="0"
                                 />
                             </div>
 
-                            <div className="col-6">
-                                <label>Giá đăng ký (VNĐ/tháng)</label>
+                            <div className="col-4">
+                                <label>Giá tiêu chuẩn (VNĐ)</label>
                                 <input
                                     type="number"
                                     className="form-control"
-                                    value={price_subscription}
-                                    onChange={(e) => this.onChangeInput(e, 'price_subscription')}
+                                    value={standardPrice}
+                                    onChange={(e) => this.onChangeInput(e, 'standardPrice')}
+                                    placeholder="0"
+                                    min="0"
+                                />
+                            </div>
+
+                            <div className="col-4">
+                                <label>Giá cao cấp (VNĐ)</label>
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    value={premiumPrice}
+                                    onChange={(e) => this.onChangeInput(e, 'premiumPrice')}
                                     placeholder="0"
                                     min="0"
                                 />
@@ -330,7 +346,7 @@ class DataManage extends Component {
                                                     <td>{item.title}</td>
                                                     <td>{item.category ? (language === LANGUAGES.VI ? item.category.valueVi : item.category.valueEn) : ''}</td>
                                                     <td>{item.format ? (language === LANGUAGES.VI ? item.format.valueVi : item.format.valueEn) : ''}</td>
-                                                    <td>{item.price_per_download || 0} / {item.price_subscription || 0}</td>
+                                                    <td>{item.basicPrice || 0} / {item.standardPrice || 0} / {item.premiumPrice || 0}</td>
                                                     <td>{this.getStatusBadge(item.status_code)}</td>
                                                     <td>
                                                         {item.status_code !== 'APPROVED' && (

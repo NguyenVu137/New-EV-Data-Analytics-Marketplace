@@ -1,5 +1,8 @@
 import axios from '../axios';
-
+// Comsumer APIS
+const getDetailDatasetService = (datasetId) => {
+    return axios.get(`/api/datasets/detail/${datasetId}`);
+};
 //  Provider APIs 
 
 const getAllDatasetsService = () => {
@@ -49,6 +52,8 @@ const getAllCodeService = (type) => {
 };
 
 export {
+    //Consumer
+    getDetailDatasetService,
     // Provider
     getAllDatasetsService,
     createDatasetService,

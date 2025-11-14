@@ -10,10 +10,10 @@ import Home from '../routes/Home';
 import Register from './Auth/Register.js';
 import Login from './Auth/Login';
 import System from '../routes/System';
+import DatasetDetail from './System/Consumer/DatasetDetail.js';
 import { CustomToastCloseButton } from '../components/CustomToast';
 import HomePage from './HomePage/HomePage.js'
 import CustomScrollbars from '../components/CustomScrollbars.js';
-
 class App extends Component {
 
     handlePersistorState = () => {
@@ -42,11 +42,15 @@ class App extends Component {
                         <div className="content-container">
                             <CustomScrollbars style={{ height: '100vh', width: '100%' }}>
                                 <Switch>
+                                    <Route path={path.DETAIL_DATA} component={DatasetDetail} />
+
                                     <Route path={path.HOME} exact component={(Home)} />
                                     <Route path={path.LOGIN} component={userIsNotAuthenticated(Login)} />
                                     <Route path={path.REGISTER} component={userIsNotAuthenticated(Register)} />
+
                                     <Route path={path.SYSTEM} component={userIsAuthenticated(System)} />
                                     <Route path={path.HOMEPAGE} component={HomePage} />
+
                                 </Switch>
                             </CustomScrollbars>
                         </div>
