@@ -242,7 +242,15 @@ function calculateMetrics(datasets, region = null, vehicleType = null, batteryTy
 
 // Run if executed directly
 if (require.main === module) {
-    calculateAndImportAnalytics();
+    calculateAndImportAnalytics()
+        .then(() => {
+            console.log('✅ Analytics calculation completed successfully');
+            process.exit(0);
+        })
+        .catch(error => {
+            console.error('❌ Error:', error);
+            process.exit(1);
+        });
 }
 
 module.exports = { calculateAndImportAnalytics, calculateMetrics };
