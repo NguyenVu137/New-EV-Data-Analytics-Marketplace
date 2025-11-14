@@ -21,7 +21,22 @@ const searchDatasets = async (req, res) => {
     }
 };
 
+let getDetailDatasetById = async (req, res) => {
+    try {
+        let datasetId = req.params.id;
+        let result = await datasetService.getDetailDataset(datasetId);
+        return res.status(200).json(result);
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            errCode: -1,
+            errMessage: "Error from server"
+        });
+    }
+}
+
 module.exports = {
     getApprovedDatasets,
-    searchDatasets
+    searchDatasets,
+    getDetailDatasetById
 };

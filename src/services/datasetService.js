@@ -148,6 +148,85 @@ let searchDatasets = async (query) => {
         ]
     });
 };
+let getDetailDataset = (datasetId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!datasetId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!"
+                });
+                return;
+            }
+
+            let dataset = await db.Dataset.findOne({
+                where: { id: datasetId },
+                attributes: [
+                    'id', 'title', 'description', 'file_url', 'api_url',
+                    'basicPrice', 'standardPrice', 'premiumPrice', 'access_policy', 'status_code',
+                    'created_at', 'updated_at'
+                ],
+                include: [
+                    {
+                        model: db.User,
+                        as: 'provider',
+                        attributes: ['id', 'firstName', 'lastName', 'email']
+                    },
+                    {
+                        model: db.Allcode,
+                        as: 'category',
+                        attributes: ['key', 'valueVi', 'valueEn'],
+                        where: { type: 'DATASET_CATEGORY' },
+                        required: false
+                    },
+                    {
+                        model: db.Allcode,
+                        as: 'format',
+                        attributes: ['key', 'valueVi', 'valueEn'],
+                        where: { type: 'DATASET_FORMAT' },
+                        required: false
+                    },
+                    {
+                        model: db.Allcode,
+                        as: 'status',
+                        attributes: ['key', 'valueVi', 'valueEn'],
+                        where: { type: 'DATASET_STATUS' },
+                        required: false
+                    },
+                    {
+                        model: db.DatasetMetadata,
+                        as: 'metadata',
+                        attributes: ['id', 'key', 'value']
+                    },
+                    {
+                        model: db.DatasetFile,
+                        as: 'files',
+                        attributes: ['id', 'file_name', 'file_url', 'version', 'created_at']
+                    },
+                    {
+                        model: db.DatasetAnalytics,
+                        as: 'analytics',
+                        attributes: ['id', 'metric_name', 'metric_value', 'timestamp']
+                    }
+                ],
+                raw: false,
+                nest: true
+            });
+
+            if (!dataset) dataset = {};
+
+            resolve({
+                errCode: 0,
+                data: dataset
+            });
+
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
+
 
 let getTopDataHome = (limitInput) => {
     return new Promise(async (resolve, reject) => {
@@ -156,7 +235,7 @@ let getTopDataHome = (limitInput) => {
                 limit: limitInput || 10,
                 where: { status_code: 'APPROVED' },
                 order: [['created_at', 'DESC']],
-                attributes: ['id', 'title', 'description', 'file_url', 'api_url', 'price_per_download', 'price_subscription'],
+                attributes: ['id', 'title', 'description', 'file_url', 'api_url', 'basicPrice', 'standardPrice', 'premiumPrice'],
                 include: [
                     {
                         model: db.Allcode,
@@ -232,6 +311,7 @@ module.exports = {
     rejectDataset,
     getApprovedDatasets,
     searchDatasets,
+    getDetailDataset,
     getAllDatasets,
     getTopDataHome
 };

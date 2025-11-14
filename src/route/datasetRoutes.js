@@ -1,6 +1,7 @@
 import express from 'express';
 import * as datasetController from '../controllers/datasetController';
 import * as providerController from '../controllers/providerController';
+import * as consumerController from '../controllers/consumerController';
 import { auth } from '../middlewares/auth';
 import { checkRole } from '../middlewares/checkRole';
 
@@ -10,6 +11,7 @@ const router = express.Router();
 router.get('/', auth, checkRole(['R3', 'R2', 'R1']), datasetController.getApprovedDatasets);
 router.get('/search', auth, checkRole(['R3', 'R2', 'R1']), datasetController.searchDatasets);
 router.get('/top-data-home', auth, checkRole(['R3', 'R2', 'R1']), datasetController.getTopDataHome);
+router.get('/detail/:id', auth, checkRole(['R1', 'R2', 'R3']), consumerController.getDetailDatasetById);
 
 
 //Admin(R1)
