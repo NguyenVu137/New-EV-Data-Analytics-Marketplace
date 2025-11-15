@@ -1,0 +1,276 @@
+.payment-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s;
+}
+
+.payment-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideUp 0.3s;
+
+    .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 32px;
+        cursor: pointer;
+        color: #999;
+        line-height: 1;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+
+        &:hover {
+            color: #333;
+        }
+    }
+
+    h2 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 28px;
+    }
+
+    .dataset-title {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 16px;
+    }
+
+    .section {
+        margin-bottom: 30px;
+
+        h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+    }
+
+    // ==================== PACKAGES ====================
+    .packages {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+
+        .package-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+
+            &:hover {
+                border-color: #3498db;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+            }
+
+            &.selected {
+                border-color: #3498db;
+                background: #e3f2fd;
+                box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+            }
+
+            .package-header {
+                margin-bottom: 15px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #e0e0e0;
+
+                h4 {
+                    margin: 0 0 10px 0;
+                    color: #333;
+                    font-size: 20px;
+                }
+
+                .price {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #3498db;
+                }
+            }
+
+            .features {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+
+                li {
+                    padding: 6px 0;
+                    color: #555;
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+
+    // ==================== PAYMENT METHODS ====================
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 10px;
+
+        .payment-method {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+
+            &:hover {
+                border-color: #3498db;
+                background: #f8f9fa;
+            }
+
+            &.selected {
+                border-color: #3498db;
+                background: #e3f2fd;
+            }
+
+            .icon {
+                font-size: 24px;
+            }
+
+            .name {
+                font-size: 14px;
+                color: #333;
+            }
+        }
+    }
+
+    // ==================== SUMMARY ====================
+    .summary {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            color: #555;
+
+            &.total {
+                border-top: 2px solid #ddd;
+                margin-top: 10px;
+                padding-top: 15px;
+                font-size: 20px;
+                font-weight: bold;
+                color: #333;
+
+                span:last-child {
+                    color: #3498db;
+                }
+            }
+        }
+    }
+
+    // ==================== ACTIONS ====================
+    .actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            &.btn-secondary {
+                background: #95a5a6;
+                color: white;
+
+                &:hover:not(:disabled) {
+                    background: #7f8c8d;
+                }
+            }
+
+            &.btn-primary {
+                background: #3498db;
+                color: white;
+
+                &:hover:not(:disabled) {
+                    background: #2980b9;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+                }
+            }
+        }
+    }
+}
+
+// ==================== ANIMATIONS ====================
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+// ==================== RESPONSIVE ====================
+@media (max-width: 768px) {
+    .payment-modal {
+        padding: 20px;
+
+        .packages {
+            grid-template-columns: 1fr;
+        }
+
+        .payment-methods {
+            grid-template-columns: 1fr;
+        }
+
+        .actions {
+            flex-direction: column;
+
+            button {
+                width: 100%;
+            }
+        }
+    }
+}

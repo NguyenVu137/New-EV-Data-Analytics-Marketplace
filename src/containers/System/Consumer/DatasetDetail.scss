@@ -84,6 +84,30 @@
             display: flex;
             gap: 0;
 
+            .home-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 1rem;
+                background-color: #20beff;
+                color: white;
+                border-radius: 6px;
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+
+                i {
+                    margin-right: 6px;
+                }
+
+                &:hover {
+                    background-color: #1aa8e0;
+                    transform: translateY(-2px);
+                }
+            }
+
             .tab {
                 background: none;
                 border: none;
@@ -399,5 +423,114 @@
 
     .loading {
         color: #666;
+    }
+}
+
+.permission-info {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 500;
+
+    &.allowed {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+
+        p {
+            margin: 0;
+            display: flex;
+            align-items: center;
+
+            &:before {
+                content: "✅";
+                margin-right: 8px;
+                font-size: 18px;
+            }
+        }
+    }
+
+    &.denied {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+
+        p {
+            margin: 0;
+            display: flex;
+            align-items: center;
+
+            &:before {
+                content: "⚠️";
+                margin-right: 8px;
+                font-size: 18px;
+            }
+        }
+    }
+
+    p {
+        margin: 5px 0;
+    }
+}
+
+// Cập nhật sidebar pricing
+.sidebar-card {
+    .pricing-list {
+        .price-item {
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s;
+
+            &:hover {
+                background: #e9ecef;
+                transform: translateX(5px);
+            }
+
+            .price-tier {
+                font-weight: 600;
+                color: #495057;
+                font-size: 14px;
+                margin-bottom: 5px;
+            }
+
+            .price-value {
+                font-size: 18px;
+                font-weight: 700;
+                color: #28a745;
+                margin-bottom: 3px;
+            }
+
+            .price-desc {
+                font-size: 12px;
+                color: #6c757d;
+            }
+        }
+    }
+
+    .purchase-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
     }
 }

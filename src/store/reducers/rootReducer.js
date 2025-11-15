@@ -5,6 +5,7 @@ import appReducer from "./appReducer";
 import userReducer from "./userReducer";
 import consumerReducer from "./consumerReducer";
 import adminReducer from "./adminReducer";
+import transactionReducer from './transtactionReducer';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 import storage from 'redux-persist/lib/storage';
 import { persistReducer } from 'redux-persist';
@@ -32,4 +33,5 @@ export default (history) => combineReducers({
     app: persistReducer(appPersistConfig, appReducer),
     admin: adminReducer,
     consumer: consumerReducer,
+    transaction: transactionReducer,
 })
