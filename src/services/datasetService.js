@@ -1,15 +1,61 @@
 import db from "../models/index";
+const fs = require('fs');
+const path = require('path');
 
-// Provider upload dataset
-let uploadDataset = async (providerId, data) => {
-    return await db.Dataset.create({
-        ...data,
-        provider_id: providerId,
-        status_code: "PENDING"
-    });
+let uploadDataset = async (providerId, data, files = null) => {
+    const transaction = await db.sequelize.transaction();
+
+    try {
+        const dataset = await db.Dataset.create({
+            ...data,
+            provider_id: providerId,
+            status_code: "PENDING"
+        }, { transaction });
+
+        if (files && files.length > 0) {
+            const fileRecords = files.map(file => ({
+                dataset_id: dataset.id,
+                file_name: file.originalname,
+                file_url: `/uploads/datasets/${file.filename}`,
+                version: '1.0'
+            }));
+
+            await db.DatasetFile.bulkCreate(fileRecords, { transaction });
+        }
+
+        if (data.metadata && Array.isArray(data.metadata) && data.metadata.length > 0) {
+            const metadataRecords = data.metadata
+                .filter(m => m.key && m.value)
+                .map(m => ({
+                    data_source_id: dataset.id,
+                    key: m.key,
+                    value: m.value
+                }));
+
+            if (metadataRecords.length > 0) {
+                await db.DatasetMetadata.bulkCreate(metadataRecords, { transaction });
+            }
+        }
+
+        await transaction.commit();
+        return dataset;
+
+    } catch (error) {
+        await transaction.rollback();
+
+        if (files && files.length > 0) {
+            files.forEach(file => {
+                const filePath = path.join(__dirname, '..', 'uploads', 'datasets', file.filename);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            });
+        }
+
+        throw error;
+    }
 };
 
-// Get provider's own datasets
 let getProviderDatasets = async (providerId) => {
     return await db.Dataset.findAll({
         where: { provider_id: providerId },
@@ -29,53 +75,163 @@ let getProviderDatasets = async (providerId) => {
                 model: db.Allcode,
                 as: 'status',
                 attributes: ['key', 'valueVi', 'valueEn']
-            }
-        ]
-    });
-};
-
-// Update dataset (only if pending or rejected)
-let updateDataset = async (datasetId, providerId, data) => {
-    let dataset = await db.Dataset.findOne({
-        where: { id: datasetId, provider_id: providerId },
-        include: [
+            },
             {
-                model: db.Allcode,
-                as: 'status',
-                attributes: ['key', 'valueVi', 'valueEn']
+                model: db.DatasetFile,
+                as: 'files',
+                attributes: ['id', 'file_name', 'file_url']
+            },
+            {
+                model: db.DatasetMetadata,
+                as: 'metadata',
+                attributes: ['id', 'key', 'value']
             }
         ]
     });
-
-    if (!dataset) {
-        return { errCode: 1, errMessage: "Dataset không tồn tại hoặc không có quyền chỉnh sửa" };
-    }
-
-    if (dataset.status_code === "APPROVED") {
-        return { errCode: 2, errMessage: "Không thể chỉnh sửa dataset đã được duyệt" };
-    }
-
-    await dataset.update({ ...data, status_code: "PENDING" });
-    return { errCode: 0, errMessage: "Cập nhật thành công", dataset };
 };
 
-// Delete dataset (only if pending or rejected)
+let updateDataset = async (datasetId, providerId, data, files = null) => {
+    const transaction = await db.sequelize.transaction();
+
+    try {
+        let dataset = await db.Dataset.findOne({
+            where: { id: datasetId, provider_id: providerId },
+            include: [
+                {
+                    model: db.Allcode,
+                    as: 'status',
+                    attributes: ['key', 'valueVi', 'valueEn']
+                }
+            ]
+        });
+
+        if (!dataset) {
+            return { errCode: 1, errMessage: "Dataset không tồn tại hoặc không có quyền chỉnh sửa" };
+        }
+
+        if (dataset.status_code === "APPROVED") {
+            return { errCode: 2, errMessage: "Không thể chỉnh sửa dataset đã được duyệt" };
+        }
+
+        await dataset.update({ ...data, status_code: "PENDING" }, { transaction });
+
+        if (files && files.length > 0) {
+            const fileRecords = files.map(file => ({
+                dataset_id: dataset.id,
+                file_name: file.originalname,
+                file_url: `/uploads/datasets/${file.filename}`,
+                version: '1.0'
+            }));
+
+            await db.DatasetFile.bulkCreate(fileRecords, { transaction });
+        }
+
+        if (data.metadata && Array.isArray(data.metadata)) {
+            await db.DatasetMetadata.destroy({
+                where: { data_source_id: datasetId },
+                transaction
+            });
+
+            const metadataRecords = data.metadata
+                .filter(m => m.key && m.value)
+                .map(m => ({
+                    data_source_id: dataset.id,
+                    key: m.key,
+                    value: m.value
+                }));
+
+            if (metadataRecords.length > 0) {
+                await db.DatasetMetadata.bulkCreate(metadataRecords, { transaction });
+            }
+        }
+
+        await transaction.commit();
+        return { errCode: 0, errMessage: "Cập nhật thành công", dataset };
+
+    } catch (error) {
+        await transaction.rollback();
+
+        if (files && files.length > 0) {
+            files.forEach(file => {
+                const filePath = path.join(__dirname, '..', 'uploads', 'datasets', file.filename);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            });
+        }
+
+        throw error;
+    }
+};
+
 let deleteDataset = async (datasetId, providerId) => {
-    let dataset = await db.Dataset.findOne({
-        where: { id: datasetId, provider_id: providerId }
-    });
+    const transaction = await db.sequelize.transaction();
 
-    if (!dataset) {
-        return { errCode: 1, errMessage: "Dataset không tồn tại hoặc không có quyền xóa" };
+    try {
+        let dataset = await db.Dataset.findOne({
+            where: { id: datasetId, provider_id: providerId },
+            include: [{ model: db.DatasetFile, as: 'files' }]
+        });
+
+        if (!dataset) {
+            return { errCode: 1, errMessage: "Dataset không tồn tại hoặc không có quyền xóa" };
+        }
+
+        if (dataset.status_code === "APPROVED") {
+            return { errCode: 2, errMessage: "Không thể xóa dataset đã được duyệt" };
+        }
+
+        if (dataset.files && dataset.files.length > 0) {
+            dataset.files.forEach(file => {
+                const filePath = path.join(__dirname, '..', file.file_url);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            });
+        }
+
+        await dataset.destroy({ transaction });
+        await transaction.commit();
+
+        return { errCode: 0, errMessage: "Xóa thành công" };
+
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
     }
-
-    if (dataset.status_code === "APPROVED") {
-        return { errCode: 2, errMessage: "Không thể xóa dataset đã được duyệt" };
-    }
-
-    await dataset.destroy();
-    return { errCode: 0, errMessage: "Xóa thành công" };
 };
+
+let deleteDatasetFile = async (fileId, providerId) => {
+    try {
+        const file = await db.DatasetFile.findOne({
+            where: { id: fileId },
+            include: [{
+                model: db.Dataset,
+                as: 'dataset',
+                where: { provider_id: providerId }
+            }]
+        });
+
+        if (!file) {
+            return { errCode: 1, errMessage: "File không tồn tại hoặc không có quyền xóa" };
+        }
+
+        if (file.dataset.status_code === "APPROVED") {
+            return { errCode: 2, errMessage: "Không thể xóa file của dataset đã được duyệt" };
+        }
+
+        const filePath = path.join(__dirname, '..', file.file_url);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        await file.destroy();
+        return { errCode: 0, errMessage: "Xóa file thành công" };
+    } catch (error) {
+        throw error;
+    }
+};
+
 
 // Admin approve dataset
 let approveDataset = async (datasetId) => {
@@ -93,12 +249,11 @@ let rejectDataset = async (datasetId, reason) => {
     if (!dataset) return { errCode: 1, errMessage: "Dataset không tồn tại" };
 
     dataset.status_code = "REJECTED";
-    dataset.access_policy = reason || ""; // Tạm lưu lý do vào access_policy
+    dataset.access_policy = reason || "";
     await dataset.save();
     return { errCode: 0, errMessage: "Từ chối thành công", dataset };
 };
 
-// Consumer / Admin / Provider view approved datasets
 let getApprovedDatasets = async () => {
     return await db.Dataset.findAll({
         where: { status_code: "APPROVED" },
@@ -148,6 +303,7 @@ let searchDatasets = async (query) => {
         ]
     });
 };
+
 let getDetailDataset = (datasetId) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -226,8 +382,6 @@ let getDetailDataset = (datasetId) => {
     });
 }
 
-
-
 let getTopDataHome = (limitInput) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -267,11 +421,9 @@ let getTopDataHome = (limitInput) => {
             })
         } catch (e) {
             reject(e)
-
         }
     })
 }
-
 
 // Get all datasets for admin
 let getAllDatasets = async () => {
@@ -307,6 +459,7 @@ module.exports = {
     getProviderDatasets,
     updateDataset,
     deleteDataset,
+    deleteDatasetFile,
     approveDataset,
     rejectDataset,
     getApprovedDatasets,
