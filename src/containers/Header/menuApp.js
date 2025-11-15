@@ -33,6 +33,16 @@ export const adminMenu = [
 
         ]
     },
+
+    { // Thống kê thị trường
+        name: 'menu.admin.analyticsdashboard',
+        menus: [
+            {
+                name: 'menu.admin.analyticsdashboard', link: '/system/analyticsdashboard',
+            },
+
+        ]
+    },
 ];
 export const providerMenu = [
     { // Quản lí dữ liệu
@@ -40,15 +50,6 @@ export const providerMenu = [
         menus: [
             {
                 name: 'menu.admin.manage-data', link: '/system/manage-data',
-            },
-
-        ]
-    },
-    { // Quản lí quyền sử dụng
-        name: 'menu.provider.manage-use-rights',
-        menus: [
-            {
-                name: 'menu.provider.manage-use-rights', link: '/provider/manage-use-rights',
             },
 
         ]

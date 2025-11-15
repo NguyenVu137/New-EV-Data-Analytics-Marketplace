@@ -7,6 +7,7 @@ import Header from '../containers/Header/Header';
 import RoleRoute from './RoleRoutes.js';
 import DataManage from '../containers/System/Provider/DataManage.js';
 import DataApproval from '../containers/System/Admin/DataApproval.js';
+import MarketAnalyticsDashboard from '../containers/System/Admin/MarketAnalyticsDashboard.js';
 class System extends Component {
     render() {
         const { systemMenuPath, isLoggedIn } = this.props;
@@ -20,6 +21,7 @@ class System extends Component {
                             <RoleRoute path="/system/user-redux" allowedRoles={['R1']} component={UserRedux} />
                             <RoleRoute path="/system/manage-data" allowedRoles={['R1', 'R2']} component={DataManage} />
                             <RoleRoute path="/system/manage-censor" allowedRoles={['R1']} component={DataApproval} />
+                            <RoleRoute path="/system/analyticsdashboard" allowedRoles={['R1']} component={MarketAnalyticsDashboard} />
 
                             <Route component={() => <Redirect to="/home" />} />
                         </Switch>

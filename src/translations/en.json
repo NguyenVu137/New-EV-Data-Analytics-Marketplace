@@ -31,7 +31,8 @@
             "post": "Posts",
             "manage-post": "Manage posts",
             "censor": "Censors",
-            "manage-censor": "Manage censors"
+            "manage-censor": "Manage censors",
+            "analyticsdashboard": "DashBoard"
         }
     },
     "manage-user": {

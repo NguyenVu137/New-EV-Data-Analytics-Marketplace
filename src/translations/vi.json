@@ -31,7 +31,8 @@
             "post": "Bài đăng",
             "manage-post": "Quản lí bài đăng",
             "censor": "Kiểm duyệt",
-            "manage-censor": "Quản lí kiểm duyệt"
+            "manage-censor": "Quản lí kiểm duyệt",
+            "analyticsdashboard": "Thống kê thị trường"
         }
     },
     "manage-user": {
