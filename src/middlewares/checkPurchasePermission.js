@@ -5,7 +5,7 @@ const transactionService = require('../services/transactionService');
  * Middleware to check if user has purchased the dataset before downloading
  */
 const checkPurchasePermission = async (req, res, next) => {
-    console.log('========== CHECK PERMISSION START ==========');
+    console.log(' CHECK PERMISSION START ');
     console.log('1. User ID:', req.user?.id);
     console.log('2. File ID:', req.params.fileId);
 
@@ -62,7 +62,7 @@ const checkPurchasePermission = async (req, res, next) => {
         }
 
         console.log('✅ Permission granted');
-        console.log('========== CHECK PERMISSION END ==========');
+        console.log(' CHECK PERMISSION END ');
 
         // 3. Attach permission info to request for logging
         req.downloadPermission = permission;
@@ -71,7 +71,7 @@ const checkPurchasePermission = async (req, res, next) => {
         next();
 
     } catch (error) {
-        console.error('========== CHECK PERMISSION ERROR ==========');
+        console.error(' CHECK PERMISSION ERROR ');
         console.error('Error details:', error);
         console.error('Stack:', error.stack);
         return res.status(500).json({

@@ -1,6 +1,6 @@
 const transactionService = require('../services/transactionService');
 
-// ==================== PURCHASE DATASET ====================
+//  PURCHASE DATASET 
 const purchaseDataset = async (req, res) => {
     try {
         const consumerId = req.user.id;
@@ -35,7 +35,7 @@ const purchaseDataset = async (req, res) => {
     }
 };
 
-// ==================== CHECK DOWNLOAD PERMISSION ====================
+//  CHECK DOWNLOAD PERMISSION 
 const checkDownloadPermission = async (req, res) => {
     try {
         const consumerId = req.user.id;
@@ -59,7 +59,7 @@ const checkDownloadPermission = async (req, res) => {
     }
 };
 
-// ==================== GET USER PURCHASES ====================
+//  GET USER PURCHASES 
 const getUserPurchases = async (req, res) => {
     try {
         const consumerId = req.user.id;
@@ -78,7 +78,7 @@ const getUserPurchases = async (req, res) => {
     }
 };
 
-// ==================== OLD FUNCTIONS (Keep for compatibility) ====================
+//  OLD FUNCTIONS (Keep for compatibility) 
 const createTransaction = async (req, res) => {
     try {
         const transaction = await transactionService.createTransaction(req.body);

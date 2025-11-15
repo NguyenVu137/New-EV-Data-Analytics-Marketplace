@@ -1,11 +1,11 @@
 const db = require("../models");
 
-// ==================== CREATE TRANSACTION (Purchase Dataset) ====================
+//  CREATE TRANSACTION (Purchase Dataset) 
 const purchaseDataset = async (consumerId, datasetId, packageType, paymentMethod) => {
     const transaction = await db.sequelize.transaction();
 
     try {
-        console.log('========== PURCHASE START ==========');
+        console.log(' PURCHASE START ');
         console.log('Consumer:', consumerId);
         console.log('Dataset:', datasetId);
         console.log('Package:', packageType);
@@ -102,7 +102,7 @@ const purchaseDataset = async (consumerId, datasetId, packageType, paymentMethod
         }
 
         await transaction.commit();
-        console.log('========== PURCHASE SUCCESS ==========');
+        console.log(' PURCHASE SUCCESS ');
 
         return {
             errCode: 0,
@@ -113,16 +113,16 @@ const purchaseDataset = async (consumerId, datasetId, packageType, paymentMethod
 
     } catch (error) {
         await transaction.rollback();
-        console.error('========== PURCHASE ERROR ==========');
+        console.error(' PURCHASE ERROR ');
         console.error('Error:', error);
         throw error;
     }
 };
 
-// ==================== CHECK PURCHASE PERMISSION ====================
+//  CHECK PURCHASE PERMISSION 
 const checkDownloadPermission = async (consumerId, datasetId) => {
     try {
-        console.log('========== CHECK PERMISSION SERVICE ==========');
+        console.log(' CHECK PERMISSION SERVICE ');
         console.log('Consumer:', consumerId);
         console.log('Dataset:', datasetId);
 
@@ -221,10 +221,10 @@ const checkDownloadPermission = async (consumerId, datasetId) => {
 
 
 
-// ==================== LOG DOWNLOAD ====================
+//  LOG DOWNLOAD 
 const logDownload = async (userId, datasetId, ipAddress = null) => {
     try {
-        console.log('========== LOG DOWNLOAD ==========');
+        console.log(' LOG DOWNLOAD ');
         console.log('User:', userId);
         console.log('Dataset:', datasetId);
         console.log('IP:', ipAddress);
@@ -243,7 +243,7 @@ const logDownload = async (userId, datasetId, ipAddress = null) => {
     }
 };
 
-// ==================== GET USER PURCHASES ====================
+//  GET USER PURCHASES 
 const getUserPurchases = async (consumerId) => {
     try {
         const purchases = await db.Transaction.findAll({
@@ -280,12 +280,12 @@ const getUserPurchases = async (consumerId) => {
     }
 };
 
-// ==================== CREATE TRANSACTION (OLD - Keep for compatibility) ====================
+//  CREATE TRANSACTION (OLD - Keep for compatibility) 
 const createTransaction = async (data) => {
     return await db.Transaction.create(data);
 };
 
-// ==================== PROVIDER REVENUE ====================
+//  PROVIDER REVENUE 
 const getProviderRevenue = async (providerId) => {
     const transactions = await db.Transaction.findAll({
         where: { provider_id: providerId, payment_status_code: 'P2' }

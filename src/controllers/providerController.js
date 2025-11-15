@@ -101,7 +101,7 @@ const deleteFile = async (req, res) => {
 
 
 const downloadFile = async (req, res) => {
-    console.log('========== DOWNLOAD DEBUG START ==========');
+    console.log(' DOWNLOAD DEBUG START ');
     console.log('1. Request params:', req.params);
     console.log('2. User ID:', req.user?.id);
     console.log('3. Dataset ID from middleware:', req.datasetId);
@@ -156,7 +156,7 @@ const downloadFile = async (req, res) => {
         }
 
         console.log('6. Sending file...');
-        console.log('========== DOWNLOAD DEBUG END ==========');
+        console.log(' DOWNLOAD DEBUG END ');
 
         // Send file for download
         return res.download(filePath, originalFileName, (err) => {
@@ -170,7 +170,7 @@ const downloadFile = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('========== DOWNLOAD ERROR ==========');
+        console.error(' DOWNLOAD ERROR ');
         console.error('Error details:', error);
         console.error('Stack:', error.stack);
         return res.status(500).json({
