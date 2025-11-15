@@ -2,7 +2,9 @@ const datasetService = require('../services/datasetService');
 const path = require('path');
 const fs = require('fs');
 const db = require('../models');
-// Get provider's own datasets
+const transactionService = require('../services/transactionService');
+
+
 const getMyDatasets = async (req, res) => {
     try {
         const providerId = req.user.id;
@@ -97,73 +99,90 @@ const deleteFile = async (req, res) => {
     }
 };
 
+
 const downloadFile = async (req, res) => {
+    console.log('========== DOWNLOAD DEBUG START ==========');
+    console.log('1. Request params:', req.params);
+    console.log('2. User ID:', req.user?.id);
+    console.log('3. Dataset ID from middleware:', req.datasetId);
+
     try {
         const fileId = req.params.fileId;
+        const userId = req.user.id;
 
-        const file = await db.DatasetFile.findOne({
-            where: { id: fileId },
-            include: [{
-                model: db.Dataset,
-                as: 'dataset',
-                attributes: ['id', 'status_code']
-            }]
-        });
+        // Get file from database
+        const file = await db.DatasetFile.findByPk(fileId);
+        console.log('4. File from DB:', file ? {
+            id: file.id,
+            fileName: file.fileName,
+            file_name: file.file_name,
+            file_url: file.file_url
+        } : 'NOT FOUND');
 
         if (!file) {
-            return res.status(404).json({
-                errCode: 1,
-                message: 'File not found in database'
-            });
+            console.log('❌ File not found in database');
+            return res.status(404).json({ errCode: 1, message: 'File not found' });
         }
 
-        if (file.dataset.status_code !== 'APPROVED') {
-            return res.status(403).json({
-                errCode: 2,
-                message: 'Dataset not approved yet'
-            });
-        }
+        // Use original file name for download
+        const originalFileName = file.fileName || file.file_name || 'downloaded_file';
+        // Use actual stored file name from file_url
+        const storedFileName = path.basename(file.file_url);
 
-        const cleanPath = file.file_url.replace(/^\//, '');
-        const filePath = path.join(__dirname, '..', '..', cleanPath);
+        // Build full file path
+        const filePath = path.join(process.cwd(), 'uploads', 'datasets', storedFileName);
 
+        console.log('5. File path:', filePath, '→ Exists:', fs.existsSync(filePath));
 
         if (!fs.existsSync(filePath)) {
-            console.error(' File not found at:', filePath);
-            return res.status(404).json({
-                errCode: 1,
-                message: `File not found on server. Path: ${filePath}`
-            });
+            console.log('❌ File not found on server');
+            return res.status(404).json({ errCode: 1, message: 'File not found on server' });
         }
 
-        console.log(` User ${req.user.id} downloading: ${file.file_name}`);
+        // Log download & increment downloadCount
+        try {
+            // Log to transactionService
+            await transactionService.logDownload(userId, req.datasetId, req.ip);
 
-        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.file_name)}"`);
-        res.setHeader('Content-Type', 'application/octet-stream');
-
-        return res.sendFile(filePath, (err) => {
-            if (err) {
-                console.error(' Send file error:', err);
-                if (!res.headersSent) {
-                    return res.status(500).json({
-                        errCode: -1,
-                        message: 'Download failed'
-                    });
-                }
-            } else {
-                console.log(' File sent successfully');
+            // Optional: increment downloadCount in DatasetFile table
+            if (typeof file.downloadCount === 'number') {
+                file.downloadCount += 1;
+                await file.save();
             }
+
+            console.log('✅ Download logged successfully');
+        } catch (logError) {
+            console.log('⚠️ Failed to log download:', logError.message);
+        }
+
+        console.log('6. Sending file...');
+        console.log('========== DOWNLOAD DEBUG END ==========');
+
+        // Send file for download
+        return res.download(filePath, originalFileName, (err) => {
+            if (err) {
+                console.error('❌ Error sending file:', err);
+                if (!res.headersSent) {
+                    return res.status(500).json({ errCode: -1, message: 'Error downloading file' });
+                }
+            }
+            console.log('✅ File sent successfully');
         });
 
-    } catch (e) {
-        console.error(' Download error:', e);
+    } catch (error) {
+        console.error('========== DOWNLOAD ERROR ==========');
+        console.error('Error details:', error);
+        console.error('Stack:', error.stack);
         return res.status(500).json({
             errCode: -1,
-            message: 'Server error',
-            error: e.message
+            message: 'Server error downloading file',
+            error: error.message
         });
     }
 };
+
+
+
 
 
 module.exports = {

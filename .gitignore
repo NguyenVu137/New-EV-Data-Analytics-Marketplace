@@ -4,4 +4,5 @@
 .idea/
 .env
 package-lock.json
-backend/uploads/datasets/
+uploads/datasets/*
+!uploads/datasets/.gitkeep
