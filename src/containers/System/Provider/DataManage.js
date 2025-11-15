@@ -11,16 +11,24 @@ class DataManage extends Component {
             datasets: [],
             categoryArr: [],
             formatArr: [],
+            statusArr: [],
 
             title: '',
             description: '',
             category_code: '',
             format_code: '',
-            file_url: '',
+            status_code: '',
             api_url: '',
             basicPrice: 0,
             standardPrice: 0,
             premiumPrice: 0,
+
+            // Files management
+            selectedFiles: [],
+            existingFiles: [],
+
+            // Metadata management
+            metadata: [{ key: '', value: '' }],
 
             action: CRUD_ACTIONS.CREATE,
             editId: '',
@@ -58,6 +66,7 @@ class DataManage extends Component {
                 format_code: formats && formats.length > 0 ? formats[0].key : ''
             });
         }
+
         if (prevProps.statusRedux !== this.props.statusRedux) {
             const statuses = this.props.statusRedux;
             this.setState({
@@ -69,6 +78,55 @@ class DataManage extends Component {
 
     onChangeInput = (event, field) => {
         this.setState({ [field]: event.target.value });
+    }
+
+    // ==================== FILE UPLOAD HANDLERS ====================
+    handleFileSelect = (event) => {
+        const files = Array.from(event.target.files);
+        this.setState(prevState => ({
+            selectedFiles: [...prevState.selectedFiles, ...files]
+        }));
+    }
+
+    removeSelectedFile = (index) => {
+        this.setState(prevState => ({
+            selectedFiles: prevState.selectedFiles.filter((_, i) => i !== index)
+        }));
+    }
+
+    handleDeleteExistingFile = async (fileId) => {
+        if (window.confirm('Bạn có chắc muốn xóa file này?')) {
+            const res = await this.props.deleteFile(fileId);
+            if (res && res.success) {
+                this.showNotification(res.message, 'success');
+                this.setState(prevState => ({
+                    existingFiles: prevState.existingFiles.filter(f => f.id !== fileId)
+                }));
+            } else {
+                this.showNotification(res?.message || 'Xóa file thất bại', 'error');
+            }
+        }
+    }
+
+    // ==================== METADATA HANDLERS ====================
+    addMetadata = () => {
+        this.setState(prevState => ({
+            metadata: [...prevState.metadata, { key: '', value: '' }]
+        }));
+    }
+
+    removeMetadata = (index) => {
+        this.setState(prevState => ({
+            metadata: prevState.metadata.filter((_, i) => i !== index)
+        }));
+    }
+
+    onChangeMetadata = (index, field, value) => {
+        this.setState(prevState => {
+            const newMetadata = [...prevState.metadata];
+            newMetadata[index][field] = value;
+            return { metadata: newMetadata };
+        });
     }
 
     checkValidation = () => {
@@ -92,27 +150,30 @@ class DataManage extends Component {
         if (!this.checkValidation()) return;
 
         const { action, editId, title, description, category_code, format_code,
-            file_url, api_url, basicPrice, standardPrice, premiumPrice } = this.state;
+            api_url, basicPrice, standardPrice, premiumPrice, status_code,
+            selectedFiles, metadata } = this.state;
 
         const datasetData = {
             title,
             description,
             category_code,
             format_code,
-            file_url,
             api_url,
             basicPrice: parseFloat(basicPrice) || 0,
             standardPrice: parseFloat(standardPrice) || 0,
             premiumPrice: parseFloat(premiumPrice) || 0,
-            status_code: this.state.status_code
+            status_code: status_code
         };
+
+        // Lọc metadata có key và value
+        const validMetadata = metadata.filter(m => m.key && m.value);
 
         try {
             let res;
             if (action === CRUD_ACTIONS.CREATE) {
-                res = await this.props.createDataset(datasetData);
+                res = await this.props.createDataset(datasetData, selectedFiles, validMetadata);
             } else if (action === CRUD_ACTIONS.EDIT) {
-                res = await this.props.updateDataset(editId, datasetData);
+                res = await this.props.updateDataset(editId, datasetData, selectedFiles, validMetadata);
             }
 
             if (res && res.success) {
@@ -132,11 +193,16 @@ class DataManage extends Component {
             description: dataset.description,
             category_code: dataset.category_code,
             format_code: dataset.format_code,
-            file_url: dataset.file_url || '',
             api_url: dataset.api_url || '',
             basicPrice: dataset.basicPrice || 0,
             standardPrice: dataset.standardPrice || 0,
             premiumPrice: dataset.premiumPrice || 0,
+            status_code: dataset.status_code,
+            existingFiles: dataset.files || [],
+            metadata: dataset.metadata && dataset.metadata.length > 0
+                ? dataset.metadata.map(m => ({ key: m.key, value: m.value }))
+                : [{ key: '', value: '' }],
+            selectedFiles: [],
             action: CRUD_ACTIONS.EDIT,
             editId: dataset.id
         });
@@ -144,7 +210,7 @@ class DataManage extends Component {
     }
 
     handleDelete = async (id) => {
-        if (window.confirm('Bạn có chắc muốn xóa dataset này?')) {
+        if (window.confirm('Bạn có chắc muốn xóa dataset này? Tất cả files sẽ bị xóa.')) {
             const res = await this.props.deleteDataset(id);
             if (res && res.success) {
                 this.showNotification(res.message, 'success');
@@ -162,11 +228,13 @@ class DataManage extends Component {
             category_code: categoryArr && categoryArr.length > 0 ? categoryArr[0].key : '',
             format_code: formatArr && formatArr.length > 0 ? formatArr[0].key : '',
             status_code: statusArr && statusArr.length > 0 ? statusArr[0].key : '',
-            file_url: '',
             api_url: '',
             basicPrice: 0,
             standardPrice: 0,
             premiumPrice: 0,
+            selectedFiles: [],
+            existingFiles: [],
+            metadata: [{ key: '', value: '' }],
             action: CRUD_ACTIONS.CREATE,
             editId: ''
         });
@@ -174,18 +242,18 @@ class DataManage extends Component {
 
     getStatusBadge = (status_code) => {
         const statusConfig = {
-            'PENDING APPROVAL': { text: 'Chờ duyệt', class: 'badge-warning' },
+            'PENDING': { text: 'Chờ duyệt', class: 'badge-warning' },
             'APPROVED': { text: 'Đã duyệt', class: 'badge-success' },
             'REJECTED': { text: 'Từ chối', class: 'badge-danger' }
         };
-        const config = statusConfig[status_code] || statusConfig['PENDING APPROVAL'];
+        const config = statusConfig[status_code] || statusConfig['PENDING'];
         return <span className={`badge ${config.class}`}>{config.text}</span>;
     }
 
     render() {
         const { datasets, categoryArr, formatArr, title, description, category_code,
-            format_code, file_url, api_url, basicPrice, standardPrice, premiumPrice,
-            action, notification, notificationType } = this.state;
+            format_code, api_url, basicPrice, standardPrice, premiumPrice,
+            selectedFiles, existingFiles, metadata, action, notification, notificationType } = this.state;
         const { language } = this.props;
 
         return (
@@ -249,18 +317,57 @@ class DataManage extends Component {
                                 />
                             </div>
 
-                            <div className="col-6">
-                                <label>File URL</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    value={file_url}
-                                    onChange={(e) => this.onChangeInput(e, 'file_url')}
-                                    placeholder="https://..."
-                                />
+                            {/* FILE UPLOAD SECTION */}
+                            <div className="col-12 mt-3">
+                                <label>Upload Files (CSV, JSON, XML, Excel, PDF)</label>
+                                <div className="file-upload-section">
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept=".csv,.json,.xml,.xlsx,.xls,.txt,.pdf"
+                                        onChange={this.handleFileSelect}
+                                        className="form-control"
+                                    />
+
+                                    {/* Show existing files (when editing) */}
+                                    {action === CRUD_ACTIONS.EDIT && existingFiles.length > 0 && (
+                                        <div className="existing-files mt-2">
+                                            <h6>Files hiện tại:</h6>
+                                            {existingFiles.map(file => (
+                                                <div key={file.id} className="file-item">
+                                                    <span>📄 {file.file_name}</span>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-danger"
+                                                        onClick={() => this.handleDeleteExistingFile(file.id)}>
+                                                        Xóa
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Show selected files */}
+                                    {selectedFiles.length > 0 && (
+                                        <div className="selected-files mt-2">
+                                            <h6>Files mới được chọn:</h6>
+                                            {selectedFiles.map((file, index) => (
+                                                <div key={index} className="file-item new-file">
+                                                    <span>📄 {file.name} ({(file.size / 1024).toFixed(2)} KB)</span>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-danger"
+                                                        onClick={() => this.removeSelectedFile(index)}>
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="col-6">
+                            <div className="col-12 mt-3">
                                 <label>API URL</label>
                                 <input
                                     type="text"
@@ -269,6 +376,51 @@ class DataManage extends Component {
                                     onChange={(e) => this.onChangeInput(e, 'api_url')}
                                     placeholder="https://api.example.com/..."
                                 />
+                            </div>
+
+                            {/* METADATA SECTION */}
+                            <div className="col-12 mt-3">
+                                <div className="metadata-header">
+                                    <label className="mb-0">Metadata (Thông tin bổ sung)</label>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-success"
+                                        onClick={this.addMetadata}>
+                                        + Thêm metadata
+                                    </button>
+                                </div>
+                                {metadata.map((item, index) => (
+                                    <div key={index} className="row mb-2 align-items-center metadata-row">
+                                        <div className="col-5">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="Key (VD: author, license...)"
+                                                value={item.key}
+                                                onChange={(e) => this.onChangeMetadata(index, 'key', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="col-5">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="Value"
+                                                value={item.value}
+                                                onChange={(e) => this.onChangeMetadata(index, 'value', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="col-2">
+                                            {metadata.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm btn-danger w-100"
+                                                    onClick={() => this.removeMetadata(index)}>
+                                                    Xóa
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
                             <div className="col-4">
@@ -326,6 +478,7 @@ class DataManage extends Component {
                                 }
                             </div>
 
+                            {/* DATASET LIST TABLE */}
                             <div className="col-12">
                                 <h5 className="my-3">Danh sách Dataset</h5>
                                 <table className="table table-striped table-hover">
@@ -334,7 +487,9 @@ class DataManage extends Component {
                                             <th>Tiêu đề</th>
                                             <th>Danh mục</th>
                                             <th>Định dạng</th>
-                                            <th>Giá tải/Đăng ký</th>
+                                            <th>Files</th>
+                                            <th>Metadata</th>
+                                            <th>Giá cơ bản/tiêu chuẩn/cao cấp</th>
                                             <th>Trạng thái</th>
                                             <th>Hành động</th>
                                         </tr>
@@ -346,6 +501,16 @@ class DataManage extends Component {
                                                     <td>{item.title}</td>
                                                     <td>{item.category ? (language === LANGUAGES.VI ? item.category.valueVi : item.category.valueEn) : ''}</td>
                                                     <td>{item.format ? (language === LANGUAGES.VI ? item.format.valueVi : item.format.valueEn) : ''}</td>
+                                                    <td>
+                                                        <span className="badge badge-info">
+                                                            {item.files?.length || 0} files
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span className="badge badge-secondary">
+                                                            {item.metadata?.length || 0} metadata
+                                                        </span>
+                                                    </td>
                                                     <td>{item.basicPrice || 0} / {item.standardPrice || 0} / {item.premiumPrice || 0}</td>
                                                     <td>{this.getStatusBadge(item.status_code)}</td>
                                                     <td>
@@ -371,7 +536,7 @@ class DataManage extends Component {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="6" className="text-center">Chưa có dataset nào</td>
+                                                <td colSpan="8" className="text-center">Chưa có dataset nào</td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -395,9 +560,10 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     fetchAllDatasets: () => dispatch(actions.fetchAllDatasets()),
-    createDataset: (data) => dispatch(actions.createDataset(data)),
-    updateDataset: (id, data) => dispatch(actions.updateDataset(id, data)),
+    createDataset: (data, files, metadata) => dispatch(actions.createDataset(data, files, metadata)),
+    updateDataset: (id, data, files, metadata) => dispatch(actions.updateDataset(id, data, files, metadata)),
     deleteDataset: (id) => dispatch(actions.deleteDataset(id)),
+    deleteFile: (fileId) => dispatch(actions.deleteFile(fileId)),
     getCategoryStart: () => dispatch(actions.fetchCategoryStart()),
     getFormatStart: () => dispatch(actions.fetchFormatStart()),
     getStatusStart: () => dispatch(actions.fetchStatusStart())

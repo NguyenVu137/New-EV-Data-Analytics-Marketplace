@@ -8,10 +8,12 @@ const DatasetDetail = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const [activeTab, setActiveTab] = useState('overview');
+    const [downloadingFileId, setDownloadingFileId] = useState(null);
 
     const detailDataset = useSelector(state => state.consumer.detailDataset);
     const loading = useSelector(state => state.consumer.loadingDetail);
     const error = useSelector(state => state.consumer.errorDetail);
+    const userInfo = useSelector(state => state.user.userInfo);
 
     useEffect(() => {
         if (id) {
@@ -19,16 +21,62 @@ const DatasetDetail = () => {
         }
     }, [id, dispatch]);
 
+    const handleDownload = async (file) => {
+        setDownloadingFileId(file.id);
+
+        try {
+            const token = userInfo?.token;
+
+            if (!token) {
+                alert('Please login to download files');
+                setDownloadingFileId(null);
+                return;
+            }
+
+            const response = await fetch(
+                `${process.env.REACT_APP_BACKEND_URL}/api/datasets/download/${file.id}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Download failed');
+            }
+
+            const blob = await response.blob();
+
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.file_name;
+            document.body.appendChild(a);
+            a.click();
+
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            setDownloadingFileId(null);
+        } catch (error) {
+            console.error('Download error:', error);
+            alert(`Download failed: ${error.message}`);
+            setDownloadingFileId(null);
+        }
+    };
+
     if (loading) return <p className="loading">Loading dataset...</p>;
     if (error) return <p className="error">Error: {error}</p>;
     if (!detailDataset || !detailDataset.id) return <p className="no-data">No dataset found</p>;
 
     return (
         <div className="dataset-detail-kaggle">
-            {/* Hero Section */}
             <div className="dataset-hero">
                 <div className="hero-content">
-
                     <h1 className="dataset-title">{detailDataset.title}</h1>
                     <p className="dataset-description">{detailDataset.description}</p>
 
@@ -53,7 +101,6 @@ const DatasetDetail = () => {
                 </div>
             </div>
 
-            {/* Navigation Tabs */}
             <div className="dataset-tabs">
                 <div className="tabs-container">
                     <button
@@ -77,7 +124,6 @@ const DatasetDetail = () => {
                 </div>
             </div>
 
-            {/* Main Content - 2 Column Layout */}
             <div className="dataset-body">
                 <div className="main-column">
                     {activeTab === 'overview' && (
@@ -127,13 +173,24 @@ const DatasetDetail = () => {
                                             <div key={file.id} className="file-item">
                                                 <div className="file-icon">📄</div>
                                                 <div className="file-info">
-                                                    <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="file-name">
-                                                        {file.file_name}
-                                                    </a>
+                                                    <span className="file-name">{file.file_name}</span>
+                                                    <span className="file-version">Version: {file.version || '1.0'}</span>
                                                 </div>
-                                                <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="download-btn">
-                                                    Download
-                                                </a>
+                                                <button
+                                                    className="download-btn"
+                                                    onClick={() => handleDownload(file)}
+                                                    disabled={downloadingFileId === file.id}
+                                                >
+                                                    {downloadingFileId === file.id ? (
+                                                        <>
+                                                            <i className="fa fa-spinner fa-spin"></i> Downloading...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <i className="fa fa-download"></i> Download
+                                                        </>
+                                                    )}
+                                                </button>
                                             </div>
                                         ))}
                                     </div>
@@ -165,7 +222,6 @@ const DatasetDetail = () => {
                     )}
                 </div>
 
-                {/* Sidebar */}
                 <div className="side-column">
                     <div className="sidebar-card">
                         <h3>Pricing</h3>

@@ -6,6 +6,7 @@ import {
     createDatasetService,
     updateDatasetService,
     deleteDatasetService,
+    deleteFileService,
     approveDatasetService,
     rejectDatasetService,
     getDetailDatasetService,
@@ -13,7 +14,8 @@ import {
 import {
     getTopDataHomeService
 } from '../../services/userService';
-// CONSUMER ACTIONS
+
+//  CONSUMER ACTIONS
 
 export const fetchTopData = () => {
     return async (dispatch, getState) => {
@@ -38,8 +40,7 @@ export const fetchTopData = () => {
     }
 }
 
-
-// PROVIDER ACTIONS
+//  PROVIDER ACTIONS
 
 export const fetchAllDatasets = () => {
     return async (dispatch) => {
@@ -69,10 +70,26 @@ export const fetchAllDatasetsFailed = () => ({
     type: actionTypes.FETCH_ALL_DATASETS_FAILED
 })
 
-export const createDataset = (data) => {
+export const createDataset = (data, files, metadata) => {
     return async (dispatch) => {
         try {
-            let res = await createDatasetService(data);
+            const formData = new FormData();
+
+            Object.keys(data).forEach(key => {
+                formData.append(key, data[key]);
+            });
+
+            if (files && files.length > 0) {
+                files.forEach(file => {
+                    formData.append('files', file);
+                });
+            }
+
+            if (metadata && metadata.length > 0) {
+                formData.append('metadata', JSON.stringify(metadata));
+            }
+
+            let res = await createDatasetService(formData);
             if (res && res.errCode === 0) {
                 dispatch(createDatasetSuccess());
                 await dispatch(fetchAllDatasets());
@@ -84,7 +101,7 @@ export const createDataset = (data) => {
         } catch (e) {
             dispatch(createDatasetFailed());
             console.log('createDatasetFailed error', e);
-            return { success: false, message: 'Server error' };
+            return { success: false, message: e.response?.data?.message || 'Server error' };
         }
     }
 }
@@ -97,10 +114,26 @@ export const createDatasetFailed = () => ({
     type: actionTypes.CREATE_DATASET_FAILED
 })
 
-export const updateDataset = (id, data) => {
+export const updateDataset = (id, data, files, metadata) => {
     return async (dispatch) => {
         try {
-            let res = await updateDatasetService(id, data);
+            const formData = new FormData();
+
+            Object.keys(data).forEach(key => {
+                formData.append(key, data[key]);
+            });
+
+            if (files && files.length > 0) {
+                files.forEach(file => {
+                    formData.append('files', file);
+                });
+            }
+
+            if (metadata && metadata.length > 0) {
+                formData.append('metadata', JSON.stringify(metadata));
+            }
+
+            let res = await updateDatasetService(id, formData);
             if (res && res.errCode === 0) {
                 dispatch(updateDatasetSuccess());
                 await dispatch(fetchAllDatasets());
@@ -112,7 +145,7 @@ export const updateDataset = (id, data) => {
         } catch (e) {
             dispatch(updateDatasetFailed());
             console.log('updateDatasetFailed error', e);
-            return { success: false, message: 'Server error' };
+            return { success: false, message: e.response?.data?.message || 'Server error' };
         }
     }
 }
@@ -153,7 +186,25 @@ export const deleteDatasetFailed = () => ({
     type: actionTypes.DELETE_DATASET_FAILED
 })
 
-// ADMIN ACTIONS
+export const deleteFile = (fileId) => {
+    return async (dispatch) => {
+        try {
+            let res = await deleteFileService(fileId);
+            if (res && res.errCode === 0) {
+                await dispatch(fetchAllDatasets());
+                return { success: true, message: res.errMessage || 'File deleted successfully' };
+            } else {
+                return { success: false, message: res?.errMessage || 'Failed to delete file' };
+            }
+        } catch (e) {
+            console.log('deleteFile error', e);
+            return { success: false, message: 'Server error' };
+        }
+    }
+}
+
+//  ADMIN ACTIONS
+
 export const fetchAllDatasetsForAdmin = () => {
     return async (dispatch) => {
         try {
@@ -207,7 +258,8 @@ export const rejectDataset = (id, reason) => {
     }
 }
 
-//Lấy categories, formats, statuses
+//  ALLCODE ACTIONS
+
 export const fetchCategoryStart = () => {
     return async (dispatch) => {
         try {
@@ -283,6 +335,8 @@ export const fetchStatusFailed = () => ({
     type: actionTypes.FETCH_STATUS_FAILED
 });
 
+//  DETAIL DATASET
+
 export const fetchDetailDataset = (datasetId) => {
     return async (dispatch) => {
         dispatch({ type: actionTypes.FETCH_DETAIL_DATASET_START });
@@ -291,7 +345,6 @@ export const fetchDetailDataset = (datasetId) => {
             let res = await getDetailDatasetService(datasetId);
             console.log('API response:', res.data);
 
-            // nếu API trả dataset trực tiếp
             if (res && res.data) {
                 console.log('Dispatching dataset:', res.data);
                 dispatch({
