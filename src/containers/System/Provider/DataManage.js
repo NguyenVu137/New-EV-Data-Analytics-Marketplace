@@ -80,7 +80,7 @@ class DataManage extends Component {
         this.setState({ [field]: event.target.value });
     }
 
-    // ==================== FILE UPLOAD HANDLERS ====================
+    //  FILE UPLOAD HANDLERS 
     handleFileSelect = (event) => {
         const files = Array.from(event.target.files);
         this.setState(prevState => ({
@@ -108,7 +108,7 @@ class DataManage extends Component {
         }
     }
 
-    // ==================== METADATA HANDLERS ====================
+    //  METADATA HANDLERS 
     addMetadata = () => {
         this.setState(prevState => ({
             metadata: [...prevState.metadata, { key: '', value: '' }]

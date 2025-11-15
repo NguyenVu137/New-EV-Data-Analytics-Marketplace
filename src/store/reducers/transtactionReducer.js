@@ -22,7 +22,7 @@ const initialState = {
 
 const transactionReducer = (state = initialState, action) => {
     switch (action.type) {
-        // ==================== PURCHASE DATASET ====================
+        //  PURCHASE DATASET 
         case 'PURCHASE_DATASET_START':
             return {
                 ...state,
@@ -47,7 +47,7 @@ const transactionReducer = (state = initialState, action) => {
                 purchaseError: action.payload
             };
 
-        // ==================== CHECK PERMISSION ====================
+        //  CHECK PERMISSION 
         case 'CHECK_PERMISSION_START':
             return {
                 ...state,
@@ -71,7 +71,7 @@ const transactionReducer = (state = initialState, action) => {
                 permissionError: action.payload
             };
 
-        // ==================== GET PURCHASES ====================
+        //  GET PURCHASES 
         case 'GET_PURCHASES_START':
             return {
                 ...state,
@@ -95,7 +95,7 @@ const transactionReducer = (state = initialState, action) => {
                 purchasesError: action.payload
             };
 
-        // ==================== GET REVENUE ====================
+        //  GET REVENUE 
         case 'GET_REVENUE_START':
             return {
                 ...state,
