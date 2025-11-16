@@ -48,6 +48,13 @@ instance.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        // Add userId header for payment API calls
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            config.headers['x-user-id'] = userId;
+        }
+        
         return config;
     },
     (error) => {

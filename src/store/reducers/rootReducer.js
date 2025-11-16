@@ -5,6 +5,7 @@ import appReducer from "./appReducer";
 import userReducer from "./userReducer";
 import adminReducer from "./adminReducer";
 import analyticsReducer from "./analyticsReducer";
+import paymentReducer from "./paymentReducer";
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 import storage from 'redux-persist/lib/storage';
 import { persistReducer } from 'redux-persist';
@@ -17,7 +18,8 @@ const persistCommonConfig = {
 const userPersistConfig = {
     ...persistCommonConfig,
     key: 'user',
-    whitelist: ['isLoggedIn', 'userInfo']
+    whitelist: ['isLoggedIn', 'userInfo'],
+    debounce: 500  // Debounce persisting to avoid rapid writes
 }; 
 
 const appPersistConfig = {
@@ -31,5 +33,6 @@ export default (history) => combineReducers({
     user: persistReducer(userPersistConfig, userReducer),
     app: persistReducer(appPersistConfig, appReducer),
     admin: adminReducer,
-    analytics: analyticsReducer
+    analytics: analyticsReducer,
+    payment: paymentReducer
 })

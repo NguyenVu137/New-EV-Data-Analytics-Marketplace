@@ -89,6 +89,8 @@ const adminReducer = (state = initialState, action) => {
             return {
                 ...state
             };
+        case actionTypes.PROCESS_LOGOUT:
+            return initialState;
         default:
             return state;
     }

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '../../../components/Navbar';
 import HomeFooter from '../../HomePage/HomeFooter';
 import { fetchAnalytics } from '../../../store/actions/analyticsActions';
-import { LineChart, BarChart, DoughnutChart, StatCard } from './ChartComponents';
+import { LineChart, BarChart, StatCard } from './ChartComponents';
 import './Dashboard.scss';
 
 /**
@@ -100,14 +100,9 @@ const Dashboard = () => {
                 
                 if (data.success && data.data && Array.isArray(data.data)) {
                     setAvailableMonths(data.data);
-                    // Set default to first month if not set
-                    if (!selectedMonth && data.data.length > 0) {
-                        const defaultMonth = data.data[0].month_string;
-                        if (defaultMonth) {
-                            setSelectedMonth(defaultMonth);
-                            console.log('[Dashboard] Selected default month:', defaultMonth);
-                        }
-                    }
+                    // Keep selectedMonth empty by default - user must choose
+                    // Do not auto-select any month
+                    console.log('[Dashboard] Months loaded - user must choose from dropdown');
                 } else {
                     console.error('[Dashboard] Invalid data structure from API:', data);
                 }
@@ -184,10 +179,18 @@ const Dashboard = () => {
     const chargingLabels = useMemo(() => dailyData?.timestamps || [], [dailyData]);
     const chargingValues = useMemo(() => dailyData?.chargeValues || [], [dailyData]);
     const co2Data = useMemo(() => {
-        const co2Saved = overview.total_co2_saved || 0;
-        const gasEquiv = co2Saved * 2.5;
-        return [co2Saved, gasEquiv];
-    }, [overview.total_co2_saved]);
+        // co2_saved in dataset is a PERCENTAGE (%)
+        // If EV saves X%, it emits (100-X)% of what gasoline would emit
+        // For comparison:
+        // - EV CO2 intensity = 100% - co2_saved% = (100 - co2_saved)%
+        // - Gasoline CO2 = 100% (baseline reference)
+        
+        const co2SavedPercent = overview.co2_saved_percent || 0; // e.g., 30%
+        const evEmissionPercent = Math.max(0, 100 - co2SavedPercent);  // e.g., 70%, min 0
+        const gasolineEmissionPercent = 100;                     // 100% (baseline)
+        
+        return [evEmissionPercent, gasolineEmissionPercent];
+    }, [overview.co2_saved_percent]);
 
     return (
             <div>
@@ -250,15 +253,15 @@ const Dashboard = () => {
                                 <StatCard 
                                     icon="💚" 
                                     title="CO₂ tiết kiệm" 
-                                    value={overview.total_co2_saved ? overview.total_co2_saved.toFixed(0) : '--'} 
-                                    unit="kg" 
+                                    value={overview.co2_saved_percent ? overview.co2_saved_percent.toFixed(1) : '--'} 
+                                    unit="%" 
                                     trend={trends.co2Trend?.value}
                                 />
                                 <StatCard 
                                     icon="⚡" 
                                     title="Tổng lần sạc" 
                                     value={overview.total_charges || '--'} 
-                                    unit="" 
+                                    unit="lần" 
                                     trend={trends.chargesTrend?.value}
                                 />
                             </div>
@@ -306,23 +309,86 @@ const Dashboard = () => {
                                     </div>
                                 </div>
 
-                                {/* Row 2: CO2 Doughnut + Stats */}
+                                {/* Row 2: CO2 Comparison + Stats */}
                                 <div className="chart-row">
                                     <div className="chart-card">
                                         <div className="chart-header">
-                                            <h3>🌍 So sánh phát thải CO₂</h3>
-                                            <p className="chart-subtitle">EV vs Xe chạy xăng</p>
+                                            <h3>🌍 So sánh Phát thải CO₂</h3>
+                                            <p className="chart-subtitle">EV vs Xe xăng (% tiêu thụ năng lượng)</p>
                                         </div>
-                                        <div className="chart-body">
-                                            <DoughnutChart 
-                                                data={co2Data} 
-                                                labels={[
-                                                    `EV tiết kiệm (${co2Data[0].toFixed(0)} kg)`,
-                                                    `Xe xăng (${co2Data[1].toFixed(0)} kg)`
-                                                ]} 
-                                                colors={['#10b981', '#ef4444']}
-                                                height={300}
-                                            />
+                                        <div className="chart-body" style={{padding: '40px 30px'}}>
+                                            {/* Comparison Numbers */}
+                                            <div style={{display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', marginBottom: 50, gap: 20}}>
+                                                {/* EV */}
+                                                <div style={{textAlign: 'center'}}>
+                                                    <div style={{fontSize: 12, color: '#999', marginBottom: 12}}>EV Phát thải</div>
+                                                    <div style={{fontSize: 40, fontWeight: 'bold', color: '#10b981'}}>
+                                                        {co2Data[0].toFixed(1)}%
+                                                    </div>
+                                                </div>
+
+                                                {/* VS Text */}
+                                                <div style={{fontSize: 16, color: '#999', fontWeight: 'bold', marginBottom: 8}}>
+                                                    vs
+                                                </div>
+
+                                                {/* Gasoline */}
+                                                <div style={{textAlign: 'center'}}>
+                                                    <div style={{fontSize: 12, color: '#999', marginBottom: 12}}>Xe xăng Phát thải</div>
+                                                    <div style={{fontSize: 40, fontWeight: 'bold', color: '#ef4444'}}>
+                                                        {co2Data[1].toFixed(1)}%
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Progress Bars */}
+                                            <div style={{marginBottom: 60}}>
+                                                {/* EV Bar */}
+                                                <div style={{marginBottom: 20}}>
+                                                    <div style={{fontSize: 13, color: '#10b981', fontWeight: 600, marginBottom: 8}}>🟢 EV</div>
+                                                    <div style={{width: '100%', height: 20, background: '#f5f5f5', borderRadius: 3, overflow: 'hidden', border: '1px solid #e0e0e0'}}>
+                                                        <div 
+                                                            style={{
+                                                                width: `${Math.min(co2Data[0], 100)}%`,
+                                                                height: '100%',
+                                                                background: 'linear-gradient(90deg, #10b981 0%, #06b6d4 100%)',
+                                                                transition: 'width 0.5s ease'
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Gasoline Bar */}
+                                                <div>
+                                                    <div style={{fontSize: 13, color: '#ef4444', fontWeight: 600, marginBottom: 8}}>🔴 Xe xăng</div>
+                                                    <div style={{width: '100%', height: 20, background: '#f5f5f5', borderRadius: 3, overflow: 'hidden', border: '1px solid #e0e0e0'}}>
+                                                        <div 
+                                                            style={{
+                                                                width: `${Math.min(co2Data[1], 100)}%`,
+                                                                height: '100%',
+                                                                background: 'linear-gradient(90deg, #ef4444 0%, #f97316 100%)',
+                                                                transition: 'width 0.5s ease'
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Benefit Highlight */}
+                                            <div style={{
+                                                padding: '25px',
+                                                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                                                borderRadius: 8,
+                                                border: '2px solid rgba(16, 185, 129, 0.3)',
+                                                textAlign: 'center',
+                                                marginTop: 20
+                                            }}>
+                                                <div style={{fontSize: 13, color: '#666', marginBottom: 8, fontWeight: 500}}>💡 Lợi ích của EV</div>
+                                                <div style={{fontSize: 32, fontWeight: 'bold', color: '#10b981'}}>
+                                                    {(100 - co2Data[0]).toFixed(1)}%
+                                                </div>
+                                                <div style={{fontSize: 12, color: '#888', marginTop: 6}}>tiết kiệm CO₂ so với xe xăng</div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -357,7 +423,7 @@ const Dashboard = () => {
                                                 <div className="summary-item-block">
                                                     <div className="summary-item-label">CO₂ Tiết kiệm</div>
                                                     <div className="summary-item-value" style={{color: '#10b981'}}>
-                                                        {overview.total_co2_saved ? overview.total_co2_saved.toFixed(0) : '--'} kg
+                                                        {overview.co2_saved_percent ? overview.co2_saved_percent.toFixed(1) : '--'}%
                                                     </div>
                                                 </div>
                                                 

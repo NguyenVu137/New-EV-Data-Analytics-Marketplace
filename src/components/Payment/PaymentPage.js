@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo } from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import PackageSelection from './PackageSelection';
 import PaymentMethodSelection from './PaymentMethodSelection';
+import CardInput from './CardInput';
 import { usePayment } from '../../hooks/usePayment';
 import './PaymentPage.css';
 
 /**
  * Payment Methods Configuration
- * Centralized payment methods with fees and processing time
+ * Chỉ hỗ trợ Thẻ tín dụng, các phương thức khác đang bảo trì
  */
 const PAYMENT_METHODS = Object.freeze([
     {
@@ -24,7 +26,7 @@ const PAYMENT_METHODS = Object.freeze([
         name: 'Chuyển khoản ngân hàng',
         description: 'Ngân hàng Việt Nam',
         icon: 'building',
-        status: 'active',
+        status: 'maintenance',
         fee: 0,
         processingTime: '1-3 ngày'
     },
@@ -33,7 +35,7 @@ const PAYMENT_METHODS = Object.freeze([
         name: 'Ví điện tử Momo',
         description: 'Thanh toán qua Momo',
         icon: 'mobile',
-        status: 'active',
+        status: 'maintenance',
         fee: 0.01,
         processingTime: 'Tức thì'
     },
@@ -66,6 +68,12 @@ const PaymentPage = () => {
     const history = useHistory();
     const dataset = location.state?.dataset;
 
+    // Get authentication state from Redux
+    const { isLoggedIn, userInfo } = useSelector(state => ({
+        isLoggedIn: state.user?.isLoggedIn,
+        userInfo: state.user?.userInfo
+    }));
+
     // Payment hook with enhanced error handling
     const {
         selectedPackage,
@@ -83,6 +91,21 @@ const PaymentPage = () => {
             console.warn('No dataset provided');
         }
     }, [dataset]);
+
+    // Check authentication and redirect if needed
+    useEffect(() => {
+        if (!isLoggedIn || !userInfo || !userInfo.user) {
+            // Store pending purchase to redirect after login
+            if (dataset && selectedPackage) {
+                sessionStorage.setItem('pendingPurchase', JSON.stringify({
+                    datasetId: dataset.id,
+                    packageType: selectedPackage
+                }));
+            }
+            // Redirect to login
+            history.push('/login');
+        }
+    }, [isLoggedIn, userInfo, dataset, history]);
 
     // Memoized dataset validation
     const isValidDataset = useMemo(() => {
@@ -160,6 +183,37 @@ const PaymentPage = () => {
             bestFor: 'Doanh nghiệp lớn, tích hợp'
         }
     ], [dataset]);
+
+    // Authentication check page
+    if (!isLoggedIn || !userInfo || !userInfo.user) {
+        return (
+            <div className="payment-error-wrapper">
+                <div className="payment-error">
+                    <div className="error-container">
+                        <div className="error-icon">
+                            <i className="fas fa-sign-in-alt"></i>
+                        </div>
+                        <h2>Vui lòng đăng nhập</h2>
+                        <p>Bạn cần đăng nhập để tiếp tục quá trình thanh toán.</p>
+                        <div className="error-actions">
+                            <button 
+                                className="error-button primary"
+                                onClick={() => history.push('/login')}
+                            >
+                                <i className="fas fa-sign-in-alt"></i> Đăng nhập
+                            </button>
+                            <button 
+                                className="error-button secondary"
+                                onClick={() => history.push('/home')}
+                            >
+                                <i className="fas fa-arrow-left"></i> Quay lại
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Error page
     if (!isValidDataset) {
@@ -305,6 +359,16 @@ const PaymentPage = () => {
                     onSelect={setSelectedPaymentMethod}
                 />
 
+                {/* Card Input for Credit Card Payment */}
+                {selectedPaymentMethod === 'creditcard' && (
+                    <div style={{ marginTop: '30px', marginBottom: '30px' }}>
+                        <CardInput 
+                            onSubmit={(data) => handlePurchase(data)}
+                            loading={loading}
+                        />
+                    </div>
+                )}
+
                 {/* Error Message */}
                 {error && (
                     <div className="error-message-box">
@@ -351,40 +415,42 @@ const PaymentPage = () => {
                         )}
                     </div>
 
-                    <div className="payment-action">
-                        <button 
-                            className={`payment-button ${loading ? 'loading' : ''} ${!selectedPaymentMethod ? 'disabled' : ''}`}
-                            onClick={handlePurchase}
-                            disabled={loading || !selectedPaymentMethod}
-                            title={!selectedPaymentMethod ? ERROR_MESSAGES.NO_PAYMENT_METHOD : ''}
-                        >
-                            {loading ? (
-                                <>
-                                    <span className="spinner"></span>
-                                    <span>Đang xử lý thanh toán...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <i className="fas fa-lock"></i>
-                                    <span>Tiến hành thanh toán</span>
-                                </>
+                    {selectedPaymentMethod !== 'creditcard' && (
+                        <div className="payment-action">
+                            <button 
+                                className={`payment-button ${loading ? 'loading' : ''} ${!selectedPaymentMethod ? 'disabled' : ''}`}
+                                onClick={handlePurchase}
+                                disabled={loading || !selectedPaymentMethod}
+                                title={!selectedPaymentMethod ? ERROR_MESSAGES.NO_PAYMENT_METHOD : ''}
+                            >
+                                {loading ? (
+                                    <>
+                                        <span className="spinner"></span>
+                                        <span>Đang xử lý thanh toán...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="fas fa-lock"></i>
+                                        <span>Tiến hành thanh toán</span>
+                                    </>
+                                )}
+                            </button>
+
+                            {!selectedPaymentMethod && (
+                                <div className="payment-hint-alert">
+                                    <i className="fas fa-info-circle"></i>
+                                    <span>{ERROR_MESSAGES.NO_PAYMENT_METHOD}</span>
+                                </div>
                             )}
-                        </button>
 
-                        {!selectedPaymentMethod && (
-                            <div className="payment-hint-alert">
-                                <i className="fas fa-info-circle"></i>
-                                <span>{ERROR_MESSAGES.NO_PAYMENT_METHOD}</span>
-                            </div>
-                        )}
-
-                        {selectedPaymentMethod && (
-                            <div className="payment-info">
-                                <i className="fas fa-shield-alt"></i>
-                                <p>Giao dịch của bạn được bảo mật bằng SSL 256-bit</p>
-                            </div>
-                        )}
-                    </div>
+                            {selectedPaymentMethod && (
+                                <div className="payment-info">
+                                    <i className="fas fa-shield-alt"></i>
+                                    <p>Giao dịch của bạn được bảo mật bằng SSL 256-bit</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

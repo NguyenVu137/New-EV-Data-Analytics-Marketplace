@@ -41,6 +41,9 @@ const analyticsReducer = (state = initialState, action) => {
                 data: state.data // Keep existing data on error
             };
         
+        case actionTypes.PROCESS_LOGOUT:
+            return initialState;
+        
         default:
             return state;
     }

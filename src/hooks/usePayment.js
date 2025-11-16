@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import axios from '../axios';
 
 /**
@@ -7,9 +8,15 @@ import axios from '../axios';
  */
 export const usePayment = (dataset) => {
     const [selectedPackage, setSelectedPackage] = useState('standard');
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('creditcard');  // Default to creditcard
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Get user info from Redux
+    const { isLoggedIn, userInfo } = useSelector(state => ({
+        isLoggedIn: state.user?.isLoggedIn,
+        userInfo: state.user?.userInfo
+    }));
 
     // Validate dataset on mount
     useEffect(() => {
@@ -20,8 +27,15 @@ export const usePayment = (dataset) => {
 
     /**
      * Handle purchase with validation and error handling
+     * @param {Object} cardData - Credit card data (optional, only for card payments)
      */
-    const handlePurchase = useCallback(async () => {
+    const handlePurchase = useCallback(async (cardData = null) => {
+        // Check authentication first
+        if (!isLoggedIn || !userInfo || !userInfo.user || !userInfo.user.id) {
+            setError('Vui lòng đăng nhập để tiếp tục thanh toán');
+            return;
+        }
+
         // Validation
         if (!dataset || !dataset.id) {
             setError('Dữ liệu gói không hợp lệ');
@@ -33,8 +47,19 @@ export const usePayment = (dataset) => {
             return;
         }
 
+        if (!['creditcard', 'bank', 'momo', 'zalopay'].includes(selectedPaymentMethod)) {
+            setError(`Phương thức thanh toán không hợp lệ: ${selectedPaymentMethod}`);
+            return;
+        }
+
         if (!selectedPackage) {
             setError('Vui lòng chọn gói dữ liệu');
+            return;
+        }
+
+        // Validate card data for credit card payment
+        if (selectedPaymentMethod === 'creditcard' && (!cardData || !cardData.cardNumber)) {
+            setError('Vui lòng nhập thông tin thẻ tín dụng');
             return;
         }
 
@@ -46,45 +71,121 @@ export const usePayment = (dataset) => {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-            const response = await axios.post(
-                `/api/datasets/${dataset.id}/purchase`,
+            const userId = userInfo.user.id;
+
+            // Step 1: Create order
+            const orderResponse = await axios.post(
+                '/api/orders',
                 {
+                    datasetId: dataset.id,
                     packageType: selectedPackage,
-                    paymentMethod: selectedPaymentMethod,
-                    timestamp: new Date().toISOString()
+                    userId: userId
                 },
                 {
                     signal: controller.signal,
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'x-user-id': userId
                     }
                 }
             );
 
             clearTimeout(timeoutId);
 
-            // Check response validity
-            if (!response.data) {
-                throw new Error('Phản hồi từ server không hợp lệ');
+            if (!orderResponse || !orderResponse.success) {
+                throw new Error(orderResponse?.message || 'Không thể tạo đơn hàng');
             }
 
-            const { success, error: apiError, paymentId } = response.data;
-
-            if (success && paymentId) {
-                // Store payment info to session
-                sessionStorage.setItem('pendingPayment', JSON.stringify({
-                    datasetId: dataset.id,
-                    packageType: selectedPackage,
-                    paymentId
-                }));
-
-                // Redirect to payment confirmation
-                setTimeout(() => {
-                    window.location.href = `/payment/${paymentId}`;
-                }, 300);
-            } else {
-                throw new Error(apiError || 'Không thể xử lý thanh toán');
+            const order = orderResponse.order;
+            if (!order || !order.id) {
+                throw new Error('Không thể tạo đơn hàng - phản hồi không hợp lệ');
             }
+
+            const orderId = order.id;
+
+            console.log('[usePayment] Order created:', { orderId, selectedPaymentMethod });
+
+            // Step 2: Initiate payment
+            console.log('[usePayment] Initiating payment with:', {
+                orderId,
+                paymentMethod: selectedPaymentMethod,
+                userId
+            });
+            
+            const paymentPayload = {
+                paymentMethod: selectedPaymentMethod,
+                userId: userId
+            };
+            
+            console.log('[usePayment] Payment payload:', paymentPayload);
+            console.log('[usePayment] Payment method type:', typeof selectedPaymentMethod);
+            console.log('[usePayment] Payment method value:', JSON.stringify(selectedPaymentMethod));
+            
+            const paymentResponse = await axios.post(
+                `/api/payments/${orderId}`,
+                paymentPayload,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-user-id': userId
+                    }
+                }
+            );
+            
+            console.log('[usePayment] Payment response:', paymentResponse);
+
+            if (!paymentResponse || !paymentResponse.success) {
+                throw new Error(paymentResponse?.message || 'Không thể khởi tạo thanh toán');
+            }
+
+            const payment = paymentResponse.payment;
+            if (!payment || !payment.id) {
+                throw new Error('Không thể khởi tạo thanh toán - phản hồi không hợp lệ');
+            }
+
+            const paymentId = payment.id;
+            const transactionId = payment.transactionId;
+
+            // Step 3: Process payment based on method
+            if (selectedPaymentMethod === 'creditcard') {
+                // Process credit card payment
+                const cardResponse = await axios.post(
+                    '/api/payments/creditcard',
+                    {
+                        transactionId: transactionId,
+                        cardNumber: cardData.cardNumber,
+                        expiryDate: cardData.expiryDate,
+                        cvv: cardData.cvv,
+                        cardHolder: cardData.cardHolder,
+                        userId: userId
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-user-id': userId
+                        }
+                    }
+                );
+
+                if (!cardResponse || !cardResponse.success) {
+                    throw new Error(cardResponse?.message || 'Lỗi xử lý thẻ tín dụng');
+                }
+            }
+
+            // Store payment info to session
+            sessionStorage.setItem('pendingPayment', JSON.stringify({
+                datasetId: dataset.id,
+                packageType: selectedPackage,
+                paymentId,
+                transactionId,
+                orderId,
+                userId: userId
+            }));
+
+            // Redirect to payment confirmation
+            setTimeout(() => {
+                window.location.href = `/payment_confirmation/${paymentId}`;
+            }, 300);
         } catch (err) {
             // Handle different error types
             let errorMessage = 'Có lỗi xảy ra khi xử lý thanh toán';
@@ -98,7 +199,7 @@ export const usePayment = (dataset) => {
                 if (status === 400) {
                     errorMessage = data.message || 'Dữ liệu không hợp lệ';
                 } else if (status === 401) {
-                    errorMessage = 'Vui lòng đăng nhập lại';
+                    errorMessage = 'Phiên đăng nhập hết hạn - vui lòng đăng nhập lại';
                 } else if (status === 402) {
                     errorMessage = 'Số dư tài khoản không đủ';
                 } else if (status === 404) {
@@ -115,7 +216,7 @@ export const usePayment = (dataset) => {
         } finally {
             setLoading(false);
         }
-    }, [dataset, selectedPackage, selectedPaymentMethod]);
+    }, [dataset, selectedPackage, selectedPaymentMethod, isLoggedIn, userInfo]);
 
     /**
      * Clear error message
@@ -132,6 +233,8 @@ export const usePayment = (dataset) => {
         loading,
         error,
         clearError,
-        handlePurchase
+        handlePurchase,
+        isLoggedIn
     };
 };
+

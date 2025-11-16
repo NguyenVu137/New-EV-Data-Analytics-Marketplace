@@ -26,9 +26,22 @@ const LineChart = memo(({ data = [], labels = [], title = '', color = '#0b69ff',
         }
 
         const padding = 40;
-        // Fixed responsive width: distribute points evenly across container
-        const pointSpacing = 100; // pixels between points
-        const width = Math.max(labels.length * pointSpacing + padding * 2, 600);
+        // Responsive width: scale based on number of data points
+        // Few points (1-5): max spacing, Many points (15+): min spacing
+        const pointCount = cleanedData.length;
+        let pointSpacing;
+        
+        if (pointCount <= 5) {
+            pointSpacing = 140; // Wide spacing for few points
+        } else if (pointCount <= 10) {
+            pointSpacing = 100; // Medium spacing
+        } else if (pointCount <= 20) {
+            pointSpacing = 60; // Closer for more points
+        } else {
+            pointSpacing = 40; // Very close for many points
+        }
+        
+        const width = Math.max(pointCount * pointSpacing + padding * 2, 800);
         const SVGHeight = height;
         const graphHeight = SVGHeight - padding * 2;
         const graphWidth = width - padding * 2;
@@ -121,10 +134,28 @@ const BarChart = memo(({ data = [], labels = [], title = '', color = '#0b69ff', 
         }
 
         const padding = 40;
-        // Fixed responsive width: distribute bars evenly across container
-        const barSpacing = 120; // pixels between bars
-        const barWidth = 45;
-        const width = Math.max(data.length * barSpacing + padding * 2, 600);
+        const barCount = data.length;
+        
+        // Responsive bar spacing: adjust based on number of bars
+        // Few bars (1-5): wide spacing with large bars
+        // Many bars (15+): tight spacing with narrow bars
+        let barSpacing, barWidth;
+        
+        if (barCount <= 5) {
+            barSpacing = 150;  // Wide spacing for few bars
+            barWidth = 60;     // Wide bars
+        } else if (barCount <= 10) {
+            barSpacing = 100;  // Medium spacing
+            barWidth = 50;     // Medium bars
+        } else if (barCount <= 20) {
+            barSpacing = 65;   // Close spacing
+            barWidth = 40;     // Narrow bars
+        } else {
+            barSpacing = 50;   // Very tight spacing
+            barWidth = 30;     // Very narrow bars
+        }
+        
+        const width = Math.max(barCount * barSpacing + padding * 2, 800);
         const SVGHeight = height;
         const graphHeight = SVGHeight - padding * 2;
 

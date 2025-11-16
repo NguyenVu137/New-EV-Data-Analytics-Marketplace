@@ -8,6 +8,7 @@ import { userIsAuthenticated, userIsNotAuthenticated } from '../hoc/authenticati
 import { path } from '../utils'
 import Home from '../routes/Home';
 import Login from './Auth/Login';
+import Logout from './Auth/Logout';
 import System from '../routes/System';
 import { CustomToastCloseButton } from '../components/CustomToast';
 import HomePage from './HomePage/HomePage.js'
@@ -15,7 +16,11 @@ import CustomScrollbars from '../components/CustomScrollbars.js';
 import DatasetDetailPage from './DatasetDetailPage/DatasetDetailPage';
 import SearchPage from '../components/search/SearchPage';
 import PaymentPage from '../components/Payment/PaymentPage';
+import PaymentConfirmation from './Payment/PaymentConfirmation';
+import MyOrders from './Payment/MyOrders';
+import MySubscriptions from './Payment/MySubscriptions';
 import Analytics from './System/Analytics/Dashboard.js';
+import { triggerAnalyticsRecalculation } from '../utils/analyticsAutoRefresh';
 
 class App extends Component {
 
@@ -35,6 +40,8 @@ class App extends Component {
 
     componentDidMount() {
         this.handlePersistorState();
+        // Trigger analytics recalculation on page load
+        triggerAnalyticsRecalculation();
     }
 
     render() {
@@ -46,11 +53,15 @@ class App extends Component {
                             <CustomScrollbars style={{ height: '100vh', width: '100%' }}>
                                 <Switch>
                                     <Route path={path.HOME} exact component={(Home)} />
-                                    <Route path={path.LOGIN} component={userIsNotAuthenticated(Login)} />
+                                    <Route path={path.LOGIN} component={Login} />
+                                    <Route path={path.LOG_OUT} component={Logout} />
                                     <Route path={path.SYSTEM} component={userIsAuthenticated(System)} />
                                     <Route path={path.ANALYTICS} component={Analytics} />
                                     <Route path={path.HOMEPAGE} component={HomePage} />
                                     <Route path={path.PAYMENT} component={PaymentPage} />
+                                    <Route path={path.PAYMENT_CONFIRMATION} component={PaymentConfirmation} />
+                                    <Route path={path.MY_ORDERS} component={userIsAuthenticated(MyOrders)} />
+                                    <Route path={path.MY_SUBSCRIPTIONS} component={userIsAuthenticated(MySubscriptions)} />
                                     <Route path={path.DATASET_DETAIL} component={DatasetDetailPage} />
                                     <Route path={path.SEARCH} component={SearchPage} />
                                     <Route path={path.DATASETS} component={SearchPage} />

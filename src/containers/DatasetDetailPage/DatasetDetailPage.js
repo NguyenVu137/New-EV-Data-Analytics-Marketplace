@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Spin, message } from 'antd';
+import { connect } from 'react-redux';
 import Navbar from '../../components/Navbar';
 import DatasetDetail from '../../components/DatasetDetail/DatasetDetail';
 import DatasetService from '../../services/DatasetService';
@@ -9,11 +10,12 @@ const DatasetDetailPage = (props) => {
     const history = props.history;
     const [dataset, setDataset] = useState(null);
     const [loading, setLoading] = useState(true);
+    const isLoggedIn = props.isLoggedIn;
 
     useEffect(() => {
         loadDataset();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id]);
+    }, [id, isLoggedIn]);
 
     const loadDataset = async () => {
         try {
@@ -29,11 +31,28 @@ const DatasetDetailPage = (props) => {
     };
 
     const handlePurchase = async (priceType) => {
+        // Check if user is logged in from Redux state only
+        if (!isLoggedIn) {
+            // Store the payment info in sessionStorage before redirecting to login
+            sessionStorage.setItem('pendingPurchase', JSON.stringify({
+                datasetId: id,
+                packageType: priceType
+            }));
+            // Redirect to login
+            message.info('Vui lòng đăng nhập để tiếp tục');
+            history.push('/login');
+            return;
+        }
+
         try {
-            const response = await DatasetService.purchaseDataset(id, priceType);
-            if (response.redirectUrl) {
-                window.location.href = response.redirectUrl;
-            }
+            // Navigate to payment page with dataset info
+            history.push({
+                pathname: `/payment/${id}`,
+                state: { 
+                    dataset: dataset,
+                    selectedPackage: priceType
+                }
+            });
         } catch (error) {
             message.error('Có lỗi xảy ra trong quá trình thanh toán');
             console.error('Error purchasing dataset:', error);
@@ -66,4 +85,10 @@ const DatasetDetailPage = (props) => {
     );
 };
 
-export default DatasetDetailPage;
+const mapStateToProps = state => {
+    return {
+        isLoggedIn: state.user.isLoggedIn
+    };
+};
+
+export default connect(mapStateToProps)(DatasetDetailPage);

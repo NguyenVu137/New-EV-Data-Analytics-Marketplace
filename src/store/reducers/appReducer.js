@@ -38,6 +38,8 @@ const appReducer = (state = initialState, action) => {
                 ...state,
                 language: action.language,
             }
+        case actionTypes.PROCESS_LOGOUT:
+            return initialState;
         default:
             return state;
     }

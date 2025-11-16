@@ -8,7 +8,10 @@ export const path = {
     DATASET_DETAIL: '/home/:id',
     DATASETS: '/home',
     SEARCH: '/search',
-    PAYMENT: '/payment/:paymentId'
+    PAYMENT: '/payment/:orderId',
+    PAYMENT_CONFIRMATION: '/payment_confirmation/:paymentId',
+    MY_ORDERS: '/my-orders',
+    MY_SUBSCRIPTIONS: '/my-subscriptions'
 };
 
 export const LANGUAGES = {
