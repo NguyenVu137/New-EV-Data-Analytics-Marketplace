@@ -5,7 +5,9 @@ const {
   groupDatasetsByDay, 
   getAvailableMonths, 
   calculateTrendArrow,
-  calculateTrendPercentage 
+  calculateTrendPercentage,
+  calculateAnalyticsMetrics,
+  calculateMonthlyAnalytics
 } = require('../services/analyticsService');
 
 exports.getAnalytics = async (req, res) => {
@@ -247,6 +249,54 @@ exports.getDatasetsByDay = async (req, res) => {
       success: false,
       message: 'Error fetching datasets',
       error: error.message
+    });
+  }
+};
+
+/**
+ * POST /api/analytics/calculate-overall - Tính analytics toàn bộ
+ * Tính metrics từ tất cả datasets, group by region/vehicle_type/battery_type
+ */
+exports.calculateOverallAnalytics = async (req, res) => {
+  try {
+    console.log('[API] Calculating overall analytics...');
+    const result = await calculateAnalyticsMetrics();
+    
+    res.json({
+      success: true,
+      message: 'Overall analytics calculated successfully',
+      data: result
+    });
+  } catch (error) {
+    console.error('[API] Error calculating analytics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to calculate analytics',
+      message: error.message
+    });
+  }
+};
+
+/**
+ * POST /api/analytics/calculate-monthly - Tính analytics theo tháng
+ * Group datasets by month, tính metrics, so sánh trend vs tháng trước
+ */
+exports.calculateMonthlyAnalyticsAPI = async (req, res) => {
+  try {
+    console.log('[API] Calculating monthly analytics...');
+    const result = await calculateMonthlyAnalytics();
+    
+    res.json({
+      success: true,
+      message: 'Monthly analytics calculated successfully',
+      data: result
+    });
+  } catch (error) {
+    console.error('[API] Error calculating monthly analytics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to calculate monthly analytics',
+      message: error.message
     });
   }
 };

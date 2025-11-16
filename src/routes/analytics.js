@@ -1,6 +1,6 @@
 const express = require('express');
 const analyticsController = require('../controllers/analyticsController');
-const { calculateMonthlyAnalytics } = require('../scripts/calculate-analytics-monthly');
+const { calculateMonthlyAnalytics, calculateAnalyticsMetrics } = require('../services/analyticsService');
 
 let router = express.Router();
 
@@ -8,8 +8,13 @@ router.get('/get-analytics', analyticsController.getAnalytics);
 router.get('/get-available-months', analyticsController.getAvailableMonths);
 router.get('/get-datasets-by-day', analyticsController.getDatasetsByDay);
 
+// New routes: Calculate analytics via API
+router.post('/calculate-overall', analyticsController.calculateOverallAnalytics);
+router.post('/calculate-monthly', analyticsController.calculateMonthlyAnalyticsAPI);
+
 /*
     recalculate monthly analytics when page loads
+    (Legacy route - for backward compatibility)
  */
 router.post('/recalculate-analytics-monthly', async (req, res) => {
     try {
@@ -35,6 +40,7 @@ router.post('/recalculate-analytics-monthly', async (req, res) => {
 
 /*
  * Auto-calculate analytics when page loads
+ * (Legacy route - for backward compatibility)
  */
 router.post('/recalculate-analytics', async (req, res) => {
     try {
