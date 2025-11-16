@@ -9,6 +9,7 @@ import DatePicker from '../../../components/Input/DatePicker';
 import moment from 'moment';
 import { toast } from "react-toastify";
 import _, { range } from 'lodash';
+import { saveBulkScheduleData } from '../../../services/userService';
 
 class UseRights extends Component {
     constructor(props) {
@@ -86,7 +87,7 @@ class UseRights extends Component {
         }
     }
 
-    handleSaveSchedule = () => {
+    handleSaveSchedule = async () => {
         let { rangeTime, selectedOption, currentDate } = this.state;
         let result = [];
         if (!currentDate) {
@@ -98,7 +99,8 @@ class UseRights extends Component {
             return;
         }
 
-        let formatedDate = moment(currentDate).format(dateFormat.SEND_TO_SERVER);
+        // let formatedDate = moment(currentDate).format(dateFormat.SEND_TO_SERVER);
+        let formatedDate = new Date(currentDate).getTime();
 
         if (rangeTime && rangeTime.length > 0) {
             let selectedTime = rangeTime.filter(item => item.isSelected === true);
@@ -107,6 +109,7 @@ class UseRights extends Component {
                     let object = {};
                     object.providerId = selectedOption.value;
                     object.date = schedule.keyMap;
+                    object.timeType = schedule.keyMap;
                     result.push(object);
                 })
             } else {
@@ -114,6 +117,12 @@ class UseRights extends Component {
                 return;
             }
         }
+
+        let res = await saveBulkScheduleData({
+            arrSchedule: result,
+            dataId: selectedOption.value,
+            formatedDate: formatedDate
+        })
     }
 
     render() {

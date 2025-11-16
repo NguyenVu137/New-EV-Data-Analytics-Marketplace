@@ -56,7 +56,7 @@
 
     "manage-use-rights": {
         "title": "Quản lý quyền sử dụng của nhà cung cấp",
-        "choose-right": "Chọn quyền sử dụng",
+        "choose-right": "Chọn nhà cung cấp",
         "choose-date": "Chọn thời gian",
         "save": "Lưu"
     }

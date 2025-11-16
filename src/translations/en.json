@@ -56,8 +56,8 @@
 
     "manage-use-rights": {
         "title": "Supplier usage rights management",
-        "choose-right": "Choose-right",
-        "choose-date": "Choose-date",
+        "choose-right": "Choose right",
+        "choose-date": "Choose date",
         "save": "Save"
     }
 }

@@ -44,9 +44,13 @@ const getDetailInforData = (inputId) => {
     return axios.get(`/api/get-detail-data-by-id?id=${inputId}`)
 }
 
+const saveBulkScheduleData = (data) => {
+    return axios.post('/api/bulk-create-schedule', data)
+}
+
 export {
     handleLoginApi, getAllUsers, createNewUserService,
     deleteUserService, editUserService, getAllCodeService,
     getTopDataHomeService, getAllDatas, saveDetailDataService,
-    getDetailInforData
+    getDetailInforData, saveBulkScheduleData
 }; 
