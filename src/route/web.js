@@ -5,6 +5,7 @@ import datasetRoutes from './datasetRoutes.js'
 import transactionRoutes from './transactionRoutes.js'
 import allcodeRoutes from './allcodeRoutes.js'
 import analyticsRoutes from './analyticsRoutes.js'
+import payoutRoutes from './payoutRoutes.js'
 const router = express.Router()
 const initWebRoutes = (app) => {
     app.use('/api/admin', adminRoutes)
@@ -13,6 +14,7 @@ const initWebRoutes = (app) => {
     app.use('/api/transactions', transactionRoutes)
     app.use('/api/allcode', allcodeRoutes)
     app.use('/api/analytics', analyticsRoutes)
+    app.use('/api/payout', payoutRoutes)
 }
 
 export default initWebRoutes

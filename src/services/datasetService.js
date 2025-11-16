@@ -9,7 +9,7 @@ let uploadDataset = async (providerId, data, files = null) => {
         const dataset = await db.Dataset.create({
             ...data,
             provider_id: providerId,
-            status_code: "PENDING"
+            status_code: "S1" // PENDING
         }, { transaction });
 
         if (files && files.length > 0) {
@@ -177,7 +177,7 @@ let deleteDataset = async (datasetId, providerId) => {
             return { errCode: 1, errMessage: "Dataset không tồn tại hoặc không có quyền xóa" };
         }
 
-        if (dataset.status_code === "APPROVED") {
+        if (dataset.status_code === "S2") {
             return { errCode: 2, errMessage: "Không thể xóa dataset đã được duyệt" };
         }
 
@@ -216,7 +216,7 @@ let deleteDatasetFile = async (fileId, providerId) => {
             return { errCode: 1, errMessage: "File không tồn tại hoặc không có quyền xóa" };
         }
 
-        if (file.dataset.status_code === "APPROVED") {
+        if (file.dataset.status_code === "S2") {
             return { errCode: 2, errMessage: "Không thể xóa file của dataset đã được duyệt" };
         }
 
@@ -238,7 +238,7 @@ let approveDataset = async (datasetId) => {
     let dataset = await db.Dataset.findByPk(datasetId);
     if (!dataset) return { errCode: 1, errMessage: "Dataset không tồn tại" };
 
-    dataset.status_code = "APPROVED";
+    dataset.status_code = "S2";
     await dataset.save();
     return { errCode: 0, errMessage: "Duyệt thành công", dataset };
 };
@@ -248,7 +248,7 @@ let rejectDataset = async (datasetId, reason) => {
     let dataset = await db.Dataset.findByPk(datasetId);
     if (!dataset) return { errCode: 1, errMessage: "Dataset không tồn tại" };
 
-    dataset.status_code = "REJECTED";
+    dataset.status_code = "S3";
     dataset.access_policy = reason || "";
     await dataset.save();
     return { errCode: 0, errMessage: "Từ chối thành công", dataset };
@@ -256,7 +256,7 @@ let rejectDataset = async (datasetId, reason) => {
 
 let getApprovedDatasets = async () => {
     return await db.Dataset.findAll({
-        where: { status_code: "APPROVED" },
+        where: { status_code: "S2" },
         order: [['created_at', 'DESC']],
         include: [
             {
@@ -387,7 +387,7 @@ let getTopDataHome = (limitInput) => {
         try {
             let datasets = await db.Dataset.findAll({
                 limit: limitInput || 10,
-                where: { status_code: 'APPROVED' },
+                where: { status_code: 'S2' },
                 order: [['created_at', 'DESC']],
                 attributes: ['id', 'title', 'description', 'file_url', 'api_url', 'basicPrice', 'standardPrice', 'premiumPrice'],
                 include: [

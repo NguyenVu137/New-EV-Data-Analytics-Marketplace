@@ -18,7 +18,14 @@ module.exports = (sequelize) => {
         provider_id: { type: DataTypes.UUID, allowNull: false },
         transaction_id: { type: DataTypes.UUID, allowNull: false },
         amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
-        payout_status_code: { type: DataTypes.STRING, allowNull: false, defaultValue: 'PENDING' },
+        platform_fee: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0 },
+        payment_fee: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0 },
+        net_amount: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0 },
+        payout_status_code: { type: DataTypes.STRING, allowNull: false, defaultValue: 'PO1' },
+        processed_at: { type: DataTypes.DATE, allowNull: true },
+        bank_account: { type: DataTypes.STRING, allowNull: true },
+        bank_name: { type: DataTypes.STRING, allowNull: true },
+        note: { type: DataTypes.TEXT, allowNull: true },
         created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
     }, {
         sequelize,

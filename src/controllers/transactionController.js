@@ -1,7 +1,7 @@
 const transactionService = require('../services/transactionService');
 
-//  PURCHASE DATASET 
-const purchaseDataset = async (req, res) => {
+//  CREATE TRANSACTION (Purchase) 
+const createTransaction = async (req, res) => {
     try {
         const consumerId = req.user.id;
         const { datasetId, packageType, paymentMethod } = req.body;
@@ -9,28 +9,76 @@ const purchaseDataset = async (req, res) => {
         if (!datasetId || !packageType || !paymentMethod) {
             return res.status(400).json({
                 errCode: 1,
-                message: 'Missing required fields'
+                message: 'Thiếu thông tin bắt buộc'
             });
         }
 
-        const result = await transactionService.purchaseDataset(
+        const result = await transactionService.createTransaction(
             consumerId,
             datasetId,
             packageType,
             paymentMethod
         );
 
-        if (result.errCode !== 0) {
-            return res.status(400).json(result);
+        return res.status(201).json(result);
+
+    } catch (error) {
+        console.error('Create transaction error:', error);
+        return res.status(200).json({
+            errCode: -1,
+            message: error.message || 'Lỗi khi tạo giao dịch'
+        });
+    }
+};
+
+//  PAYMENT CALLBACK 
+const paymentCallback = async (req, res) => {
+    try {
+        const { transactionId, status } = req.body;
+
+        if (!transactionId || !status) {
+            return res.status(400).json({
+                errCode: 1,
+                message: 'Invalid callback data'
+            });
         }
 
-        return res.status(201).json(result);
-    } catch (e) {
-        console.error('Purchase error:', e);
+        const result = await transactionService.processPaymentCallback(
+            transactionId,
+            status
+        );
+
+        return res.status(200).json(result);
+
+    } catch (error) {
+        console.error('Payment callback error:', error);
         return res.status(500).json({
             errCode: -1,
-            message: 'Server error',
-            error: e.message
+            message: 'Lỗi khi xử lý callback',
+            error: error.message
+        });
+    }
+};
+
+//  SIMULATE PAYMENT (DEV ONLY) 
+const simulatePayment = async (req, res) => {
+    try {
+        const { transactionId } = req.params;
+        const { status = 'success' } = req.body;
+
+        const result = await transactionService.processPaymentCallback(
+            transactionId,
+            status
+        );
+
+        return res.status(200).json(result);
+
+    } catch (error) {
+        console.error('Simulate payment error:', error);
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Lỗi khi giả lập thanh toán',
+            error: error.message
         });
     }
 };
@@ -39,7 +87,7 @@ const purchaseDataset = async (req, res) => {
 const checkDownloadPermission = async (req, res) => {
     try {
         const consumerId = req.user.id;
-        const datasetId = req.params.datasetId;
+        const { datasetId } = req.params;
 
         const permission = await transactionService.checkDownloadPermission(
             consumerId,
@@ -50,11 +98,12 @@ const checkDownloadPermission = async (req, res) => {
             errCode: 0,
             ...permission
         });
-    } catch (e) {
-        console.error('Check permission error:', e);
+
+    } catch (error) {
+        console.error('Check permission error:', error);
         return res.status(500).json({
             errCode: -1,
-            message: 'Server error'
+            message: 'Lỗi khi kiểm tra quyền download'
         });
     }
 };
@@ -69,41 +118,44 @@ const getUserPurchases = async (req, res) => {
             errCode: 0,
             data: purchases
         });
-    } catch (e) {
-        console.error('Get purchases error:', e);
+
+    } catch (error) {
+        console.error('Get purchases error:', error);
         return res.status(500).json({
             errCode: -1,
-            message: 'Server error'
+            message: 'Lỗi khi lấy danh sách mua hàng'
         });
     }
 };
 
-//  OLD FUNCTIONS (Keep for compatibility) 
-const createTransaction = async (req, res) => {
+//  GET USER TRANSACTIONS 
+const getUserTransactions = async (req, res) => {
     try {
-        const transaction = await transactionService.createTransaction(req.body);
-        return res.status(201).json({ errCode: 0, transaction });
-    } catch (e) {
-        console.log(e);
-        return res.status(500).json({ errCode: -1, message: 'Server error' });
-    }
-};
+        const consumerId = req.user.id;
+        const { limit = 20, offset = 0 } = req.query;
 
-const getProviderRevenue = async (req, res) => {
-    try {
-        const providerId = req.user.id;
-        const revenue = await transactionService.getProviderRevenue(providerId);
-        return res.status(200).json({ errCode: 0, revenue });
-    } catch (e) {
-        console.log(e);
-        return res.status(500).json({ errCode: -1, message: 'Server error' });
+        const result = await transactionService.getUserTransactions(consumerId, {
+            limit: parseInt(limit),
+            offset: parseInt(offset)
+        });
+
+        return res.status(200).json(result);
+
+    } catch (error) {
+        console.error('Get transactions error:', error);
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Lỗi khi lấy danh sách giao dịch',
+            error: error.message
+        });
     }
 };
 
 module.exports = {
     createTransaction,
-    getProviderRevenue,
-    purchaseDataset,
+    paymentCallback,
+    simulatePayment,
     checkDownloadPermission,
-    getUserPurchases
+    getUserPurchases,
+    getUserTransactions
 };
