@@ -33,7 +33,17 @@
             "manage-post": "Manage posts",
             "censor": "Censors",
             "manage-censor": "Manage censors",
-            "analyticsdashboard": "DashBoard"
+            "analyticsdashboard": "DashBoard",
+            "payout": "Payouts",
+            "manage-payouts": "Manage Payouts"
+        },
+        "provider": {
+            "earnings": "Earnings",
+            "my-payouts": "My Earnings"
+        },
+        "consumer": {
+            "purchases": "Transactions",
+            "my-purchases": "Purchase History"
         }
     },
     "manage-user": {
@@ -53,5 +63,10 @@
     "homepage": {
         "featured-data": "Last week's featured data",
         "more-info": "More info"
+    },
+    "admin": {
+        "manage-payouts": {
+            "title": "Manage Provider Payouts"
+        }
     }
 }

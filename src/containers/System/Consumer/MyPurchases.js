@@ -20,9 +20,17 @@ const MyPurchases = () => {
         const dataset = transaction.dataset;
         if (!dataset) return 'Unknown';
 
-        if (transaction.type?.valueVi === 'Subscription') return 'PREMIUM';
-        if (transaction.amount == dataset.basicPrice) return 'BASIC';
-        if (transaction.amount == dataset.standardPrice) return 'STANDARD';
+        // Check by type_code: T2 = Subscription (Premium), T1 = Download
+        if (transaction.type_code === 'T2') return 'PREMIUM';
+        
+        // For T1 (Download), check by amount
+        const amount = parseFloat(transaction.amount);
+        const basicPrice = parseFloat(dataset.basicPrice);
+        const standardPrice = parseFloat(dataset.standardPrice);
+        
+        if (Math.abs(amount - basicPrice) < 0.01) return 'BASIC';
+        if (Math.abs(amount - standardPrice) < 0.01) return 'STANDARD';
+        
         return 'Unknown';
     };
 

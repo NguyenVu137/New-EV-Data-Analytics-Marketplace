@@ -43,6 +43,15 @@ export const adminMenu = [
 
         ]
     },
+    
+    { // Quản lý thanh toán
+        name: 'menu.admin.payout',
+        menus: [
+            {
+                name: 'menu.admin.manage-payouts', link: '/system/manage-payouts',
+            },
+        ]
+    },
 ];
 export const providerMenu = [
     { // Quản lí dữ liệu
@@ -54,5 +63,24 @@ export const providerMenu = [
 
         ]
     },
+    
+    { // Thu nhập của Provider
+        name: 'menu.provider.earnings',
+        menus: [
+            {
+                name: 'menu.provider.my-payouts', link: '/system/my-payouts',
+            },
+        ]
+    },
+];
 
+export const consumerMenu = [
+    { // Lịch sử mua hàng
+        name: 'menu.consumer.purchases',
+        menus: [
+            {
+                name: 'menu.consumer.my-purchases', link: '/system/my-purchases',
+            },
+        ]
+    },
 ];

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { purchaseDataset } from '../../../store/actions';
+import { purchaseDataset, simulatePayment } from '../../../store/actions';
 import './PaymentModal.scss';
 
 const PaymentModal = ({ isOpen, onClose, dataset, onPurchaseSuccess }) => {
     const dispatch = useDispatch();
     const [selectedPackage, setSelectedPackage] = useState('BASIC');
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('PM3'); // MoMo default
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [pendingTransaction, setPendingTransaction] = useState(null);
 
     const isPurchasing = useSelector(state => state.transaction?.isPurchasing || false);
 
@@ -47,19 +49,57 @@ const PaymentModal = ({ isOpen, onClose, dataset, onPurchaseSuccess }) => {
                 selectedPaymentMethod
             ));
 
-            if (result.success) {
-                alert('✅ Thanh toán thành công! Bạn có thể download dataset ngay bây giờ.');
-                if (onPurchaseSuccess) {
-                    onPurchaseSuccess(result.data);
-                }
-                onClose();
+            console.log('Purchase result in PaymentModal:', result);
+
+            if (result && result.errCode === 0) {
+                alert('✅ Đơn hàng đã được tạo! Đang xử lý thanh toán...');
+                
+                // Đợi 2 giây để backend auto-complete payment
+                setTimeout(() => {
+                    if (onPurchaseSuccess) {
+                        onPurchaseSuccess(result.data);
+                    }
+                    handleClose();
+                    alert('✅ Thanh toán thành công! Bạn có thể download dataset ngay bây giờ.');
+                }, 2000);
             } else {
-                alert(`❌ Thanh toán thất bại: ${result.message}`);
+                alert(`❌ Lỗi: ${result?.message || 'Không thể tạo đơn hàng'}`);
             }
         } catch (error) {
             console.error('Purchase error:', error);
             alert('❌ Có lỗi xảy ra khi thanh toán!');
         }
+    };
+
+    const confirmPayment = async () => {
+        if (!pendingTransaction) return;
+
+        try {
+            const result = await dispatch(simulatePayment(pendingTransaction.id, 'success'));
+            
+            console.log('Confirm payment result:', result);
+
+            if (result && result.errCode === 0) {
+                alert('✅ Thanh toán thành công! Bạn có thể download dataset ngay bây giờ.');
+                if (onPurchaseSuccess) {
+                    onPurchaseSuccess(result.data);
+                }
+                handleClose();
+            } else {
+                alert(`❌ Thanh toán thất bại: ${result?.message}`);
+            }
+        } catch (error) {
+            console.error('Confirm payment error:', error);
+            alert('❌ Có lỗi xảy ra khi xác nhận thanh toán!');
+        }
+    };
+
+    const handleClose = () => {
+        setShowConfirm(false);
+        setPendingTransaction(null);
+        setSelectedPackage('BASIC');
+        setSelectedPaymentMethod('PM3');
+        onClose();
     };
 
     if (!isOpen) return null;
@@ -129,7 +169,7 @@ const PaymentModal = ({ isOpen, onClose, dataset, onPurchaseSuccess }) => {
 
                 {/* Action Buttons */}
                 <div className="actions">
-                    <button className="btn-secondary" onClick={onClose} disabled={isPurchasing}>
+                    <button className="btn-secondary" onClick={handleClose} disabled={isPurchasing}>
                         Hủy
                     </button>
                     <button

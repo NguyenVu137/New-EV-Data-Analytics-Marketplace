@@ -107,10 +107,9 @@ const adminReducer = (state = initialState, action) => {
             };
 
         case actionTypes.FETCH_TOP_DATAS_SUCCESS:
-
             return {
                 ...state,
-                topDatas: action.datas
+                topDatas: action.data
             };
 
         case actionTypes.FETCH_TOP_DATAS_FAILED:

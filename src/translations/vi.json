@@ -33,7 +33,17 @@
             "manage-post": "Quản lí bài đăng",
             "censor": "Kiểm duyệt",
             "manage-censor": "Quản lí kiểm duyệt",
-            "analyticsdashboard": "Thống kê thị trường"
+            "analyticsdashboard": "Thống kê thị trường",
+            "payout": "Thanh toán",
+            "manage-payouts": "Quản lý thanh toán"
+        },
+        "provider": {
+            "earnings": "Thu nhập",
+            "my-payouts": "Quản lý thu nhập"
+        },
+        "consumer": {
+            "purchases": "Giao dịch",
+            "my-purchases": "Lịch sử mua"
         }
     },
     "manage-user": {
@@ -53,5 +63,10 @@
     "homepage": {
         "featured-data": "Dữ liệu nổi bật tuần qua",
         "more-info": "Xem thêm"
+    },
+    "admin": {
+        "manage-payouts": {
+            "title": "Quản lý thanh toán Provider"
+        }
     }
 }

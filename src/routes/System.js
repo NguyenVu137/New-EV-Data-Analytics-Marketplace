@@ -8,6 +8,9 @@ import RoleRoute from './RoleRoutes.js';
 import DataManage from '../containers/System/Provider/DataManage.js';
 import DataApproval from '../containers/System/Admin/DataApproval.js';
 import MarketAnalyticsDashboard from '../containers/System/Admin/MarketAnalyticsDashboard.js';
+import ManagePayouts from '../containers/System/Admin/ManagePayouts.js';
+import PurchaseDataset from '../containers/System/PurchaseDataset.js';
+import ProviderPayout from '../containers/System/ProviderPayout.js';
 class System extends Component {
     render() {
         const { systemMenuPath, isLoggedIn } = this.props;
@@ -22,6 +25,9 @@ class System extends Component {
                             <RoleRoute path="/system/manage-data" allowedRoles={['R1', 'R2']} component={DataManage} />
                             <RoleRoute path="/system/manage-censor" allowedRoles={['R1']} component={DataApproval} />
                             <RoleRoute path="/system/analyticsdashboard" allowedRoles={['R1']} component={MarketAnalyticsDashboard} />
+                            <RoleRoute path="/system/manage-payouts" allowedRoles={['R1']} component={ManagePayouts} />
+                            <RoleRoute path="/system/my-purchases" allowedRoles={['R3']} component={PurchaseDataset} />
+                            <RoleRoute path="/system/my-payouts" allowedRoles={['R2']} component={ProviderPayout} />
 
                             <Route component={() => <Redirect to="/home" />} />
                         </Switch>

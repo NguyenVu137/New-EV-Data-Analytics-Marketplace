@@ -1,5 +1,6 @@
 import actionTypes from './actionTypes';
 import { getAllCodeService, createNewUserService, getAllUsers, deleteUserService, editUserService } from '../../services/userService';
+import { getTopDataHomeService } from '../../services/datasetService';
 
 // Gender
 export const fetchGenderStart = () => {
@@ -171,3 +172,30 @@ export const editUserSuccess = () => ({
 export const editUserFailed = () => ({
     type: 'EDIT_USER_FAILED'
 })
+
+// Fetch Top Datasets for Homepage
+export const fetchTopData = (limit = 10) => {
+    return async (dispatch) => {
+        try {
+            let res = await getTopDataHomeService(limit);
+            if (res && res.errCode === 0) {
+                dispatch({
+                    type: actionTypes.FETCH_TOP_DATAS_SUCCESS,
+                    data: res.data
+                });
+                return { success: true, data: res.data };
+            } else {
+                dispatch({
+                    type: actionTypes.FETCH_TOP_DATAS_FAILED
+                });
+                return { success: false, message: res?.message || 'Failed to fetch top datasets' };
+            }
+        } catch (e) {
+            dispatch({
+                type: actionTypes.FETCH_TOP_DATAS_FAILED
+            });
+            console.log('fetchTopData error', e);
+            return { success: false, message: 'Server error' };
+        }
+    }
+}

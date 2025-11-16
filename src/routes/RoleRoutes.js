@@ -14,7 +14,8 @@ const RoleRoute = ({ component: Component, allowedRoles, userInfo, ...rest }) =>
             {...rest}
             render={props => {
                 console.log("RoleRoute - userInfo:", userInfo);
-                console.log("RoleRoute - userInfo.roleId:", userInfo?.roleId);
+                console.log("RoleRoute - userInfo.user:", userInfo?.user);
+                console.log("RoleRoute - userInfo.user.roleId:", userInfo?.user?.roleId);
                 console.log("RoleRoute - allowedRoles:", allowedRoles);
                 if (!userInfo) {
                     // chưa login => redirect về login

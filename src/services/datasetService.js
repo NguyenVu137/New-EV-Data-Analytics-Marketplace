@@ -13,6 +13,10 @@ const searchDatasetsService = (params) => {
     return axios.get('/api/datasets/search', { params });
 };
 
+const getTopDataHomeService = (limit = 10) => {
+    return axios.get(`/api/datasets/top-data-home?limit=${limit}`);
+};
+
 //  Provider APIs  
 
 const getAllDatasetsService = () => {
@@ -68,6 +72,7 @@ export {
     getDetailDatasetService,
     getApprovedDatasetsService,
     searchDatasetsService,
+    getTopDataHomeService,
 
     // Provider
     getAllDatasetsService,

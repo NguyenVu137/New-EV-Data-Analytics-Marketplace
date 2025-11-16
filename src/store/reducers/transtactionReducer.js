@@ -1,8 +1,15 @@
+import actionTypes from '../actions/actionTypes';
+
 const initialState = {
-    // Purchase
-    isPurchasing: false,
-    purchaseSuccess: null,
-    purchaseError: null,
+    // Create Transaction
+    isCreatingTransaction: false,
+    currentTransaction: null,
+    paymentUrl: null,
+    createError: null,
+
+    // Simulate Payment
+    isSimulating: false,
+    simulateError: null,
 
     // Permission
     isCheckingPermission: false,
@@ -14,48 +21,77 @@ const initialState = {
     userPurchases: [],
     purchasesError: null,
 
-    // Revenue (for provider)
-    isLoadingRevenue: false,
-    providerRevenue: 0,
-    revenueError: null
+    // Transaction history
+    isLoadingHistory: false,
+    transactions: [],
+    transactionTotal: 0,
+    historyError: null,
+
+    // UI
+    showPaymentModal: false
 };
 
 const transactionReducer = (state = initialState, action) => {
     switch (action.type) {
-        //  PURCHASE DATASET 
-        case 'PURCHASE_DATASET_START':
+        //  CREATE TRANSACTION 
+        case actionTypes.CREATE_TRANSACTION_START:
             return {
                 ...state,
-                isPurchasing: true,
-                purchaseSuccess: null,
-                purchaseError: null
+                isCreatingTransaction: true,
+                createError: null,
+                currentTransaction: null
             };
 
-        case 'PURCHASE_DATASET_SUCCESS':
+        case actionTypes.CREATE_TRANSACTION_SUCCESS:
             return {
                 ...state,
-                isPurchasing: false,
-                purchaseSuccess: action.payload,
-                purchaseError: null
+                isCreatingTransaction: false,
+                currentTransaction: action.payload.transaction,
+                paymentUrl: action.payload.paymentUrl,
+                showPaymentModal: true,
+                createError: null
             };
 
-        case 'PURCHASE_DATASET_FAILED':
+        case actionTypes.CREATE_TRANSACTION_FAILED:
             return {
                 ...state,
-                isPurchasing: false,
-                purchaseSuccess: null,
-                purchaseError: action.payload
+                isCreatingTransaction: false,
+                currentTransaction: null,
+                createError: action.payload
+            };
+
+        //  SIMULATE PAYMENT 
+        case actionTypes.SIMULATE_PAYMENT_START:
+            return {
+                ...state,
+                isSimulating: true,
+                simulateError: null
+            };
+
+        case actionTypes.SIMULATE_PAYMENT_SUCCESS:
+            return {
+                ...state,
+                isSimulating: false,
+                showPaymentModal: false,
+                simulateError: null
+            };
+
+        case actionTypes.SIMULATE_PAYMENT_FAILED:
+            return {
+                ...state,
+                isSimulating: false,
+                simulateError: action.payload
             };
 
         //  CHECK PERMISSION 
-        case 'CHECK_PERMISSION_START':
+        case actionTypes.CHECK_PERMISSION_START:
             return {
                 ...state,
                 isCheckingPermission: true,
                 permissionError: null
             };
 
-        case 'CHECK_PERMISSION_SUCCESS':
+        case actionTypes.CHECK_PERMISSION_SUCCESS:
             return {
                 ...state,
                 isCheckingPermission: false,
@@ -63,7 +99,7 @@ const transactionReducer = (state = initialState, action) => {
                 permissionError: null
             };
 
-        case 'CHECK_PERMISSION_FAILED':
+        case actionTypes.CHECK_PERMISSION_FAILED:
             return {
                 ...state,
                 isCheckingPermission: false,
@@ -72,14 +108,14 @@ const transactionReducer = (state = initialState, action) => {
             };
 
         //  GET PURCHASES 
-        case 'GET_PURCHASES_START':
+        case actionTypes.GET_PURCHASES_START:
             return {
                 ...state,
                 isLoadingPurchases: true,
                 purchasesError: null
             };
 
-        case 'GET_PURCHASES_SUCCESS':
+        case actionTypes.GET_PURCHASES_SUCCESS:
             return {
                 ...state,
                 isLoadingPurchases: false,
@@ -87,7 +123,7 @@ const transactionReducer = (state = initialState, action) => {
                 purchasesError: null
             };
 
-        case 'GET_PURCHASES_FAILED':
+        case actionTypes.GET_PURCHASES_FAILED:
             return {
                 ...state,
                 isLoadingPurchases: false,
@@ -95,28 +131,29 @@ const transactionReducer = (state = initialState, action) => {
                 purchasesError: action.payload
             };
 
-        //  GET REVENUE 
-        case 'GET_REVENUE_START':
+        //  GET TRANSACTION HISTORY 
+        case actionTypes.GET_TRANSACTION_HISTORY_START:
             return {
                 ...state,
-                isLoadingRevenue: true,
-                revenueError: null
+                isLoadingHistory: true,
+                historyError: null
             };
 
-        case 'GET_REVENUE_SUCCESS':
+        case actionTypes.GET_TRANSACTION_HISTORY_SUCCESS:
             return {
                 ...state,
-                isLoadingRevenue: false,
-                providerRevenue: action.payload,
-                revenueError: null
+                isLoadingHistory: false,
+                transactions: action.payload.data || [],
+                transactionTotal: action.payload.total || 0,
+                historyError: null
             };
 
-        case 'GET_REVENUE_FAILED':
+        case actionTypes.GET_TRANSACTION_HISTORY_FAILED:
             return {
                 ...state,
-                isLoadingRevenue: false,
-                providerRevenue: 0,
-                revenueError: action.payload
+                isLoadingHistory: false,
+                transactions: [],
+                historyError: action.payload
             };
 
         default:

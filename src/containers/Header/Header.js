@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import _ from 'lodash'
 import * as actions from "../../store/actions";
 import Navigator from '../../components/Navigator';
-import { adminMenu, providerMenu } from './menuApp';
+import { adminMenu, providerMenu, consumerMenu } from './menuApp';
 import './Header.scss';
 import { LANGUAGES, USER_ROLE } from "../../utils";
 import { FormattedMessage } from 'react-intl';
@@ -32,6 +32,9 @@ class Header extends Component {
             }
             if (role === USER_ROLE.PROVIDER) {
                 menu = providerMenu;
+            }
+            if (role === USER_ROLE.CONSUMER) {
+                menu = consumerMenu;
             }
         }
         this.setState({
