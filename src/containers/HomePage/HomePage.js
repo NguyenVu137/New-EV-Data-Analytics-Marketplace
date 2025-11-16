@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import HomeHeader from './HomeHeader';
-import Specialty from './Section/Specialty';
-import CarBrands from './Section/CarBrands';
 import FeaturedData from './Section/FeaturedData';
 import About from './Section/About';
 import HomeFooter from './HomeFooter';
@@ -45,8 +43,6 @@ class HomePage extends Component {
             <div>
                 <HomeHeader onFilterChange={this.handleFilterChange} />
                 <FeaturedData ref={this.featuredDataRef} settings={settings} />
-                <Specialty settings={settings} />
-                <CarBrands settings={settings} />
                 <About />
                 <HomeFooter />
             </div>

@@ -10,13 +10,16 @@ import IntlProviderWrapper from "./hoc/IntlProviderWrapper";
 
 import { Provider } from 'react-redux';
 import reduxStore, { persistor } from './redux';
+import { PersistGate } from 'redux-persist/integration/react';
 
 const renderApp = () => {
     ReactDOM.render(
         <Provider store={reduxStore}>
-            <IntlProviderWrapper>
-                <App persistor={persistor}/>
-            </IntlProviderWrapper>
+            <PersistGate loading={null} persistor={persistor}>
+                <IntlProviderWrapper>
+                    <App persistor={persistor}/>
+                </IntlProviderWrapper>
+            </PersistGate>
         </Provider>,
         document.getElementById('root')
     ); 

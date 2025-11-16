@@ -23,6 +23,10 @@ class HomeHeader extends Component {
     handleAnalyticsClick = () => {
         this.props.history.push('/analytics');
     }
+
+    handlePurchaseHistoryClick = () => {
+        this.props.history.push('/purchase-history');
+    }
     
     render() {
         let language = this.props.language;
@@ -44,7 +48,7 @@ class HomeHeader extends Component {
                                 <div><b><FormattedMessage id="homeheader.datalist"/></b></div>
                                 <div></div>
                             </div>
-                            <div className="child-content">
+                            <div className="child-content" onClick={this.handlePurchaseHistoryClick}>
                                 <div><b><FormattedMessage id="homeheader.provider"/></b></div>
                                 <div></div>
                             </div>

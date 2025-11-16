@@ -12,7 +12,7 @@ const Navbar = ({ history }) => {
     };
 
     const handleProviderClick = () => {
-        // Add provider navigation
+        history.push('/purchase-history');
     };
 
     const handleAboutClick = () => {
@@ -40,7 +40,7 @@ const Navbar = ({ history }) => {
                         <div></div>
                     </div>
                     <div className="child-content" onClick={handleProviderClick}>
-                        <div><b>Nhà cung cấp</b></div>
+                        <div><b>Lịch sử mua</b></div>
                         <div></div>
                     </div>
                     <div className="child-content" onClick={handleAboutClick}>

@@ -8,15 +8,19 @@ const initialState = {
 const userReducer = (state = initialState, action) => {
     switch (action.type) {
         case actionTypes.USER_LOGIN_SUCCESS:
+            console.log('🔐 USER_LOGIN_SUCCESS reducer - action.userInfo:', action.userInfo);
+            
             // Save userId to localStorage for payment API calls
             if (action.userInfo && action.userInfo.user && action.userInfo.user.id) {
                 localStorage.setItem('userId', action.userInfo.user.id);
             }
-            return {
+            const newState = {
                 ...state,
                 isLoggedIn: true,
                 userInfo: action.userInfo
-            }
+            };
+            console.log('✅ New Redux state:', newState);
+            return newState;
         case actionTypes.USER_LOGIN_FAIL:
             localStorage.removeItem('userId');
             return {

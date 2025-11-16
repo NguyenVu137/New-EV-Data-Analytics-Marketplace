@@ -1,10 +1,11 @@
 export const path = {
-    HOME: '/',
-    HOMEPAGE: '/home',
+    HOME: '/home',
     LOGIN: '/login',
     LOG_OUT: '/logout',
     SYSTEM: '/system',
+    PROVIDER: '/provider',
     ANALYTICS: '/analytics',
+    PURCHASE_HISTORY: '/purchase-history',
     DATASET_DETAIL: '/home/:id',
     DATASETS: '/home',
     SEARCH: '/search',

@@ -21,9 +21,14 @@ class Login extends Component {
     }
 
     componentDidMount() {
-        // Nếu đã login rồi, redirect về home
+        // Nếu đã login rồi, redirect dựa theo role
         if (this.props.isLoggedIn) {
-            this.props.navigate('/home');
+            // Check if user has admin role (roleId === 'R1' or roleId === 1)
+            if (this.props.userInfo && this.props.userInfo.user && (this.props.userInfo.user.roleId === 'R1' || this.props.userInfo.user.roleId === 1)) {
+                this.props.navigate('/system/user-manage');
+            } else {
+                this.props.navigate('/home');
+            }
         }
     }
  
@@ -46,27 +51,65 @@ class Login extends Component {
 
         try {
             let data = await handleLoginApi(this.state.username, this.state.password);
+            console.log('📱 1. Login API response:', JSON.stringify(data, null, 2));
+            
             if (data && data.errCode !== 0) {
                 this.setState({
                     errMessage: data.message
                 })
             }
             if (data && data.errCode === 0) {
-                this.props.userLoginSuccess(data);
+                console.log('✅ 2. Login success! Dispatching to Redux...');
+                console.log('✅ 2a. User data:', JSON.stringify(data.user, null, 2));
+                console.log('✅ 2b. User roleId:', data.user?.roleId, '| Type:', typeof data.user?.roleId);
                 
-                // Check if there's a pending purchase
-                const pendingPurchase = sessionStorage.getItem('pendingPurchase');
-                if (pendingPurchase) {
-                    const { datasetId, packageType } = JSON.parse(pendingPurchase);
-                    sessionStorage.removeItem('pendingPurchase');
-                    // Redirect to payment page
-                    this.props.navigate(`/payment/${datasetId}?package=${packageType}`);
-                } else {
-                    // Redirect to home after successful login
-                    this.props.navigate('/home');
-                }
+                // Dispatch to Redux FIRST
+                this.props.userLoginSuccess(data);
+                console.log('✅ 3. Dispatched userLoginSuccess');
+                
+                // Check Redux state immediately (might not be updated yet)
+                console.log('✅ 4. Redux props immediately after dispatch:', {
+                    isLoggedIn: this.props.isLoggedIn,
+                    userInfo: this.props.userInfo
+                });
+                
+                // Wait for Redux state to update
+                setTimeout(() => {
+                    const currentState = this.props.userInfo;
+                    const roleId = currentState?.user?.roleId;
+                    
+                    console.log('✅ 5. Redux state after 500ms wait:', JSON.stringify(currentState, null, 2));
+                    console.log('✅ 5a. Retrieved roleId:', roleId, '| Type:', typeof roleId);
+                    
+                    // Determine redirect path based on user role
+                    let redirectPath = '/home'; // default path for regular users
+                    
+                    console.log('✅ 6. Checking role...');
+                    console.log('   - roleId === 1 ?', roleId === 1);
+                    console.log('   - roleId === "R1" ?', roleId === 'R1');
+                    
+                    if (roleId === 1 || roleId === 'R1') {
+                        redirectPath = '/system/user-manage';
+                        console.log('✅ 7. ADMIN ROLE DETECTED! Redirecting to:', redirectPath);
+                    } else {
+                        console.log('✅ 7. Regular user. Redirecting to:', redirectPath);
+                    }
+                    
+                    // Check if there's a pending purchase
+                    const pendingPurchase = sessionStorage.getItem('pendingPurchase');
+                    if (pendingPurchase) {
+                        const { datasetId, packageType } = JSON.parse(pendingPurchase);
+                        sessionStorage.removeItem('pendingPurchase');
+                        console.log('💳 Pending purchase found, redirecting to payment');
+                        this.props.navigate(`/payment/${datasetId}?package=${packageType}`);
+                    } else {
+                        console.log('➡️ 8. Final redirect to:', redirectPath);
+                        this.props.navigate(redirectPath);
+                    }
+                }, 500);
             }
         } catch (error) {
+            console.error('❌ Login error:', error);
             if (error.response) {
                 if (error.response.data) {
                     this.setState({
@@ -145,7 +188,8 @@ class Login extends Component {
 const mapStateToProps = state => {
     return {
         language: state.app.language,
-        isLoggedIn: state.user?.isLoggedIn
+        isLoggedIn: state.user?.isLoggedIn,
+        userInfo: state.user?.userInfo
     };
 };
 

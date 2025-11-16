@@ -1,29 +1,22 @@
 import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
+import HomePage from '../containers/HomePage/HomePage';
 
 class Home extends Component {
 
     render() {
-        const { isLoggedIn } = this.props;
-        let linkToRedirect = isLoggedIn ? '/system/user-manage' : '/home';
-
-        return (
-            <Redirect to={linkToRedirect} />
-        ); 
+        console.log('🏠 Home.js render - location:', window.location.pathname);
+        // Just render HomePage - role-based logic is handled in System/Provider components
+        return <HomePage />;
     }
 
 }
 
 const mapStateToProps = state => {
     return {
-        isLoggedIn: state.user.isLoggedIn
+        isLoggedIn: state.user.isLoggedIn,
+        userInfo: state.user.userInfo
     };
 };
 
-const mapDispatchToProps = dispatch => {
-    return {
-    };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Home);
+export default connect(mapStateToProps)(Home);

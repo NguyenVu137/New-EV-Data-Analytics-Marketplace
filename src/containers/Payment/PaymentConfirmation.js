@@ -102,7 +102,7 @@ const PaymentConfirmation = () => {
             <div className="success-actions">
               <button 
                 className="button primary"
-                onClick={() => history.push('/my-datasets')}
+                onClick={() => history.push('/purchase-history')}
               >
                 <i className="fas fa-download"></i> Xem lịch sử mua
               </button>

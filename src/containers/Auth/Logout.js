@@ -22,7 +22,7 @@ class Logout extends Component {
         
         // Redirect to home
         setTimeout(() => {
-            window.location.href = '/';
+            window.location.href = '/home';
         }, 500);
     }
 

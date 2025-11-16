@@ -2,7 +2,7 @@
     "homeheader": {
         "homepage": "Trang chủ",
         "datalist": "Phân tích dữ liệu",
-        "provider": "Nhà cung cấp",
+        "provider": "Lịch sử mua",
         "about": "Giới thiệu",
         "support": "Hỗ trợ",
         "welcome": "Xin chào, "
@@ -59,6 +59,24 @@
         "choose-right": "Chọn nhà cung cấp",
         "choose-date": "Chọn thời gian",
         "save": "Lưu"
+    },
+
+    "purchase-history": {
+        "title": "Lịch sử mua hàng",
+        "no-purchases": "Không tìm thấy lịch sử mua hàng",
+        "dataset-name": "Tên bộ dữ liệu",
+        "purchase-date": "Ngày mua",
+        "package-type": "Loại gói",
+        "price": "Giá",
+        "actions": "Hành động",
+        "download": "Tải",
+        "not-available": "Không có"
+    },
+
+    "common": {
+        "loading": "Đang tải...",
+        "please-login": "Vui lòng đăng nhập",
+        "downloading": "Đang tải..."
     }
     
 }

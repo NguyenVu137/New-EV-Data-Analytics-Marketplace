@@ -5,7 +5,7 @@ import { push } from 'connected-react-router';
 import * as actions from "../../store/actions";
 import { persistor } from '../../redux';
 import Navigator from '../../components/Navigator';
-import { adminMenu } from './menuApp';
+import { adminMenu, providerMenu } from './menuApp';
 import './Header.scss';
 import { LANGUAGES } from "../../utils";
 import { FormattedMessage } from 'react-intl';
@@ -38,11 +38,25 @@ class Header extends Component {
 
     render() {
         const { language, userInfo } = this.props;
+        
+        // Determine menu based on user role
+        let menus = adminMenu;
+        if (userInfo && userInfo.user) {
+            const roleId = userInfo.user.roleId;
+            if (roleId === 'R2' || roleId === 2) {
+                menus = providerMenu;
+            } else if (roleId === 'R3' || roleId === 3) {
+                menus = []; // Regular user - no menu
+            } else {
+                menus = adminMenu;
+            }
+        }
+        
         return (
             <div className="header-container">
                 {/* thanh navigator */}
                 <div className="header-tabs-container">
-                    <Navigator menus={adminMenu} />
+                    <Navigator menus={menus} />
                 </div>
 
                 <div className="languages">
