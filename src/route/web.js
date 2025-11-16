@@ -26,7 +26,8 @@ let initWebRoutes = (app) => {
     router.get('/api/top-data-home', dataController.getTopDataHome);
     router.get('/api/get-all-datas', dataController.getAllDatas);
     router.post('/api/save-infor-datas', dataController.postInforDatas);
-    router.get('/api/get-detail-data-by-id', dataController.getDetailDataById)
+    router.get('/api/get-detail-data-by-id', dataController.getDetailDataById);
+    router.post('/api/bulk-create-schedule', dataController.bulkCreateSchedule);
 
     return app.use("/", router);
 }
