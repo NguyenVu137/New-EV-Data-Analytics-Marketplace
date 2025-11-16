@@ -4,7 +4,14 @@ export const path = {
     LOGIN: '/login',
     LOG_OUT: '/logout',
     SYSTEM: '/system',
-    DETAIL_DATA: '/detail-data/:id'
+    ANALYTICS: '/analytics',
+    DATASET_DETAIL: '/home/:id',
+    DATASETS: '/home',
+    SEARCH: '/search',
+    PAYMENT: '/payment/:orderId',
+    PAYMENT_CONFIRMATION: '/payment_confirmation/:paymentId',
+    MY_ORDERS: '/my-orders',
+    MY_SUBSCRIPTIONS: '/my-subscriptions'
 };
 
 export const LANGUAGES = {
@@ -27,9 +34,3 @@ export const YesNoObj = {
     YES: 'Y',
     NO: 'N'
 } 
-
-export const USER_ROLE = {
-    ADMIN: 'R1',
-    PROVIDER: 'R2',
-    CONSUMER: 'R3'
-}

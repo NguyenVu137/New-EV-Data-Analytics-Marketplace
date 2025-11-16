@@ -1,7 +1,7 @@
 {
     "homeheader": {
         "homepage": "Trang chủ",
-        "datalist": "Danh mục dữ liệu",
+        "datalist": "Phân tích dữ liệu",
         "provider": "Nhà cung cấp",
         "about": "Giới thiệu",
         "support": "Hỗ trợ",
@@ -13,7 +13,7 @@
         "child1": "Hành vi lái xe",
         "child2": "Hiệu suất pin",
         "child3": "Dữ liệu môi trường",
-        "child4": "Dữ liệu nhà cung cấp",
+        "child4": "Giao dịch V2G",
         "child5": "Sử dụng trạm sạc"
     },
     "menu": {

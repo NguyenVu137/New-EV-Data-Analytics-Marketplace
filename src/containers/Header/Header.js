@@ -1,63 +1,55 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
 
 import * as actions from "../../store/actions";
+import { persistor } from '../../redux';
 import Navigator from '../../components/Navigator';
-import { adminMenu, providerMenu } from './menuApp';
+import { adminMenu } from './menuApp';
 import './Header.scss';
-import { LANGUAGES, USER_ROLE } from "../../utils";
+import { LANGUAGES } from "../../utils";
 import { FormattedMessage } from 'react-intl';
-import _ from 'lodash';
+
 
 class Header extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            menuApp: []
-        }
-    }
 
     handleChangeLanguage = (language) => {
         this.props.changeLanguageAppRedux(language)
     }
 
-    componentDidMount() {
-        let { userInfo } = this.props;
-        let menu = [];
-        if (userInfo && !_.isEmpty(userInfo)) {
-            let role = userInfo.user.roleId;
-            if (role === USER_ROLE.ADMIN) {
-                menu = adminMenu;
-            }
-
-            if (role === USER_ROLE.PROVIDER) {
-                menu = providerMenu;
-            }
-             
-        }
-
-        console.log(menu)
-       
-
-        this.setState({
-            menuApp: menu
-        })
+    handleLogout = () => {
+        this.props.processLogout();
+        
+        // Purge persistor to clear all persisted state
+        persistor.purge();
+        
+        // Clear localStorage
+        localStorage.removeItem('userId');
+        localStorage.removeItem('persist:user');
+        localStorage.removeItem('persist:root');
+        localStorage.removeItem('persist:app');
+        
+        // Clear sessionStorage
+        sessionStorage.clear();
+        
+        // Redirect to login
+        this.props.navigate('/login');
     }
 
     render() {
-        const { processLogout, language, userInfo } = this.props;
+        const { language, userInfo } = this.props;
         return (
             <div className="header-container">
                 {/* thanh navigator */}
                 <div className="header-tabs-container">
-                    <Navigator menus={this.state.menuApp} />
+                    <Navigator menus={adminMenu} />
                 </div>
 
                 <div className="languages">
                     <span className="welcome">
                         <FormattedMessage id="homeheader.welcome" />
                         {userInfo && userInfo.user.firstName ? userInfo.user.firstName : ''}!
-                    </span>
+                        </span>
                     <span className={language === LANGUAGES.VI ? "language-vi active" : "language-vi"}
                         onClick={() => this.handleChangeLanguage(LANGUAGES.VI)}
                     >VN
@@ -67,7 +59,7 @@ class Header extends Component {
                         EN
                     </span>
                     {/* nút logout */}
-                    <div className="btn btn-logout" onClick={processLogout} title="Log out">
+                    <div className="btn btn-logout" onClick={this.handleLogout} title="Log out">
                         <i className="fas fa-sign-out-alt"></i>
                     </div>
                 </div>
@@ -87,6 +79,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
+        navigate: (path) => dispatch(push(path)),
         processLogout: () => dispatch(actions.processLogout()),
         changeLanguageAppRedux: (language) => dispatch(actions.changeLanguageApp(language))
     };

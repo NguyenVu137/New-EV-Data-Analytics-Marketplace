@@ -1,0 +1,26 @@
+.dataset-detail .detail-table {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.dataset-detail .detail-table td {
+  padding: 8px;
+  vertical-align: top;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dataset-detail .detail-table td.label {
+  width: 150px;
+  font-weight: 500;
+  color: #666;
+}
+
+.dataset-detail .actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.dataset-detail .purchase-modal-content .detail-table {
+  margin-bottom: 0;
+}

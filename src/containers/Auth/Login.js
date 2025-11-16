@@ -19,6 +19,13 @@ class Login extends Component {
             errMessage: ''
         }
     }
+
+    componentDidMount() {
+        // Nếu đã login rồi, redirect về home
+        if (this.props.isLoggedIn) {
+            this.props.navigate('/home');
+        }
+    }
  
     handleOnChangeUsername = (event) => {
         this.setState({
@@ -45,7 +52,19 @@ class Login extends Component {
                 })
             }
             if (data && data.errCode === 0) {
-                this.props.userLoginSuccess(data)
+                this.props.userLoginSuccess(data);
+                
+                // Check if there's a pending purchase
+                const pendingPurchase = sessionStorage.getItem('pendingPurchase');
+                if (pendingPurchase) {
+                    const { datasetId, packageType } = JSON.parse(pendingPurchase);
+                    sessionStorage.removeItem('pendingPurchase');
+                    // Redirect to payment page
+                    this.props.navigate(`/payment/${datasetId}?package=${packageType}`);
+                } else {
+                    // Redirect to home after successful login
+                    this.props.navigate('/home');
+                }
             }
         } catch (error) {
             if (error.response) {
@@ -125,7 +144,8 @@ class Login extends Component {
 
 const mapStateToProps = state => {
     return {
-        language: state.app.language
+        language: state.app.language,
+        isLoggedIn: state.user?.isLoggedIn
     };
 };
 
