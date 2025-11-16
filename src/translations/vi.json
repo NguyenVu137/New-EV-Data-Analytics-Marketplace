@@ -52,6 +52,14 @@
     "homepage": {
         "featured-data": "Dữ liệu nổi bật tuần qua",
         "more-info": "Xem thêm"
+    },
+
+    "manage-use-rights": {
+        "title": "Quản lý quyền sử dụng của nhà cung cấp",
+        "choose-right": "Chọn quyền sử dụng",
+        "choose-date": "Chọn thời gian",
+        "save": "Lưu"
     }
+    
 }
 

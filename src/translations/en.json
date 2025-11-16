@@ -52,5 +52,12 @@
     "homepage": {
         "featured-data": "Last week's featured data",
         "more-info": "More info"
+    },
+
+    "manage-use-rights": {
+        "title": "Supplier usage rights management",
+        "choose-right": "Choose-right",
+        "choose-date": "Choose-date",
+        "save": "Save"
     }
 }
