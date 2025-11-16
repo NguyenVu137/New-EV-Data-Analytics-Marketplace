@@ -28,7 +28,7 @@ async function importDatasets() {
             name: row.name,
             data_type: row.data_type,
             region: row.region,
-            upload_date: new Date(row.upload_date),
+            //upload_date: new Date(row.upload_date),
             basic_price: parseFloat(row.basic_price),
             standard_price: parseFloat(row.standard_price),
             premium_price: parseFloat(row.premium_price),
@@ -43,7 +43,7 @@ async function importDatasets() {
             battery_type: row.battery_type,
             format: row.format,
             description: row.description,
-            createdAt: new Date(),
+            createdAt: new Date(row.upload_date),
             updatedAt: new Date()
         }));
         

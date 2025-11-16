@@ -1,6 +1,7 @@
 'use strict';
 const { Model } = require('sequelize');
 
+// Định nghĩa mô hình AnalyticsMonth
 module.exports = (sequelize, DataTypes) => {
   class AnalyticsMonth extends Model {
     static associate(models) {
@@ -10,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
   }
-
+  // Khởi tạo Model AnalyticsMonth với các trường dữ liệu
   AnalyticsMonth.init({
     id: {
       type: DataTypes.INTEGER,

@@ -1,6 +1,6 @@
 'use strict';
 const { Model } = require('sequelize');
-
+// Định nghĩa mô hình Order
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
     static associate(models) {
@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       Order.hasMany(models.Transaction, { foreignKey: 'orderId', as: 'transactions' });
     }
   }
-
+  // Khởi tạo Model Order với các trường dữ liệu
   Order.init(
     {
       id: {

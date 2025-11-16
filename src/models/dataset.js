@@ -4,12 +4,13 @@ const {
 } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
+    // Định nghĩa mô hình Dataset
     class Dataset extends Model {
         static associate(models) {
             // define associations here
         }
     }
-
+    // Khởi tạo Model Dataset với các trường dữ liệu
     Dataset.init({
         name: {
             type: DataTypes.STRING,
@@ -21,10 +22,6 @@ module.exports = (sequelize, DataTypes) => {
         },
         region: {
             type: DataTypes.STRING,
-            allowNull: false
-        },
-        upload_date: {
-            type: DataTypes.DATE,
             allowNull: false
         },
         basic_price: {

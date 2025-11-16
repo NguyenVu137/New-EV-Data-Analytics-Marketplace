@@ -1,6 +1,6 @@
 'use strict';
 const { Model } = require('sequelize');
-
+// Định nghĩa mô hình Payment
 module.exports = (sequelize, DataTypes) => {
   class Payment extends Model {
     static associate(models) {
@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       Payment.hasMany(models.Transaction, { foreignKey: 'paymentId', as: 'transactions' });
     }
   }
-
+  // Khởi tạo Model Payment với các trường dữ liệu
   Payment.init(
     {
       id: {

@@ -1,6 +1,6 @@
 'use strict';
 const { Model } = require('sequelize');
-
+// Định nghĩa mô hình Transaction
 module.exports = (sequelize, DataTypes) => {
   class Transaction extends Model {
     static associate(models) {
@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       Transaction.belongsTo(models.Payment, { foreignKey: 'paymentId', as: 'payment' });
     }
   }
-
+  // Khởi tạo Model Transaction với các trường dữ liệu
   Transaction.init(
     {
       id: {

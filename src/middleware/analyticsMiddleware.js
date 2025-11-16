@@ -1,4 +1,4 @@
-import { calculateAnalyticsMetrics } from "../services/analyticsService";
+const { calculateMonthlyAnalytics } = require("../services/analyticsService");
 
 /**
  * Middleware để trigger recalculate analytics sau khi thay đổi datasets
@@ -20,7 +20,7 @@ const triggerAnalyticsRecalculation = async (req, res, next) => {
                 console.log(`[Middleware] Dataset changed, triggering analytics recalculation...`);
                 
                 // Async recalculate - không block response
-                calculateAnalyticsMetrics()
+                calculateMonthlyAnalytics()
                     .then(() => console.log(`[Middleware] Analytics recalculated successfully`))
                     .catch(err => console.error(`[Middleware] Error recalculating analytics:`, err));
             }
@@ -35,4 +35,4 @@ const triggerAnalyticsRecalculation = async (req, res, next) => {
     next();
 };
 
-export default triggerAnalyticsRecalculation;
+module.exports = triggerAnalyticsRecalculation;

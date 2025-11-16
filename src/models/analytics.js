@@ -2,7 +2,7 @@
 const {
     Model
 } = require('sequelize');
-
+// Định nghĩa mô hình Analytics
 module.exports = (sequelize, DataTypes) => {
     class Analytics extends Model {
         static associate(models) {
@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
             });
         }
     }
-
+    // Khởi tạo Model Analytics với các trường dữ liệu
     Analytics.init({
         timestamp: {
             type: DataTypes.DATE,

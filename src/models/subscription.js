@@ -1,6 +1,6 @@
 'use strict';
 const { Model } = require('sequelize');
-
+// Định nghĩa mô hình Subscription
 module.exports = (sequelize, DataTypes) => {
   class Subscription extends Model {
     static associate(models) {
@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       Subscription.belongsTo(models.Order, { foreignKey: 'orderId', as: 'order' });
     }
   }
-
+  // Khởi tạo Model Subscription với các trường dữ liệu
   Subscription.init(
     {
       id: {

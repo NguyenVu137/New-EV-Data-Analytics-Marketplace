@@ -22,27 +22,24 @@ module.exports = {
             },
             dataId: {
                 allowNull: true,
-                type: Sequelize.INTEGER
-            },
-            specialtyId: {
-                allowNull: true,
-                type: Sequelize.INTEGER
-            },
-            clinicId: {
-                allowNull: true,
-                type: Sequelize.INTEGER
-            },
-            providerId: {
-                allowNull: true,
-                type: Sequelize.INTEGER
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'datasets',
+                    key: 'id'
+                },
+                onDelete: 'CASCADE',
+                onUpdate: 'CASCADE',
+                comment: 'Liên kết đến Dataset'
             },
             createdAt: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.fn('now')
             },
             updatedAt: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.fn('now')
             }
         });
     },
