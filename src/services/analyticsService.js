@@ -1,6 +1,6 @@
 import axios from '../axios';
 
-
+// MARKET ANALYTICS
 const getMarketAnalyticsService = () => {
     return axios.get('/api/analytics/market');
 };
@@ -29,12 +29,30 @@ const getMarketOverviewService = () => {
 const getTrendingStatsService = (days = 7) => {
     return axios.get(`/api/analytics/trending?days=${days}`);
 };
+// AI INSIGHTS
+const getAIInsightsService = (forceRefresh = false) => {
+    return axios.get(`/api/analytics/ai-insights?refresh=${forceRefresh}`);
+};
+
+const regenerateAIInsightsService = () => {
+    return axios.post('/api/analytics/ai-insights/regenerate');
+};
+
+const clearAIInsightsCacheService = () => {
+    return axios.delete('/api/analytics/ai-insights/cache');
+};
 
 export {
+    // Market Analytics
     getMarketAnalyticsService,
     getTopDatasetsService,
     getCategoryStatsService,
     getPackageStatsService,
     getMarketOverviewService,
-    getTrendingStatsService
+    getTrendingStatsService,
+
+    // AI Insights
+    getAIInsightsService,
+    regenerateAIInsightsService,
+    clearAIInsightsCacheService
 };

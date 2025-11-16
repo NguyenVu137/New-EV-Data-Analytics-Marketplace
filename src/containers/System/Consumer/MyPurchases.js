@@ -114,16 +114,11 @@ const MyPurchases = () => {
                             <div className="purchase-footer">
                                 <button
                                     className="btn-view-detail"
-                                    onClick={() => history.push(`/dataset/detail/${transaction.dataset?.id}`)}
+                                    onClick={() => history.push(`/detail-data/${transaction.dataset?.id}`)}
                                 >
                                     <i className="fa fa-eye"></i> Xem chi tiết
                                 </button>
-                                <button
-                                    className="btn-download"
-                                    onClick={() => history.push(`/dataset/detail/${transaction.dataset?.id}`)}
-                                >
-                                    <i className="fa fa-download"></i> Download
-                                </button>
+
                             </div>
                         </div>
                     ))}

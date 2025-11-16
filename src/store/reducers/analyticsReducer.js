@@ -10,7 +10,11 @@ const initialState = {
     categoryStats: [],
     packageStats: [],
     marketOverview: null,
-    trendingStats: []
+    trendingStats: [],
+
+    isLoadingAIInsights: false,
+    aiInsights: null,
+    aiInsightsError: null
 };
 
 const analyticsReducer = (state = initialState, action) => {
@@ -55,6 +59,34 @@ const analyticsReducer = (state = initialState, action) => {
                 topInterestDatasets: []
             };
 
+        case actionTypes.FETCH_AI_INSIGHTS_START:
+            return {
+                ...state,
+                isLoadingAIInsights: true,
+                aiInsightsError: null
+            };
+
+        case actionTypes.FETCH_AI_INSIGHTS_SUCCESS:
+            return {
+                ...state,
+                isLoadingAIInsights: false,
+                aiInsights: action.payload,
+                aiInsightsError: null
+            };
+
+        case actionTypes.FETCH_AI_INSIGHTS_FAILED:
+            return {
+                ...state,
+                isLoadingAIInsights: false,
+                aiInsightsError: action.payload
+            };
+
+        case actionTypes.CLEAR_AI_INSIGHTS:
+            return {
+                ...state,
+                aiInsights: null,
+                aiInsightsError: null
+            };
         default:
             return state;
     }

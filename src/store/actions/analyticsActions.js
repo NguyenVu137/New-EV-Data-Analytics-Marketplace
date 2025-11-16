@@ -5,9 +5,12 @@ import {
     getCategoryStatsService,
     getPackageStatsService,
     getMarketOverviewService,
-    getTrendingStatsService
+    getTrendingStatsService,
+    getAIInsightsService,
+    regenerateAIInsightsService,
+    clearAIInsightsCacheService
 } from '../../services/analyticsService';
-
+// MARKET ANALYTICS ACTIONS 
 export const fetchMarketAnalytics = () => {
     return async (dispatch) => {
         dispatch({ type: actionTypes.FETCH_MARKET_ANALYTICS_START });
@@ -109,6 +112,92 @@ export const fetchTrendingStats = (days = 7) => {
             return { success: true, data: res.data };
         } catch (error) {
             console.error('fetchTrendingStats error:', error);
+            return { success: false, message: error.response?.data?.message || 'Server error' };
+        }
+    };
+};
+
+//  AI INSIGHTS ACTIONS 
+
+export const fetchAIInsights = (forceRefresh = false) => {
+    return async (dispatch) => {
+        dispatch({ type: actionTypes.FETCH_AI_INSIGHTS_START });
+
+        try {
+            const res = await getAIInsightsService(forceRefresh);
+
+            if (res && res.errCode === 0) {
+                dispatch({
+                    type: actionTypes.FETCH_AI_INSIGHTS_SUCCESS,
+                    payload: res.data
+                });
+                return { success: true, data: res.data };
+            } else {
+                dispatch({
+                    type: actionTypes.FETCH_AI_INSIGHTS_FAILED,
+                    payload: res.message || 'Failed to fetch AI insights'
+                });
+                return { success: false, message: res.message };
+            }
+        } catch (error) {
+            dispatch({
+                type: actionTypes.FETCH_AI_INSIGHTS_FAILED,
+                payload: error.response?.data?.message || error.message
+            });
+            console.error('fetchAIInsights error:', error);
+            return {
+                success: false,
+                message: error.response?.data?.message || 'Server error'
+            };
+        }
+    };
+};
+
+export const regenerateAIInsights = () => {
+    return async (dispatch) => {
+        dispatch({ type: actionTypes.FETCH_AI_INSIGHTS_START });
+
+        try {
+            const res = await regenerateAIInsightsService();
+
+            if (res && res.errCode === 0) {
+                dispatch({
+                    type: actionTypes.FETCH_AI_INSIGHTS_SUCCESS,
+                    payload: res.data
+                });
+                return { success: true, data: res.data };
+            } else {
+                dispatch({
+                    type: actionTypes.FETCH_AI_INSIGHTS_FAILED,
+                    payload: res.message
+                });
+                return { success: false, message: res.message };
+            }
+        } catch (error) {
+            dispatch({
+                type: actionTypes.FETCH_AI_INSIGHTS_FAILED,
+                payload: error.message
+            });
+            console.error('regenerateAIInsights error:', error);
+            return { success: false, message: error.response?.data?.message || 'Server error' };
+        }
+    };
+};
+
+export const clearAIInsightsCache = () => {
+    return async (dispatch) => {
+        try {
+            const res = await clearAIInsightsCacheService();
+
+            if (res && res.errCode === 0) {
+                // Clear state after cache cleared
+                dispatch({ type: actionTypes.CLEAR_AI_INSIGHTS });
+                return { success: true, message: res.message };
+            } else {
+                return { success: false, message: res.message };
+            }
+        } catch (error) {
+            console.error('clearAIInsightsCache error:', error);
             return { success: false, message: error.response?.data?.message || 'Server error' };
         }
     };

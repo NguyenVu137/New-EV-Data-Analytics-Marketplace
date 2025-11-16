@@ -12,6 +12,9 @@ class HomeHeader extends Component {
         this.props.changeLanguageAppRedux(language)
         //fire redux event : actions
     }
+    goToMyPurchases = () => {
+        this.props.history.push('/my-purchases');
+    };
     handleLogout = () => {
         this.props.processLogout();
         this.props.history.push('/home');
@@ -75,6 +78,11 @@ class HomeHeader extends Component {
                             </div>
                         </div>
                         <div className="right-content">
+                            {this.props.isLoggedIn && (
+                                <button className="btn-purchases" onClick={this.goToMyPurchases}>
+                                    <i className="fa-solid fa-receipt"></i> Lịch sử mua
+                                </button>
+                            )}
                             {this.props.isLoggedIn ? (
                                 <button className="btn-logout" onClick={this.handleLogout}>
                                     <FormattedMessage id="homeheader.logout" />

@@ -5,7 +5,8 @@ export const path = {
     REGISTER: '/register',
     LOG_OUT: '/logout',
     SYSTEM: '/system',
-    DETAIL_DATA: '/detail-data/:id'
+    DETAIL_DATA: '/detail-data/:id',
+    MY_PURCHASES: '/my-purchases'
 };
 
 export const LANGUAGES = {

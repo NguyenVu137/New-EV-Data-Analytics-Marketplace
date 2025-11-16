@@ -2,13 +2,14 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import * as actions from '../../../store/actions';
+import AIInsightsPanel from './AIInsightsPanel';
 import './MarketAnalyticsDashboard.scss';
 
 class MarketAnalyticsDashboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedTab: 'overview'
+            selectedTab: 'ai-insights' // 👈 DEFAULT TAB = AI Insights
         };
     }
 
@@ -297,6 +298,7 @@ class MarketAnalyticsDashboard extends Component {
                         📈 Thống kê thị trường dữ liệu
                     </h1>
                     <p className="dashboard-subtitle">
+                        Dữ liệu nào được quan tâm nhất trong EV Data Analytics Marketplace
                     </p>
                 </div>
 
@@ -306,6 +308,12 @@ class MarketAnalyticsDashboard extends Component {
                         onClick={() => this.handleTabChange('overview')}
                     >
                         Tổng quan
+                    </button>
+                    <button
+                        className={`tab-btn ${selectedTab === 'ai-insights' ? 'active' : ''}`}
+                        onClick={() => this.handleTabChange('ai-insights')}
+                    >
+                        🤖 AI Insights
                     </button>
                     <button
                         className={`tab-btn ${selectedTab === 'datasets' ? 'active' : ''}`}
@@ -334,6 +342,8 @@ class MarketAnalyticsDashboard extends Component {
                             {this.renderTopDatasets()}
                         </>
                     )}
+
+                    {selectedTab === 'ai-insights' && <AIInsightsPanel />}
 
                     {selectedTab === 'datasets' && this.renderTopDatasets()}
 

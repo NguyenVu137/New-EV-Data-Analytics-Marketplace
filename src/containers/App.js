@@ -11,6 +11,8 @@ import Register from './Auth/Register.js';
 import Login from './Auth/Login';
 import System from '../routes/System';
 import DatasetDetail from './System/Consumer/DatasetDetail.js';
+import MyPurchases from './System/Consumer/MyPurchases';
+
 import { CustomToastCloseButton } from '../components/CustomToast';
 import HomePage from './HomePage/HomePage.js'
 import CustomScrollbars from '../components/CustomScrollbars.js';
@@ -43,7 +45,7 @@ class App extends Component {
                             <CustomScrollbars style={{ height: '100vh', width: '100%' }}>
                                 <Switch>
                                     <Route path={path.DETAIL_DATA} component={DatasetDetail} />
-
+                                    <Route path={path.MY_PURCHASES} component={userIsAuthenticated(MyPurchases)} />
                                     <Route path={path.HOME} exact component={(Home)} />
                                     <Route path={path.LOGIN} component={userIsNotAuthenticated(Login)} />
                                     <Route path={path.REGISTER} component={userIsNotAuthenticated(Register)} />

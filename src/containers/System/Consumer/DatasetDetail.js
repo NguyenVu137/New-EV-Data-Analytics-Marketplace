@@ -145,7 +145,6 @@ const DatasetDetail = () => {
             <div className="dataset-hero">
                 <div className="hero-content">
                     <h1 className="dataset-title">{detailDataset.title}</h1>
-                    <p className="dataset-description">{detailDataset.description}</p>
 
                     <div className="hero-meta">
                         <div className="meta-item">
@@ -251,17 +250,7 @@ const DatasetDetail = () => {
                                     </div>
                                 )}
 
-                                {/* Debug info */}
-                                {process.env.NODE_ENV === 'development' && (
-                                    <div style={{ padding: '10px', background: '#f0f0f0', margin: '10px 0', fontSize: '12px' }}>
-                                        <strong>Debug Info:</strong>
-                                        <div>Files count: {detailDataset.files?.length || 0}</div>
-                                        <div>Files: {JSON.stringify(detailDataset.files?.map(f => ({
-                                            id: f.id,
-                                            name: f.file_name || f.fileName
-                                        })))}</div>
-                                    </div>
-                                )}
+
 
                                 {detailDataset.files?.length > 0 ? (
                                     <div className="files-list">

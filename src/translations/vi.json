@@ -8,7 +8,8 @@
         "welcome": "Xin chào, {name}",
         "login": "Đăng nhập",
         "logout": "Đăng xuất",
-        "register": "Đăng kí"
+        "register": "Đăng kí",
+        "MyPurchases": "Lịch sử mua"
     },
     "banner": {
         "title1": "NỀN TẢNG KẾT NỐI",

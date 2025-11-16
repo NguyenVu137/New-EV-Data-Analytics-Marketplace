@@ -8,7 +8,8 @@
         "welcome": "Welcome, {name}",
         "login": "Login",
         "logout": "Logout",
-        "register": "Register"
+        "register": "Register",
+        "MyPurchases": "MyPurchases"
     },
     "banner": {
         "title1": "CONNECTING PLATFORM",
