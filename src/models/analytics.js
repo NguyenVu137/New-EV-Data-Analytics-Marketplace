@@ -57,26 +57,42 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: 0,
             comment: 'Số lượng bản ghi dữ liệu được sử dụng để tính toán'
         },
-        region: {
-            type: DataTypes.STRING(255),
-            allowNull: true,
-            comment: 'Khu vực (nếu lọc theo khu vực)'
-        },
-        vehicle_type: {
-            type: DataTypes.STRING(255),
-            allowNull: true,
-            comment: 'Loại xe (nếu lọc theo loại xe)'
-        },
-        battery_type: {
-            type: DataTypes.STRING(255),
-            allowNull: true,
-            comment: 'Loại pin (nếu lọc theo loại pin)'
-        },
         period: {
             type: DataTypes.STRING(50),
             allowNull: false,
-            defaultValue: 'all',
-            comment: 'Kỳ tính (daily, weekly, monthly, all)'
+            defaultValue: 'monthly',
+            comment: 'Kỳ tính (monthly = tính theo tháng)'
+        },
+        // Trend fields - so sánh với tháng trước
+        soc_trend: {
+            type: DataTypes.FLOAT,
+            allowNull: true,
+            defaultValue: 0,
+            comment: 'Tỷ lệ thay đổi SoC so với tháng trước (%)'
+        },
+        soh_trend: {
+            type: DataTypes.FLOAT,
+            allowNull: true,
+            defaultValue: 0,
+            comment: 'Tỷ lệ thay đổi SoH so với tháng trước (%)'
+        },
+        co2_trend: {
+            type: DataTypes.FLOAT,
+            allowNull: true,
+            defaultValue: 0,
+            comment: 'Tỷ lệ thay đổi CO2 so với tháng trước (%)'
+        },
+        charges_trend: {
+            type: DataTypes.FLOAT,
+            allowNull: true,
+            defaultValue: 0,
+            comment: 'Tỷ lệ thay đổi số lần sạc so với tháng trước (%)'
+        },
+        distance_trend: {
+            type: DataTypes.FLOAT,
+            allowNull: true,
+            defaultValue: 0,
+            comment: 'Tỷ lệ thay đổi quãng đường so với tháng trước (%)'
         },
         month_id: {
             type: DataTypes.INTEGER,

@@ -9,7 +9,6 @@ router.get('/get-available-months', analyticsController.getAvailableMonths);
 router.get('/get-datasets-by-day', analyticsController.getDatasetsByDay);
 
 // New routes: Calculate analytics via API
-router.post('/calculate-overall', analyticsController.calculateOverallAnalytics);
 router.post('/calculate-monthly', analyticsController.calculateMonthlyAnalyticsAPI);
 
 /*

@@ -2,7 +2,7 @@ const db = require('../models');
 const { Op } = require('sequelize');
 
 /**
- * Payment Service - Xử lý logic thanh toán
+ * Xử lý logic thanh toán
  */
 class PaymentService {
   /**
@@ -10,13 +10,13 @@ class PaymentService {
    */
   async createOrder(userId, datasetId, packageType) {
     try {
-      // Validate dataset tồn tại
+      // Kiểm tra dataset tồn tại
       const dataset = await db.Dataset.findByPk(datasetId);
       if (!dataset) {
         throw new Error('Dataset không tồn tại');
       }
 
-      // Lấy giá dựa vào packageType
+      // Lấy giá dựa vào loại gói
       const priceMap = {
         basic: dataset.basic_price,
         standard: dataset.standard_price,
@@ -28,7 +28,7 @@ class PaymentService {
         throw new Error('Gói dữ liệu không hợp lệ');
       }
 
-      // Tạo order
+      // Tạo đơn hàng
       const order = await db.Order.create({
         userId,
         datasetId,
@@ -37,10 +37,10 @@ class PaymentService {
         status: 'pending'
       });
 
-      console.log(`[PaymentService] Order created: ${order.id} for user ${userId}`);
+      console.log(`[PaymentService] Đơn hàng được tạo: ${order.id} cho người dùng ${userId}`);
       return order;
     } catch (error) {
-      console.error('[PaymentService] Error creating order:', error.message);
+      console.error('[PaymentService] Lỗi tạo đơn hàng:', error.message);
       throw error;
     }
   }
@@ -50,7 +50,7 @@ class PaymentService {
    */
   async initiatePayment(orderId, paymentMethod) {
     try {
-      // Validate order tồn tại
+      // Kiểm tra đơn hàng tồn tại
       const order = await db.Order.findByPk(orderId, {
         include: [{ model: db.Dataset, as: 'dataset' }]
       });
@@ -63,10 +63,10 @@ class PaymentService {
         throw new Error('Trạng thái đơn hàng không hợp lệ');
       }
 
-      // Tạo transaction ID
+      // Tạo ID giao dịch
       const transactionId = `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      // Tạo payment record
+      // Tạo bản ghi thanh toán
       const payment = await db.Payment.create({
         orderId,
         paymentMethod,
@@ -75,7 +75,7 @@ class PaymentService {
         status: 'pending'
       });
 
-      console.log(`[PaymentService] Payment initiated: ${payment.id} (${transactionId})`);
+      console.log(`[PaymentService] Thanh toán được khởi tạo: ${payment.id} (${transactionId})`);
       return {
         id: payment.id,
         orderId,
@@ -84,59 +84,17 @@ class PaymentService {
         status: 'pending'
       };
     } catch (error) {
-      console.error('[PaymentService] Error initiating payment:', error.message);
+      console.error('[PaymentService] Lỗi khởi tạo thanh toán:', error.message);
       throw error;
     }
   }
 
-  /**
-   * Check trạng thái thanh toán
-   */
-  async checkPaymentStatus(paymentId) {
-    try {
-      const payment = await db.Payment.findByPk(paymentId, {
-        include: [
-          {
-            model: db.Order,
-            as: 'order',
-            include: [{ model: db.Dataset, as: 'dataset' }]
-          }
-        ]
-      });
 
-      if (!payment) {
-        throw new Error('Thanh toán không tồn tại');
-      }
-
-      console.log('[checkPaymentStatus] Payment found:', {
-        id: payment.id,
-        status: payment.status,
-        hasOrder: !!payment.order,
-        hasDataset: !!payment.order?.dataset
-      });
-
-      return {
-        id: payment.id,
-        orderId: payment.orderId,
-        transactionId: payment.transactionId,
-        status: payment.status,
-        amount: payment.amount,
-        order: {
-          id: payment.order.id,
-          datasetName: payment.order.dataset?.name || 'Dataset',
-          packageType: payment.order.packageType
-        }
-      };
-    } catch (error) {
-      console.error('[PaymentService] Error checking payment status:', error.message);
-      throw error;
-    }
-  }
 
   /**
-   * Xác nhận thanh toán thành công (từ webhook hoặc mock)
+   * Cập nhật trạng thái thanh toán (thành công hoặc thất bại)
    */
-  async confirmPayment(transactionId, paymentDetails = {}) {
+  async updatePaymentStatus(transactionId, status, details = {}) {
     try {
       const payment = await db.Payment.findOne({
         where: { transactionId }
@@ -150,87 +108,73 @@ class PaymentService {
         throw new Error('Thanh toán đã được xử lý');
       }
 
-      // Update payment
+      // Cập nhật thanh toán
       await payment.update({
-        status: 'success',
-        paymentGatewayResponse: paymentDetails
+        status,
+        paymentGatewayResponse: details
       });
 
-      // Lấy order
+      // Lấy đơn hàng
       const order = await db.Order.findByPk(payment.orderId);
-      await order.update({ status: 'confirmed' });
+      const orderStatus = status === 'success' ? 'confirmed' : 'failed';
+      await order.update({ status: orderStatus });
 
-      // Tạo subscription nếu là gói standard hoặc premium
-      if (['standard', 'premium'].includes(order.packageType)) {
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + 1); // +1 tháng
+      // Nếu thành công: tạo gói đăng ký + ghi sổ giao dịch
+      if (status === 'success') {
+        // Tạo gói đăng ký nếu là loại standard hoặc premium
+        if (['standard', 'premium'].includes(order.packageType)) {
+          const startDate = new Date();
+          const endDate = new Date();
+          endDate.setMonth(endDate.getMonth() + 1); // +1 tháng
 
-        await db.Subscription.create({
+          await db.Subscription.create({
+            userId: order.userId,
+            datasetId: order.datasetId,
+            packageType: order.packageType,
+            orderId: order.id,
+            startDate,
+            endDate,
+            status: 'active',
+            autoRenew: true
+          });
+
+          console.log(`[PaymentService] Gói đăng ký được tạo cho người dùng ${order.userId}`);
+        }
+
+        // Tạo bản ghi giao dịch
+        await db.Transaction.create({
           userId: order.userId,
-          datasetId: order.datasetId,
-          packageType: order.packageType,
           orderId: order.id,
-          startDate,
-          endDate,
-          status: 'active',
-          autoRenew: true
+          paymentId: payment.id,
+          type: 'purchase',
+          amount: payment.amount,
+          status: 'success',
+          description: `Mua gói ${order.packageType} - Dataset ${order.datasetId}`
         });
 
-        console.log(`[PaymentService] Subscription created for user ${order.userId}`);
+        console.log(`[PaymentService] Thanh toán được xác nhận: ${transactionId}`);
+      } else {
+        console.log(`[PaymentService] Thanh toán thất bại: ${transactionId} - ${details.reason || 'Không rõ'}`);
       }
 
-      // Tạo transaction record
-      await db.Transaction.create({
-        userId: order.userId,
-        orderId: order.id,
-        paymentId: payment.id,
-        type: 'purchase',
-        amount: payment.amount,
-        status: 'success',
-        description: `Mua gói ${order.packageType} - Dataset ${order.datasetId}`
-      });
-
-      console.log(`[PaymentService] Payment confirmed: ${transactionId}`);
       return { success: true, payment };
     } catch (error) {
-      console.error('[PaymentService] Error confirming payment:', error.message);
+      console.error('[PaymentService] Lỗi cập nhật trạng thái thanh toán:', error.message);
       throw error;
     }
   }
 
-  /**
-   * Hủy thanh toán
-   */
+  //
+  async confirmPayment(transactionId, paymentDetails = {}) {
+    return this.updatePaymentStatus(transactionId, 'success', paymentDetails);
+  }
+  //
   async failPayment(transactionId, reason = 'Unknown') {
-    try {
-      const payment = await db.Payment.findOne({
-        where: { transactionId }
-      });
-
-      if (!payment) {
-        throw new Error('Thanh toán không tồn tại');
-      }
-
-      await payment.update({
-        status: 'failed',
-        paymentGatewayResponse: { reason }
-      });
-
-      // Update order status
-      const order = await db.Order.findByPk(payment.orderId);
-      await order.update({ status: 'failed' });
-
-      console.log(`[PaymentService] Payment failed: ${transactionId} - ${reason}`);
-      return { success: true };
-    } catch (error) {
-      console.error('[PaymentService] Error failing payment:', error.message);
-      throw error;
-    }
+    return this.updatePaymentStatus(transactionId, 'failed', { reason });
   }
 
   /**
-   * Lấy lịch sử đơn hàng của user
+   * Lấy lịch sử đơn hàng của người dùng
    */
   async getUserOrders(userId, limit = 20, offset = 0) {
     try {
@@ -255,13 +199,13 @@ class PaymentService {
 
       return { orders: rows, total: count };
     } catch (error) {
-      console.error('[PaymentService] Error getting user orders:', error.message);
+      console.error('[PaymentService] Lỗi lấy lịch sử đơn hàng:', error.message);
       throw error;
     }
   }
 
   /**
-   * Lấy gói subscription của user
+   * Lấy gói đăng ký của người dùng
    */
   async getUserSubscriptions(userId) {
     try {
@@ -282,7 +226,7 @@ class PaymentService {
         order: [['endDate', 'ASC']]
       });
 
-      // Check expired subscriptions
+      // Kiểm tra gói đăng ký hết hạn
       const now = new Date();
       for (const sub of subscriptions) {
         if (sub.endDate < now && sub.status === 'active') {
@@ -292,38 +236,13 @@ class PaymentService {
 
       return subscriptions;
     } catch (error) {
-      console.error('[PaymentService] Error getting user subscriptions:', error.message);
+      console.error('[PaymentService] Lỗi lấy danh sách gói đăng ký:', error.message);
       throw error;
     }
   }
 
   /**
-   * Hủy subscription
-   */
-  async cancelSubscription(subscriptionId, userId) {
-    try {
-      const subscription = await db.Subscription.findByPk(subscriptionId);
-
-      if (!subscription) {
-        throw new Error('Subscription không tồn tại');
-      }
-
-      if (subscription.userId !== userId) {
-        throw new Error('Không có quyền hủy subscription này');
-      }
-
-      await subscription.update({ status: 'cancelled' });
-
-      console.log(`[PaymentService] Subscription cancelled: ${subscriptionId}`);
-      return { success: true };
-    } catch (error) {
-      console.error('[PaymentService] Error cancelling subscription:', error.message);
-      throw error;
-    }
-  }
-
-  /**
-   * Download dữ liệu từ subscription
+   * Tải xuống dữ liệu từ gói đăng ký
    */
   async downloadSubscriptionData(subscriptionId, userId) {
     try {
@@ -338,53 +257,71 @@ class PaymentService {
       });
 
       if (!subscription) {
-        throw new Error('Subscription không tồn tại');
+        throw new Error('Gói đăng ký không tồn tại');
       }
 
       if (subscription.userId !== userId) {
         throw new Error('Không có quyền truy cập dữ liệu này');
       }
 
-      // Mock CSV data - in production, fetch actual dataset data
-      const csvHeader = 'Dataset Name,Package Type,Start Date,End Date\n';
-      const csvRow = `"${subscription.dataset?.name || 'Dataset'}","${subscription.packageType}","${subscription.startDate}","${subscription.endDate}"\n`;
-      const csvData = csvHeader + csvRow;
+      if (subscription.status !== 'active') {
+        throw new Error('Gói đăng ký đã hết hạn hoặc bị hủy');
+      }
 
-      console.log(`[PaymentService] Data downloaded: ${subscriptionId}`);
+      // Lấy dữ liệu dataset thực tế từ gói đăng ký
+      const datasets = await db.Dataset.findAll({
+        where: { id: subscription.datasetId },
+        limit: 1000,
+        raw: true
+      });
+
+      if (datasets.length === 0) {
+        throw new Error('Không tìm thấy dữ liệu');
+      }
+
+      // Tạo nội dung CSV với dữ liệu thực tế
+      const csvHeader = 'ID,Name,Type,Region,SoC,SoH,CO2 Saved,Distance,Vehicle Type,Battery Type\n';
+      const csvRows = datasets.map(d => 
+        `"${d.id}","${d.name}","${d.data_type}","${d.region}",${d.soc},${d.soh},${d.co2_saved},${d.total_distance},"${d.vehicle_type}","${d.battery_type}"`
+      ).join('\n');
+      const csvData = csvHeader + csvRows + '\n';
+
+      console.log(`[PaymentService] Dữ liệu được tải xuống: ${subscriptionId}`);
       return csvData;
     } catch (error) {
-      console.error('[PaymentService] Error downloading data:', error.message);
+      console.error('[PaymentService] Lỗi tải xuống dữ liệu:', error.message);
       throw error;
     }
   }
 
   /**
-   * Mock credit card payment
+   * Thanh toán bằng thẻ tín dụng mock - dùng cho kiểm tra
    */
   async processMockCreditCard(transactionId, cardNumber) {
     const mockCards = {
-      '4111111111111111': { status: 'success', message: 'Thành công' },
-      '4000000000000002': { status: 'failed', message: 'Số dư không đủ' },
-      '4000002500003155': { status: 'failed', message: 'Thẻ hết hạn' }
+      '9111111111111111': { status: 'success', message: 'Thành công' },
+      '9111111111111112': { status: 'failed', message: 'Số dư không đủ' },
+      '9111111111111113': { status: 'failed', message: 'Thẻ hết hạn' }
     };
 
-    // Simulate 2-3s processing time
+    // Mô phỏng thời gian xử lý 2-3s
     await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
 
     const result = mockCards[cardNumber] || { status: 'failed', message: 'Thẻ không hợp lệ' };
 
     if (result.status === 'success') {
-      await this.confirmPayment(transactionId, {
+      await this.updatePaymentStatus(transactionId, 'success', {
         method: 'creditcard',
         cardLast4: cardNumber.slice(-4),
         timestamp: new Date()
       });
     } else {
-      await this.failPayment(transactionId, result.message);
+      await this.updatePaymentStatus(transactionId, 'failed', { reason: result.message });
     }
 
     return result;
   }
 }
 
+// Export singleton
 module.exports = new PaymentService();

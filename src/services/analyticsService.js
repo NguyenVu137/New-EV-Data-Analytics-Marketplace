@@ -1,146 +1,8 @@
 const db = require("../models/index");
 const { Op } = require('sequelize');
 
-/**
- * Calculate metrics from datasets and update analytics table
- */
-async function calculateAnalyticsMetrics() {
-    try {
-        console.log('[Analytics] Calculating metrics from datasets...');
-
-        // Get all datasets
-        const allDatasets = await db.Dataset.findAll({
-            attributes: [
-                'id', 'soc', 'soh', 'co2_saved', 'charging_frequency', 
-                'charging_time', 'total_distance', 'region', 'vehicle_type', 
-                'battery_type', 'createdAt'
-            ],
-            where: {
-                [Op.and]: [
-                    { soc: { [Op.not]: null } },
-                    { soh: { [Op.not]: null } }
-                ]
-            },
-            order: [['createdAt', 'DESC']],
-            raw: true
-        });
-
-        if (allDatasets.length === 0) {
-            console.log('[Analytics] No datasets found');
-            return { success: true, message: 'No datasets to calculate' };
-        }
-
-        console.log(`[Analytics] Found ${allDatasets.length} dataset records`);
-
-        // Calculate overall metrics
-        const overallAnalytics = calculateMetrics(allDatasets, null, null, null);
-        
-        // Clear existing analytics
-        await db.Analytics.destroy({ where: {} });
-
-        // Insert overall analytics
-        const analyticsRecord = await db.Analytics.create({
-            timestamp: new Date(),
-            average_soc: overallAnalytics.average_soc,
-            average_soh: overallAnalytics.average_soh,
-            total_co2_saved: overallAnalytics.total_co2_saved,
-            total_charges: overallAnalytics.total_charges,
-            average_charging_time: overallAnalytics.average_charging_time,
-            total_distance: overallAnalytics.total_distance,
-            data_count: overallAnalytics.data_count,
-            region: null,
-            vehicle_type: null,
-            battery_type: null,
-            period: 'all'
-        });
-
-        console.log('[Analytics] Created overall analytics record');
-
-        // Calculate by region
-        const regions = [...new Set(allDatasets.map(d => d.region).filter(Boolean))];
-        for (const region of regions) {
-            const regionDatasets = allDatasets.filter(d => d.region === region);
-            const regionAnalytics = calculateMetrics(regionDatasets, region, null, null);
-            
-            await db.Analytics.create({
-                timestamp: new Date(),
-                average_soc: regionAnalytics.average_soc,
-                average_soh: regionAnalytics.average_soh,
-                total_co2_saved: regionAnalytics.total_co2_saved,
-                total_charges: regionAnalytics.total_charges,
-                average_charging_time: regionAnalytics.average_charging_time,
-                total_distance: regionAnalytics.total_distance,
-                data_count: regionAnalytics.data_count,
-                region: region,
-                vehicle_type: null,
-                battery_type: null,
-                period: 'all'
-            });
-        }
-
-        // Calculate by vehicle type
-        const vehicleTypes = [...new Set(allDatasets.map(d => d.vehicle_type).filter(Boolean))];
-        for (const vehicleType of vehicleTypes) {
-            const vehicleDatasets = allDatasets.filter(d => d.vehicle_type === vehicleType);
-            const vehicleAnalytics = calculateMetrics(vehicleDatasets, null, vehicleType, null);
-            
-            await db.Analytics.create({
-                timestamp: new Date(),
-                average_soc: vehicleAnalytics.average_soc,
-                average_soh: vehicleAnalytics.average_soh,
-                total_co2_saved: vehicleAnalytics.total_co2_saved,
-                total_charges: vehicleAnalytics.total_charges,
-                average_charging_time: vehicleAnalytics.average_charging_time,
-                total_distance: vehicleAnalytics.total_distance,
-                data_count: vehicleAnalytics.data_count,
-                region: null,
-                vehicle_type: vehicleType,
-                battery_type: null,
-                period: 'all'
-            });
-        }
-
-        // Calculate by battery type
-        const batteryTypes = [...new Set(allDatasets.map(d => d.battery_type).filter(Boolean))];
-        for (const batteryType of batteryTypes) {
-            const batteryDatasets = allDatasets.filter(d => d.battery_type === batteryType);
-            const batteryAnalytics = calculateMetrics(batteryDatasets, null, null, batteryType);
-            
-            await db.Analytics.create({
-                timestamp: new Date(),
-                average_soc: batteryAnalytics.average_soc,
-                average_soh: batteryAnalytics.average_soh,
-                total_co2_saved: batteryAnalytics.total_co2_saved,
-                total_charges: batteryAnalytics.total_charges,
-                average_charging_time: batteryAnalytics.average_charging_time,
-                total_distance: batteryAnalytics.total_distance,
-                data_count: batteryAnalytics.data_count,
-                region: null,
-                vehicle_type: null,
-                battery_type: batteryType,
-                period: 'all'
-            });
-        }
-
-        const totalRecords = await db.Analytics.count();
-        console.log(`[Analytics] ✅ Calculation completed! Total records: ${totalRecords}`);
-
-        return { 
-            success: true, 
-            message: 'Analytics calculated successfully',
-            totalRecords: totalRecords
-        };
-
-    } catch (error) {
-        console.error('[Analytics] Error calculating metrics:', error);
-        throw error;
-    }
-}
-
-/**
- * Calculate metrics from datasets
- */
-function calculateMetrics(datasets, region = null, vehicleType = null, batteryType = null) {
+// Tính toán các chỉ số từ một tập hợp dữ liệu
+function calculateMetrics(datasets) {
     if (!datasets || datasets.length === 0) {
         return {
             average_soc: 0,
@@ -153,26 +15,8 @@ function calculateMetrics(datasets, region = null, vehicleType = null, batteryTy
         };
     }
 
-    const filteredDatasets = datasets.filter(d => {
-        if (region && d.region !== region) return false;
-        if (vehicleType && d.vehicle_type !== vehicleType) return false;
-        if (batteryType && d.battery_type !== batteryType) return false;
-        return true;
-    });
-
-    if (filteredDatasets.length === 0) {
-        return {
-            average_soc: 0,
-            average_soh: 0,
-            total_co2_saved: 0,
-            total_charges: 0,
-            average_charging_time: 0,
-            total_distance: 0,
-            data_count: 0
-        };
-    }
-
-    const totals = filteredDatasets.reduce((acc, d) => {
+    //Tính tổng các giá trị
+    const totals = datasets.reduce((acc, d) => {
         return {
             soc: acc.soc + (parseFloat(d.soc) || 0),
             soh: acc.soh + (parseFloat(d.soh) || 0),
@@ -183,30 +27,28 @@ function calculateMetrics(datasets, region = null, vehicleType = null, batteryTy
         };
     }, { soc: 0, soh: 0, co2_saved: 0, charges: 0, charging_time: 0, distance: 0 });
 
+    // Tính toán trung bình và tổng
     return {
-        average_soc: totals.soc / filteredDatasets.length,
-        average_soh: totals.soh / filteredDatasets.length,
+        average_soc: totals.soc / datasets.length,
+        average_soh: totals.soh / datasets.length,
         total_co2_saved: totals.co2_saved,
         total_charges: totals.charges,
-        average_charging_time: filteredDatasets.length > 0 ? totals.charging_time / filteredDatasets.length : 0,
+        average_charging_time: datasets.length > 0 ? totals.charging_time / datasets.length : 0,
         total_distance: totals.distance,
-        data_count: filteredDatasets.length
+        data_count: datasets.length
     };
 }
 
-/**
- * Calculate Analytics by Month with Trend Comparison
- * Groups datasets by month, calculates metrics, and compares with previous month
- */
+// Tính toán analytics hàng tháng và lưu vào database
 async function calculateMonthlyAnalytics() {
     try {
         console.log('[Analytics Monthly] Starting calculation...');
 
-        // Get all datasets with vehicle_type
+        // Get all datasets with required fields
         const allDatasets = await db.Dataset.findAll({
             attributes: [
                 'id', 'soc', 'soh', 'co2_saved', 'charging_frequency',
-                'charging_time', 'total_distance', 'createdAt', 'vehicle_type'
+                'charging_time', 'total_distance', 'createdAt'
             ],
             where: {
                 [Op.and]: [
@@ -253,7 +95,7 @@ async function calculateMonthlyAnalytics() {
             const [year, month] = monthString.split('-').map(Number);
 
             // Calculate metrics for this month
-            const metrics = calculateMetrics(datasets, null, null, null);
+            const metrics = calculateMetrics(datasets);
 
             // Calculate trends (compare with previous month)
             let trends = {
@@ -267,17 +109,17 @@ async function calculateMonthlyAnalytics() {
             if (i > 0) {
                 const previousMonthString = sortedMonths[i - 1];
                 const previousDatasets = groupedByMonth[previousMonthString];
-                const previousMetrics = calculateMetrics(previousDatasets, null, null, null);
+                const previousMetrics = calculateMetrics(previousDatasets);
 
-                // Calculate trend percentages
-                trends.soc_trend = calculateTrendPercentage(metrics.average_soc, previousMetrics.average_soc);
-                trends.soh_trend = calculateTrendPercentage(metrics.average_soh, previousMetrics.average_soh);
-                trends.co2_trend = calculateTrendPercentage(metrics.total_co2_saved, previousMetrics.total_co2_saved);
-                trends.charges_trend = calculateTrendPercentage(metrics.total_charges, previousMetrics.total_charges);
-                trends.distance_trend = calculateTrendPercentage(metrics.total_distance, previousMetrics.total_distance);
+                // Tính phần trăm xu hướng
+                trends.soc_trend = calculateTrendPercentage(previousMetrics.average_soc, metrics.average_soc);
+                trends.soh_trend = calculateTrendPercentage(previousMetrics.average_soh, metrics.average_soh);
+                trends.co2_trend = calculateTrendPercentage(previousMetrics.total_co2_saved, metrics.total_co2_saved);
+                trends.charges_trend = calculateTrendPercentage(previousMetrics.total_charges, metrics.total_charges);
+                trends.distance_trend = calculateTrendPercentage(previousMetrics.total_distance, metrics.total_distance);
             }
 
-            // Create or update AnalyticsMonth record
+            // Tao hoặc tìm bản ghi AnalyticsMonth
             const [monthRecord] = await db.AnalyticsMonth.findOrCreate({
                 where: { month_string: monthString },
                 defaults: {
@@ -287,7 +129,7 @@ async function calculateMonthlyAnalytics() {
                 }
             });
 
-            // Create Analytics record with trends
+            // Tạo bản ghi Analytics với xu hướng
             await db.Analytics.create({
                 timestamp: new Date(),
                 month_id: monthRecord.id,
@@ -326,9 +168,7 @@ async function calculateMonthlyAnalytics() {
     }
 }
 
-/**
- * Get available months for filter dropdown - Lấy từ bảng analytics_months
- */
+// Lấy các tháng có dữ liệu từ bảng analytics_months
 async function getAvailableMonths() {
     try {
         // Lấy từ bảng analytics_months
@@ -351,9 +191,7 @@ async function getAvailableMonths() {
     }
 }
 
-/**
- * Group datasets by day within a month
- */
+// Nhóm dữ liệu theo ngày trong một tháng
 function groupDatasetsByDay(datasets) {
     const groupedByDay = {};
     
@@ -367,7 +205,7 @@ function groupDatasetsByDay(datasets) {
 
     const timestamps = Object.keys(groupedByDay).sort();
     
-    // Calculate daily averages for SoC and SoH
+    // Tính giá trị trung bình cho mỗi ngày
     const socValues = timestamps.map(date => {
         const dayData = groupedByDay[date];
         const avgSoc = dayData.reduce((sum, item) => sum + (parseFloat(item.soc) || 0), 0) / dayData.length;
@@ -393,27 +231,23 @@ function groupDatasetsByDay(datasets) {
     };
 }
 
-/**
- * Calculate trend percentage between two values
- */
+// Tính phần trăm xu hướng giữa hai giá trị
+// Công thức: ((giá trị hiện tại - giá trị trước) / giá trị trước) * 100
 function calculateTrendPercentage(previousValue, currentValue) {
     if (!previousValue || previousValue === 0) return 0;
     return ((currentValue - previousValue) / previousValue) * 100;
 }
 
-/**
- * Determine trend arrow based on percentage
- */
+// Xác định mũi tên xu hướng dựa trên phần trăm
 function calculateTrendArrow(trendPercentage) {
     if (trendPercentage > 0) return '↑';
     if (trendPercentage < 0) return '↓';
     return '→';
 }
 
+// Export các hàm
 module.exports = { 
-    calculateAnalyticsMetrics, 
     calculateMonthlyAnalytics,
-    calculateMetrics, 
     groupDatasetsByDay, 
     getAvailableMonths,
     calculateTrendPercentage,

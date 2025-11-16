@@ -102,13 +102,37 @@ const paymentController = {
 
       console.log(`[checkPaymentStatus] Checking status for paymentId: ${paymentId}`);
 
-      const payment = await paymentService.checkPaymentStatus(paymentId);
+      const payment = await db.Payment.findByPk(paymentId, {
+        include: [
+          {
+            model: db.Order,
+            as: 'order',
+            include: [{ model: db.Dataset, as: 'dataset' }]
+          }
+        ]
+      });
 
-      console.log(`[checkPaymentStatus] Found payment:`, payment);
+      if (!payment) {
+        return res.status(404).json({
+          success: false,
+          message: 'Thanh toán không tồn tại'
+        });
+      }
 
       res.json({
         success: true,
-        data: payment
+        data: {
+          id: payment.id,
+          orderId: payment.orderId,
+          transactionId: payment.transactionId,
+          status: payment.status,
+          amount: payment.amount,
+          order: {
+            id: payment.order.id,
+            datasetName: payment.order.dataset?.name || 'Dataset',
+            packageType: payment.order.packageType
+          }
+        }
       });
     } catch (error) {
       console.error('Error checking payment status:', error);
