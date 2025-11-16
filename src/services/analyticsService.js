@@ -1,48 +1,41 @@
 const db = require("../models/index");
 const { Op } = require('sequelize');
 
-// Tính toán các chỉ số từ một tập hợp dữ liệu
-function calculateMetrics(datasets) {
-    if (!datasets || datasets.length === 0) {
-        return {
-            average_soc: 0,
-            average_soh: 0,
-            total_co2_saved: 0,
-            total_charges: 0,
-            average_charging_time: 0,
-            total_distance: 0,
-            data_count: 0
-        };
-    }
-
-    //Tính tổng các giá trị
-    const totals = datasets.reduce((acc, d) => {
-        return {
-            soc: acc.soc + (parseFloat(d.soc) || 0),
-            soh: acc.soh + (parseFloat(d.soh) || 0),
-            co2_saved: acc.co2_saved + (parseFloat(d.co2_saved) || 0),
-            charges: acc.charges + (parseInt(d.charging_frequency) || 0),
-            charging_time: acc.charging_time + (parseInt(d.charging_time) || 0),
-            distance: acc.distance + (parseFloat(d.total_distance) || 0)
-        };
-    }, { soc: 0, soh: 0, co2_saved: 0, charges: 0, charging_time: 0, distance: 0 });
-
-    // Tính toán trung bình và tổng
-    return {
-        average_soc: totals.soc / datasets.length,
-        average_soh: totals.soh / datasets.length,
-        total_co2_saved: totals.co2_saved,
-        total_charges: totals.charges,
-        average_charging_time: datasets.length > 0 ? totals.charging_time / datasets.length : 0,
-        total_distance: totals.distance,
-        data_count: datasets.length
-    };
-}
+// Flag để tránh tính toán 2 lần cùng lúc
+let isCalculating = false;
 
 // Tính toán analytics hàng tháng và lưu vào database
 async function calculateMonthlyAnalytics() {
     try {
+        if (isCalculating) {
+            console.log('[Analytics Monthly] Calculation already in progress, skipping...');
+            return { 
+                success: true, 
+                message: 'Calculation already in progress',
+                skipped: true 
+            };
+        }
+
+        isCalculating = true;
         console.log('[Analytics Monthly] Starting calculation...');
+
+        // CHECK AND CLEAR OLD ANALYTICS FIRST
+        const oldAnalyticsCount = await db.Analytics.count();
+        const oldAnalyticsMonthCount = await db.AnalyticsMonth.count();
+        
+        console.log(`[Analytics Monthly] Checking old data: ${oldAnalyticsCount} analytics records, ${oldAnalyticsMonthCount} months`);
+        
+        if (oldAnalyticsCount > 0) {
+            console.log('[Analytics Monthly] Clearing old analytics data...');
+            await db.Analytics.destroy({ where: {} });
+            console.log('[Analytics Monthly] Analytics cleared');
+        }
+        
+        if (oldAnalyticsMonthCount > 0) {
+            console.log('[Analytics Monthly] Clearing old analytics_months data...');
+            await db.AnalyticsMonth.destroy({ where: {} });
+            console.log('[Analytics Monthly] AnalyticsMonth cleared');
+        }
 
         // Get all datasets with required fields
         const allDatasets = await db.Dataset.findAll({
@@ -84,10 +77,6 @@ async function calculateMonthlyAnalytics() {
         // Sort months chronologically
         const sortedMonths = Object.keys(groupedByMonth).sort();
 
-        // Clear old analytics
-        await db.Analytics.destroy({ where: {} });
-        await db.AnalyticsMonth.destroy({ where: {} });
-
         // Calculate analytics for each month
         for (let i = 0; i < sortedMonths.length; i++) {
             const monthString = sortedMonths[i];
@@ -95,29 +84,22 @@ async function calculateMonthlyAnalytics() {
             const [year, month] = monthString.split('-').map(Number);
 
             // Calculate metrics for this month
-            const metrics = calculateMetrics(datasets);
+            const totals = datasets.reduce((acc, d) => {
+                return {
+                    soc: acc.soc + (parseFloat(d.soc) || 0),
+                    soh: acc.soh + (parseFloat(d.soh) || 0),
+                    co2_saved: acc.co2_saved + (parseFloat(d.co2_saved) || 0),
+                    charges: acc.charges + (parseInt(d.charging_frequency) || 0)
+                };
+            }, { soc: 0, soh: 0, co2_saved: 0, charges: 0 });
 
-            // Calculate trends (compare with previous month)
-            let trends = {
-                soc_trend: 0,
-                soh_trend: 0,
-                co2_trend: 0,
-                charges_trend: 0,
-                distance_trend: 0
+            const metrics = {
+                average_soc: totals.soc / datasets.length,
+                average_soh: totals.soh / datasets.length,
+                co2_saved_percent: totals.co2_saved / datasets.length,
+                total_charges: totals.charges,
+                data_count: datasets.length
             };
-
-            if (i > 0) {
-                const previousMonthString = sortedMonths[i - 1];
-                const previousDatasets = groupedByMonth[previousMonthString];
-                const previousMetrics = calculateMetrics(previousDatasets);
-
-                // Tính phần trăm xu hướng
-                trends.soc_trend = calculateTrendPercentage(previousMetrics.average_soc, metrics.average_soc);
-                trends.soh_trend = calculateTrendPercentage(previousMetrics.average_soh, metrics.average_soh);
-                trends.co2_trend = calculateTrendPercentage(previousMetrics.total_co2_saved, metrics.total_co2_saved);
-                trends.charges_trend = calculateTrendPercentage(previousMetrics.total_charges, metrics.total_charges);
-                trends.distance_trend = calculateTrendPercentage(previousMetrics.total_distance, metrics.total_distance);
-            }
 
             // Tao hoặc tìm bản ghi AnalyticsMonth
             const [monthRecord] = await db.AnalyticsMonth.findOrCreate({
@@ -129,31 +111,24 @@ async function calculateMonthlyAnalytics() {
                 }
             });
 
-            // Tạo bản ghi Analytics với xu hướng
+            // Tạo bản ghi Analytics
             await db.Analytics.create({
-                timestamp: new Date(),
                 month_id: monthRecord.id,
                 month_string: monthString,
                 average_soc: metrics.average_soc,
                 average_soh: metrics.average_soh,
-                total_co2_saved: metrics.total_co2_saved,
+                co2_saved_percent: metrics.co2_saved_percent,
                 total_charges: metrics.total_charges,
-                average_charging_time: metrics.average_charging_time,
-                total_distance: metrics.total_distance,
-                data_count: metrics.data_count,
-                soc_trend: trends.soc_trend,
-                soh_trend: trends.soh_trend,
-                co2_trend: trends.co2_trend,
-                charges_trend: trends.charges_trend,
-                distance_trend: trends.distance_trend,
-                period: 'monthly'
+                data_count: metrics.data_count
             });
 
-            console.log(`[Analytics Monthly] ✅ Month ${monthString}: ${metrics.data_count} records, Trends: SoC${trends.soc_trend.toFixed(2)}%, Co2${trends.co2_trend.toFixed(2)}%`);
+            console.log(`[Analytics Monthly] Month ${monthString}: ${metrics.data_count} records`);
         }
 
         const totalRecords = await db.Analytics.count();
-        console.log(`[Analytics Monthly] ✅ Completed! Total analytics records: ${totalRecords}`);
+        console.log(`[Analytics Monthly] Completed! Total analytics records: ${totalRecords}`);
+
+        isCalculating = false;
 
         return {
             success: true,
@@ -163,28 +138,54 @@ async function calculateMonthlyAnalytics() {
         };
 
     } catch (error) {
+        isCalculating = false;
         console.error('[Analytics Monthly] Error:', error);
         throw error;
     }
 }
 
-// Lấy các tháng có dữ liệu từ bảng analytics_months
+// Lấy các tháng có dữ liệu từ bảng Analytics
 async function getAvailableMonths() {
     try {
-        // Lấy từ bảng analytics_months
-        const months = await db.AnalyticsMonth.findAll({
+        // Lấy tất cả tháng UNIQUE từ bảng Analytics
+        const months = await db.Analytics.findAll({
+            attributes: ['month_string'],
+            where: { month_string: { [Op.not]: null } },
+            group: ['month_string'],
             order: [['month_string', 'DESC']],
-            raw: true
+            raw: true,
+            subQuery: false
         });
 
-        console.log('[Analytics Service] Found months from analytics_months:', months.length);
+        console.log('[Analytics Service] Found unique months from Analytics table:', months.length);
         
-        return months.map(m => ({
-            month_string: m.month_string,
-            label: `Tháng ${m.month}/${m.year}`,
-            month: m.month,
-            year: m.year
-        }));
+        if (months.length === 0) {
+            // Fallback: Lấy từ bảng AnalyticsMonth nếu Analytics trống
+            const monthsFromTable = await db.AnalyticsMonth.findAll({
+                order: [['month_string', 'DESC']],
+                raw: true
+            });
+            
+            console.log('[Analytics Service] Fallback: Found months from analytics_months:', monthsFromTable.length);
+            
+            return monthsFromTable.map(m => ({
+                month_string: m.month_string,
+                label: `Tháng ${m.month}/${m.year}`,
+                month: m.month,
+                year: m.year
+            }));
+        }
+
+        // Parse month_string (YYYY-MM) để lấy month và year
+        return months.map(m => {
+            const [year, month] = m.month_string.split('-').map(Number);
+            return {
+                month_string: m.month_string,
+                label: `Tháng ${month}/${year}`,
+                month: month,
+                year: year
+            };
+        });
     } catch (error) {
         console.error('[Analytics Service] Error getting available months:', error);
         return [];
@@ -238,11 +239,11 @@ function calculateTrendPercentage(previousValue, currentValue) {
     return ((currentValue - previousValue) / previousValue) * 100;
 }
 
-// Xác định mũi tên xu hướng dựa trên phần trăm
+// Xác định trạng thái xu hướng dựa trên phần trăm
 function calculateTrendArrow(trendPercentage) {
-    if (trendPercentage > 0) return '↑';
-    if (trendPercentage < 0) return '↓';
-    return '→';
+    if (trendPercentage > 0) return 'up';
+    if (trendPercentage < 0) return 'down';
+    return 'flat';
 }
 
 // Export các hàm

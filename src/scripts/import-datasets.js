@@ -7,15 +7,15 @@ async function importDatasets() {
     try {
         console.log('Starting dataset import...');
         
-        // ✅ STEP 1: Xóa tất cả dữ liệu cũ
+        // STEP 1: Xóa tất cả dữ liệu cũ
         console.log('🗑️  Deleting old datasets...');
         const deletedCount = await Dataset.destroy({ where: {} });
-        console.log(`✅ Deleted ${deletedCount} old records`);
+        console.log(`Deleted ${deletedCount} old records`);
         
-        // ✅ STEP 2: Read CSV file
+        // STEP 2: Read CSV file
         const fileContent = fs.readFileSync('./ev_data_sample_100.csv', 'utf-8');
         
-        // ✅ STEP 3: Parse CSV
+        // STEP 3: Parse CSV
         const records = csv.parse(fileContent, {
             columns: true,
             skip_empty_lines: true
@@ -53,12 +53,12 @@ async function importDatasets() {
             individualHooks: false
         });
         
-        console.log(`✅ Successfully imported ${result.length} datasets`);
+        console.log(`Successfully imported ${result.length} datasets`);
         console.log('Import completed!');
         
         process.exit(0);
     } catch (error) {
-        console.error('❌ Error importing datasets:', error);
+        console.error('Error importing datasets:', error);
         console.error(error.stack);
         process.exit(1);
     }

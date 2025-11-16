@@ -69,11 +69,10 @@ exports.getAnalytics = async (req, res) => {
     }
 
     let trends = {
-      socTrend: { value: 0, arrow: '→', display: '0%' },
-      sohTrend: { value: 0, arrow: '→', display: '0%' },
-      co2Trend: { value: 0, arrow: '→', display: '0%' },
-      chargesTrend: { value: 0, arrow: '→', display: '0%' },
-      distanceTrend: { value: 0, arrow: '→', display: '0%' }
+      socTrend: { value: 0, arrow: 'flat', display: '0%' },
+      sohTrend: { value: 0, arrow: 'flat', display: '0%' },
+      co2Trend: { value: 0, arrow: 'flat', display: '0%' },
+      chargesTrend: { value: 0, arrow: 'flat', display: '0%' }
     };
 
     if (previousMonthAnalytics && currentMonthAnalytics) {
@@ -98,8 +97,8 @@ exports.getAnalytics = async (req, res) => {
       };
 
       const co2TrendValue = calculateTrendPercentage(
-        previousMonthAnalytics.total_co2_saved,
-        currentMonthAnalytics.total_co2_saved
+        previousMonthAnalytics.co2_saved_percent,
+        currentMonthAnalytics.co2_saved_percent
       );
       trends.co2Trend = {
         value: co2TrendValue,
@@ -117,15 +116,7 @@ exports.getAnalytics = async (req, res) => {
         display: Math.abs(Math.round(chargesTrendValue)) + '%'
       };
 
-      const distanceTrendValue = calculateTrendPercentage(
-        previousMonthAnalytics.total_distance_saved,
-        currentMonthAnalytics.total_distance_saved
-      );
-      trends.distanceTrend = {
-        value: distanceTrendValue,
-        arrow: calculateTrendArrow(distanceTrendValue),
-        display: Math.abs(Math.round(distanceTrendValue)) + '%'
-      };
+      // distanceTrend removed - no longer tracked in analytics
     }
 
     // Lấy tất cả datasets trong tháng để phân tích dữ liệu hàng ngày
@@ -149,11 +140,12 @@ exports.getAnalytics = async (req, res) => {
       return isFinite(num) ? num : defaultVal;
     };
 
-    // Tính toán phần trăm CO2 saved trung bình
-    let co2SavedPercent = 0;
-    if (allDatasets && allDatasets.length > 0) {
-      const totalCo2Saved = allDatasets.reduce((sum, d) => sum + (parseFloat(d.co2_saved) || 0), 0);
-      co2SavedPercent = totalCo2Saved / allDatasets.length;
+    // Lấy co2_saved_percent từ database (tính toán sẵn)
+    // Nếu không có, fallback tính từ datasets
+    let co2SavedPercent = validateNumber(currentMonthAnalytics?.co2_saved_percent);
+    if (co2SavedPercent === 0 && allDatasets && allDatasets.length > 0) {
+      const sumCo2Saved = allDatasets.reduce((sum, d) => sum + (parseFloat(d.co2_saved) || 0), 0);
+      co2SavedPercent = sumCo2Saved / allDatasets.length;
     }
 
     const response = {
@@ -163,11 +155,8 @@ exports.getAnalytics = async (req, res) => {
         overview: {
           average_soc: validateNumber(currentMonthAnalytics?.average_soc),
           average_soh: validateNumber(currentMonthAnalytics?.average_soh),
-          total_co2_saved: validateNumber(currentMonthAnalytics?.total_co2_saved),
           co2_saved_percent: validateNumber(co2SavedPercent),
           total_charges: parseInt(currentMonthAnalytics?.total_charges) || 0,
-          total_distance_saved: validateNumber(currentMonthAnalytics?.total_distance_saved),
-          total_distance: validateNumber(currentMonthAnalytics?.total_distance),
           dataset_count: parseInt(currentMonthAnalytics?.data_count) || 0
         },
         trends: trends,

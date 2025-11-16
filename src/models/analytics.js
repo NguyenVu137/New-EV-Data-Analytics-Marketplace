@@ -14,12 +14,6 @@ module.exports = (sequelize, DataTypes) => {
     }
     // Khởi tạo Model Analytics với các trường dữ liệu
     Analytics.init({
-        timestamp: {
-            type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: DataTypes.NOW,
-            comment: 'Thời điểm tính toán dữ liệu'
-        },
         average_soc: {
             type: DataTypes.FLOAT,
             allowNull: true,
@@ -30,10 +24,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
             comment: 'Trung bình sức khỏe pin (%)'
         },
-        total_co2_saved: {
+        co2_saved_percent: {
             type: DataTypes.FLOAT,
             allowNull: true,
-            comment: 'Tổng CO2 đã giảm (kg)'
+            defaultValue: 0,
+            comment: 'Trung bình CO2 tiết kiệm (%)'
         },
         total_charges: {
             type: DataTypes.INTEGER,
@@ -41,58 +36,11 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: 0,
             comment: 'Tổng số lần sạc'
         },
-        average_charging_time: {
-            type: DataTypes.FLOAT,
-            allowNull: true,
-            comment: 'Thời gian sạc trung bình (phút)'
-        },
-        total_distance: {
-            type: DataTypes.FLOAT,
-            allowNull: true,
-            comment: 'Tổng quãng đường (km)'
-        },
         data_count: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
             comment: 'Số lượng bản ghi dữ liệu được sử dụng để tính toán'
-        },
-        period: {
-            type: DataTypes.STRING(50),
-            allowNull: false,
-            defaultValue: 'monthly',
-            comment: 'Kỳ tính (monthly = tính theo tháng)'
-        },
-        // Trend fields - so sánh với tháng trước
-        soc_trend: {
-            type: DataTypes.FLOAT,
-            allowNull: true,
-            defaultValue: 0,
-            comment: 'Tỷ lệ thay đổi SoC so với tháng trước (%)'
-        },
-        soh_trend: {
-            type: DataTypes.FLOAT,
-            allowNull: true,
-            defaultValue: 0,
-            comment: 'Tỷ lệ thay đổi SoH so với tháng trước (%)'
-        },
-        co2_trend: {
-            type: DataTypes.FLOAT,
-            allowNull: true,
-            defaultValue: 0,
-            comment: 'Tỷ lệ thay đổi CO2 so với tháng trước (%)'
-        },
-        charges_trend: {
-            type: DataTypes.FLOAT,
-            allowNull: true,
-            defaultValue: 0,
-            comment: 'Tỷ lệ thay đổi số lần sạc so với tháng trước (%)'
-        },
-        distance_trend: {
-            type: DataTypes.FLOAT,
-            allowNull: true,
-            defaultValue: 0,
-            comment: 'Tỷ lệ thay đổi quãng đường so với tháng trước (%)'
         },
         month_id: {
             type: DataTypes.INTEGER,

@@ -2,18 +2,13 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    
     await queryInterface.createTable('analytics', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
-      },
-      timestamp: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-        comment: 'Thời điểm tính toán dữ liệu'
       },
       average_soc: {
         type: Sequelize.FLOAT,
@@ -25,10 +20,11 @@ module.exports = {
         allowNull: true,
         comment: 'Trung bình sức khỏe pin (%)'
       },
-      total_co2_saved: {
+      co2_saved_percent: {
         type: Sequelize.FLOAT,
         allowNull: true,
-        comment: 'Tổng CO2 đã giảm (kg)'
+        defaultValue: 0,
+        comment: 'Trung bình CO2 tiết kiệm (%)'
       },
       total_charges: {
         type: Sequelize.INTEGER,
@@ -36,57 +32,11 @@ module.exports = {
         defaultValue: 0,
         comment: 'Tổng số lần sạc'
       },
-      average_charging_time: {
-        type: Sequelize.FLOAT,
-        allowNull: true,
-        comment: 'Thời gian sạc trung bình (phút)'
-      },
-      total_distance: {
-        type: Sequelize.FLOAT,
-        allowNull: true,
-        comment: 'Tổng quãng đường (km)'
-      },
       data_count: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 0,
         comment: 'Số lượng bản ghi dữ liệu được sử dụng để tính toán'
-      },
-      period: {
-        type: Sequelize.STRING(50),
-        allowNull: false,
-        defaultValue: 'monthly',
-        comment: 'Kỳ tính (monthly = tính theo tháng)'
-      },
-      soc_trend: {
-        type: Sequelize.FLOAT,
-        allowNull: true,
-        defaultValue: 0,
-        comment: 'Tỷ lệ thay đổi SoC so với tháng trước (%)'
-      },
-      soh_trend: {
-        type: Sequelize.FLOAT,
-        allowNull: true,
-        defaultValue: 0,
-        comment: 'Tỷ lệ thay đổi SoH so với tháng trước (%)'
-      },
-      co2_trend: {
-        type: Sequelize.FLOAT,
-        allowNull: true,
-        defaultValue: 0,
-        comment: 'Tỷ lệ thay đổi CO2 so với tháng trước (%)'
-      },
-      charges_trend: {
-        type: Sequelize.FLOAT,
-        allowNull: true,
-        defaultValue: 0,
-        comment: 'Tỷ lệ thay đổi số lần sạc so với tháng trước (%)'
-      },
-      distance_trend: {
-        type: Sequelize.FLOAT,
-        allowNull: true,
-        defaultValue: 0,
-        comment: 'Tỷ lệ thay đổi quãng đường so với tháng trước (%)'
       },
       month_id: {
         type: Sequelize.INTEGER,
@@ -115,8 +65,8 @@ module.exports = {
       }
     });
 
-    // Create index for faster queries
-    await queryInterface.addIndex('analytics', ['timestamp', 'period']);
+    // Tạo index trên cột month_string để tăng tốc truy vấn
+    await queryInterface.addIndex('analytics', ['month_string']);
   },
 
   down: async (queryInterface, Sequelize) => {
