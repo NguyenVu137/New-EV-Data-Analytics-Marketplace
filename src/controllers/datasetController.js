@@ -14,14 +14,6 @@ const datasetController = {
             // Build where clause for filters
             const whereClause = {};
 
-            // Search by keyword
-            if (req.query.q) {
-                whereClause[Op.or] = [
-                    { name: { [Op.like]: `%${req.query.q}%` } },
-                    { description: { [Op.like]: `%${req.query.q}%` } }
-                ];
-            }
-
             // Filter by data_type
             if (req.query.data_type) {
                 whereClause.data_type = req.query.data_type;
@@ -54,16 +46,16 @@ const datasetController = {
 
             // Filter by time range
             if (req.query.timeRangeStart || req.query.timeRangeEnd) {
-                whereClause.upload_date = {};
+                whereClause.createdAt = {};
                 if (req.query.timeRangeStart) {
                     // timeRangeStart is in format YYYY-MM-DD
-                    whereClause.upload_date[Op.gte] = new Date(req.query.timeRangeStart);
+                    whereClause.createdAt[Op.gte] = new Date(req.query.timeRangeStart);
                 }
                 if (req.query.timeRangeEnd) {
                     // timeRangeEnd is in format YYYY-MM-DD, set to end of day
                     const endDate = new Date(req.query.timeRangeEnd);
                     endDate.setHours(23, 59, 59, 999);
-                    whereClause.upload_date[Op.lte] = endDate;
+                    whereClause.createdAt[Op.lte] = endDate;
                 }
             }
 
@@ -75,7 +67,7 @@ const datasetController = {
                 where: whereClause,
                 offset: offset,
                 limit: perPage,
-                order: [['upload_date', 'DESC']],
+                order: [['createdAt', 'DESC']],
                 raw: true
             });
 
@@ -159,8 +151,7 @@ const datasetController = {
 
             const amount = priceMap[priceType];
 
-            // TODO: Integrate with payment gateway
-            // For now, just return payment info
+            // Mock payment
             res.json({
                 success: true,
                 paymentId: `PAY_${Date.now()}`,
@@ -181,13 +172,12 @@ const datasetController = {
     },
 
     /**
-     * POST /api/datasets - Tạo dataset mới (admin)
+     * POST /api/datasets - Tạo dataset mới
      */
     async createDataset(req, res) {
         try {
             const dataset = await Dataset.create(req.body);
-
-            res.json({
+            res.status(201).json({
                 success: true,
                 data: dataset
             });
@@ -202,12 +192,11 @@ const datasetController = {
     },
 
     /**
-     * PUT /api/datasets/:id - Cập nhật dataset (admin)
+     * PUT /api/datasets/:id - Cập nhật dataset
      */
     async updateDataset(req, res) {
         try {
             const { id } = req.params;
-
             const dataset = await Dataset.findByPk(id);
 
             if (!dataset) {
@@ -218,7 +207,6 @@ const datasetController = {
             }
 
             await dataset.update(req.body);
-
             res.json({
                 success: true,
                 data: dataset
@@ -234,12 +222,11 @@ const datasetController = {
     },
 
     /**
-     * DELETE /api/datasets/:id - Xóa dataset (admin)
+     * DELETE /api/datasets/:id - Xóa dataset
      */
     async deleteDataset(req, res) {
         try {
             const { id } = req.params;
-
             const dataset = await Dataset.findByPk(id);
 
             if (!dataset) {
@@ -250,7 +237,6 @@ const datasetController = {
             }
 
             await dataset.destroy();
-
             res.json({
                 success: true,
                 message: 'Dataset deleted successfully'
@@ -263,7 +249,8 @@ const datasetController = {
                 message: error.message
             });
         }
-    }
+    },
+
 };
 
 module.exports = datasetController;

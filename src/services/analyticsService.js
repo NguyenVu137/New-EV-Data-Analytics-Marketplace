@@ -13,7 +13,7 @@ async function calculateAnalyticsMetrics() {
             attributes: [
                 'id', 'soc', 'soh', 'co2_saved', 'charging_frequency', 
                 'charging_time', 'total_distance', 'region', 'vehicle_type', 
-                'battery_type', 'upload_date'
+                'battery_type', 'createdAt'
             ],
             where: {
                 [Op.and]: [
@@ -21,7 +21,7 @@ async function calculateAnalyticsMetrics() {
                     { soh: { [Op.not]: null } }
                 ]
             },
-            order: [['upload_date', 'DESC']],
+            order: [['createdAt', 'DESC']],
             raw: true
         });
 
@@ -226,7 +226,7 @@ function groupDatasetsByDay(datasets) {
     const groupedByDay = {};
     
     datasets.forEach(dataset => {
-        const dateStr = new Date(dataset.upload_date).toISOString().split('T')[0];
+        const dateStr = new Date(dataset.createdAt).toISOString().split('T')[0];
         if (!groupedByDay[dateStr]) {
             groupedByDay[dateStr] = [];
         }

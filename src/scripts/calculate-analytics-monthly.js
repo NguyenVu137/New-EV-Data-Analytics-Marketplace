@@ -1,5 +1,6 @@
 const db = require("../models/index");
 const { Op } = require("sequelize");
+const { calculateMetrics, calculateTrendPercentage: calculateTrend } = require('../services/analyticsService');
 
 /**
  * Calculate Analytics by Month with Trend Comparison
@@ -9,11 +10,11 @@ async function calculateMonthlyAnalytics() {
     try {
         console.log('[Analytics Monthly] Starting calculation...');
 
-        // Get all datasets
+        // Get all datasets with vehicle_type
         const allDatasets = await db.Dataset.findAll({
             attributes: [
                 'id', 'soc', 'soh', 'co2_saved', 'charging_frequency',
-                'charging_time', 'total_distance', 'upload_date'
+                'charging_time', 'total_distance', 'createdAt', 'vehicle_type'
             ],
             where: {
                 [Op.and]: [
@@ -21,7 +22,7 @@ async function calculateMonthlyAnalytics() {
                     { soh: { [Op.not]: null } }
                 ]
             },
-            order: [['upload_date', 'ASC']],
+            order: [['createdAt', 'ASC']],
             raw: true
         });
 
@@ -35,7 +36,7 @@ async function calculateMonthlyAnalytics() {
         // Group datasets by month_string (YYYY-MM)
         const groupedByMonth = {};
         allDatasets.forEach(dataset => {
-            const date = new Date(dataset.upload_date);
+            const date = new Date(dataset.createdAt);
             const monthString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
             
             if (!groupedByMonth[monthString]) {
@@ -133,78 +134,19 @@ async function calculateMonthlyAnalytics() {
     }
 }
 
-/**
- * Calculate metrics from datasets
- */
-function calculateMetrics(datasets, region = null, vehicleType = null, batteryType = null) {
-    if (!datasets || datasets.length === 0) {
-        return {
-            average_soc: 0,
-            average_soh: 0,
-            total_co2_saved: 0,
-            total_charges: 0,
-            average_charging_time: 0,
-            total_distance: 0,
-            data_count: 0
-        };
-    }
 
-    const filteredDatasets = datasets.filter(d => {
-        if (region && d.region !== region) return false;
-        if (vehicleType && d.vehicle_type !== vehicleType) return false;
-        if (batteryType && d.battery_type !== batteryType) return false;
-        return true;
+// Export function for use as module
+module.exports = { calculateMonthlyAnalytics };
+
+// Run directly if executed as script
+if (require.main === module) {
+    calculateMonthlyAnalytics()
+    .then(result => {
+        console.log('[Analytics Monthly] ✅ Success:', result);
+        process.exit(0);
+    })
+    .catch(error => {
+        console.error('[Analytics Monthly] ❌ Error:', error);
+        process.exit(1);
     });
-
-    if (filteredDatasets.length === 0) {
-        return {
-            average_soc: 0,
-            average_soh: 0,
-            total_co2_saved: 0,
-            total_charges: 0,
-            average_charging_time: 0,
-            total_distance: 0,
-            data_count: 0
-        };
-    }
-
-    const totals = filteredDatasets.reduce((acc, d) => {
-        return {
-            soc: acc.soc + (parseFloat(d.soc) || 0),
-            soh: acc.soh + (parseFloat(d.soh) || 0),
-            co2_saved: acc.co2_saved + (parseFloat(d.co2_saved) || 0),
-            charges: acc.charges + (parseInt(d.charging_frequency) || 0),
-            charging_time: acc.charging_time + (parseInt(d.charging_time) || 0),
-            distance: acc.distance + (parseFloat(d.total_distance) || 0)
-        };
-    }, { soc: 0, soh: 0, co2_saved: 0, charges: 0, charging_time: 0, distance: 0 });
-
-    return {
-        average_soc: totals.soc / filteredDatasets.length,
-        average_soh: totals.soh / filteredDatasets.length,
-        total_co2_saved: totals.co2_saved,
-        total_charges: totals.charges,
-        average_charging_time: filteredDatasets.length > 0 ? totals.charging_time / filteredDatasets.length : 0,
-        total_distance: totals.distance,
-        data_count: filteredDatasets.length
-    };
 }
-
-/**
- * Calculate trend percentage between two values
- */
-function calculateTrend(currentValue, previousValue) {
-    if (!previousValue || previousValue === 0) return 0;
-    const trend = ((currentValue - previousValue) / previousValue) * 100;
-    return parseFloat(trend.toFixed(2));
-}
-
-calculateMonthlyAnalytics()
-  .then(result => {
-    console.log('[Analytics Monthly] ✅ Success:', result);
-    process.exit(0);
-  })
-  .catch(error => {
-    console.error('[Analytics Monthly] ❌ Error:', error);
-    process.exit(1);
-  });

@@ -1,5 +1,6 @@
 const db = require("../models/index");
 const { Op } = require('sequelize');
+const { calculateMetrics } = require('../services/analyticsService');
 
 /**
  * Verify and fix analytics data
@@ -19,7 +20,7 @@ async function verifyAndFixAnalytics() {
             attributes: [
                 'id', 'soc', 'soh', 'co2_saved', 'charging_frequency', 
                 'charging_time', 'total_distance', 'region', 'vehicle_type', 
-                'battery_type', 'upload_date'
+                'battery_type', 'createdAt'
             ],
             raw: true
         });
@@ -97,7 +98,7 @@ async function verifyAndFixAnalytics() {
             attributes: [
                 'id', 'soc', 'soh', 'co2_saved', 'charging_frequency', 
                 'charging_time', 'total_distance', 'region', 'vehicle_type', 
-                'battery_type', 'upload_date'
+                'battery_type', 'createdAt'
             ],
             raw: true
         });
@@ -202,63 +203,6 @@ async function verifyAndFixAnalytics() {
         console.error(error.stack);
         process.exit(1);
     }
-}
-
-/**
- * Calculate metrics from datasets
- */
-function calculateMetrics(datasets, region = null, vehicleType = null, batteryType = null) {
-    if (!datasets || datasets.length === 0) {
-        return {
-            average_soc: 0,
-            average_soh: 0,
-            total_co2_saved: 0,
-            total_charges: 0,
-            average_charging_time: 0,
-            total_distance: 0,
-            data_count: 0
-        };
-    }
-
-    const filteredDatasets = datasets.filter(d => {
-        if (region && d.region !== region) return false;
-        if (vehicleType && d.vehicle_type !== vehicleType) return false;
-        if (batteryType && d.battery_type !== batteryType) return false;
-        return true;
-    });
-
-    if (filteredDatasets.length === 0) {
-        return {
-            average_soc: 0,
-            average_soh: 0,
-            total_co2_saved: 0,
-            total_charges: 0,
-            average_charging_time: 0,
-            total_distance: 0,
-            data_count: 0
-        };
-    }
-
-    const totals = filteredDatasets.reduce((acc, d) => {
-        return {
-            soc: acc.soc + (parseFloat(d.soc) || 0),
-            soh: acc.soh + (parseFloat(d.soh) || 0),
-            co2_saved: acc.co2_saved + (parseFloat(d.co2_saved) || 0),
-            charges: acc.charges + (parseInt(d.charging_frequency) || 0),
-            charging_time: acc.charging_time + (parseInt(d.charging_time) || 0),
-            distance: acc.distance + (parseFloat(d.total_distance) || 0)
-        };
-    }, { soc: 0, soh: 0, co2_saved: 0, charges: 0, charging_time: 0, distance: 0 });
-
-    return {
-        average_soc: totals.soc / filteredDatasets.length,
-        average_soh: totals.soh / filteredDatasets.length,
-        total_co2_saved: totals.co2_saved,
-        total_charges: totals.charges,
-        average_charging_time: filteredDatasets.length > 0 ? totals.charging_time / filteredDatasets.length : 0,
-        total_distance: totals.distance,
-        data_count: filteredDatasets.length
-    };
 }
 
 // Run if executed directly

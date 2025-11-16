@@ -2,8 +2,9 @@ import express from "express";
 import homeController from "../controllers/homeController";
 import userController from "../controllers/userController";
 import dataController from "../controllers/dataController";
-const analyticsRoute = require("../route/analyticsRoute");
-const datasetRouter = require("../routes/datasets");
+const analyticsRoute = require("./analytics");
+const datasetRouter = require("./datasets");
+const paymentRouter = require("./payments");
 
 let router = express.Router();
 
@@ -24,12 +25,8 @@ let initWebRoutes = (app) => {
     router.put('/api/edit-user', userController.handleEditUser);
     router.delete('/api/delete-user', userController.handleDeleteUser);
 
-
-    router.post('/api/');
-
     router.get('/api/allcode', userController.getAllCode);
     router.get('/api/top-data-home', dataController.getTopDataHome);
-
     router.get('/api/get-all-datas', dataController.getAllDatas);
 
     // Analytics routes
@@ -37,6 +34,9 @@ let initWebRoutes = (app) => {
 
     // Dataset routes
     app.use("/api", datasetRouter);
+
+    // Payment routes
+    app.use("/api", paymentRouter);
 
     return app.use("/", router);
 }

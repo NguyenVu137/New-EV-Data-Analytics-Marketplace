@@ -46,23 +46,26 @@ exports.getAnalytics = async (req, res) => {
       }]
     });
 
-    const parts = monthString.split('-');
-    const year = parseInt(parts[0]);
-    const month = parseInt(parts[1]);
-    let prevMonth = month - 1;
-    let prevYear = year;
-    
-    if (prevMonth < 1) {
-      prevMonth = 12;
-      prevYear -= 1;
-    }
-    
-    const prevMonthStr = String(prevMonth).padStart(2, '0');
-    const previousMonthString = prevYear + '-' + prevMonthStr;
-
-    const previousMonthAnalytics = await db.Analytics.findOne({
-      where: { month_string: previousMonthString }
+    // Lấy tháng gần nhất với tháng hiện tại 
+    const allAnalyticsMonths = await db.Analytics.findAll({
+      attributes: ['month_string'],
+      where: { month_string: { [Op.lt]: monthString } }, 
+      order: [['month_string', 'DESC']],
+      limit: 1,
+      raw: true
     });
+
+    let previousMonthAnalytics = null;
+    if (allAnalyticsMonths && allAnalyticsMonths.length > 0) {
+      const nearestMonthString = allAnalyticsMonths[0].month_string;
+      console.log(`[getAnalytics] Found nearest previous month: ${nearestMonthString} for current: ${monthString}`);
+      
+      previousMonthAnalytics = await db.Analytics.findOne({
+        where: { month_string: nearestMonthString }
+      });
+    } else {
+      console.log(`[getAnalytics] No previous month data found for ${monthString}`);
+    }
 
     let trends = {
       socTrend: { value: 0, arrow: '→', display: '0%' },
@@ -124,24 +127,33 @@ exports.getAnalytics = async (req, res) => {
       };
     }
 
+    // Lấy tất cả datasets trong tháng để phân tích dữ liệu hàng ngày
     const { sequelize: seqInstance } = db;
     const allDatasets = await db.Dataset.findAll({
       where: seqInstance.where(
-        seqInstance.fn('DATE_FORMAT', seqInstance.col('upload_date'), '%Y-%m'),
+        seqInstance.fn('DATE_FORMAT', seqInstance.col('createdAt'), '%Y-%m'),
         Op.eq,
         monthString
       ),
-      order: [['upload_date', 'ASC']]
+      order: [['createdAt', 'ASC']]
     });
 
+    // Gọi hàm để nhóm dữ liệu theo ngày và lấy danh sách tháng hệ thống có dữ liệu
     const dailyData = groupDatasetsByDay(allDatasets);
     const availableMonths = await getAvailableMonths();
 
-    // Validate numeric values before sending response
+    // Đảm bảo giá trị số hợp lệ
     const validateNumber = (val, defaultVal = 0) => {
       const num = parseFloat(val);
       return isFinite(num) ? num : defaultVal;
     };
+
+    // Tính toán phần trăm CO2 saved trung bình
+    let co2SavedPercent = 0;
+    if (allDatasets && allDatasets.length > 0) {
+      const totalCo2Saved = allDatasets.reduce((sum, d) => sum + (parseFloat(d.co2_saved) || 0), 0);
+      co2SavedPercent = totalCo2Saved / allDatasets.length;
+    }
 
     const response = {
       success: true,
@@ -151,8 +163,10 @@ exports.getAnalytics = async (req, res) => {
           average_soc: validateNumber(currentMonthAnalytics?.average_soc),
           average_soh: validateNumber(currentMonthAnalytics?.average_soh),
           total_co2_saved: validateNumber(currentMonthAnalytics?.total_co2_saved),
+          co2_saved_percent: validateNumber(co2SavedPercent),
           total_charges: parseInt(currentMonthAnalytics?.total_charges) || 0,
           total_distance_saved: validateNumber(currentMonthAnalytics?.total_distance_saved),
+          total_distance: validateNumber(currentMonthAnalytics?.total_distance),
           dataset_count: parseInt(currentMonthAnalytics?.data_count) || 0
         },
         trends: trends,
@@ -172,6 +186,7 @@ exports.getAnalytics = async (req, res) => {
   }
 };
 
+// Cung cấp danh sách các tháng có dữ liệu phân tích cho client
 exports.getAvailableMonths = async (req, res) => {
   try {
     const months = await getAvailableMonths();
@@ -189,6 +204,7 @@ exports.getAvailableMonths = async (req, res) => {
   }
 };
 
+// Lấy danh sách datasets phân theo ngày trong tháng được chỉ định
 exports.getDatasetsByDay = async (req, res) => {
   try {
     const month = req.query.month;
@@ -211,11 +227,11 @@ exports.getDatasetsByDay = async (req, res) => {
     const { sequelize: seqInstance } = db;
     const allDatasets = await db.Dataset.findAll({
       where: seqInstance.where(
-        seqInstance.fn('DATE_FORMAT', seqInstance.col('upload_date'), '%Y-%m'),
+        seqInstance.fn('DATE_FORMAT', seqInstance.col('createdAt'), '%Y-%m'),
         Op.eq,
         month
       ),
-      order: [['upload_date', 'ASC']],
+      order: [['createdAt', 'ASC']],
       raw: true
     });
 
