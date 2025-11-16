@@ -294,6 +294,38 @@ const paymentController = {
         message: error.message || 'Lỗi hủy subscription'
       });
     }
+  },
+
+  /**
+   * GET /api/subscriptions/:subscriptionId/download - Download dữ liệu
+   */
+  async downloadSubscriptionData(req, res) {
+    try {
+      const userId = req.user?.id;
+      const { subscriptionId } = req.params;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Vui lòng đăng nhập'
+        });
+      }
+
+      const data = await paymentService.downloadSubscriptionData(subscriptionId, userId);
+
+      // Set headers for file download
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="dataset_${subscriptionId}.csv"`);
+      
+      // Send CSV data
+      res.send(data);
+    } catch (error) {
+      console.error('Error downloading subscription data:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Lỗi tải dữ liệu'
+      });
+    }
   }
 };
 

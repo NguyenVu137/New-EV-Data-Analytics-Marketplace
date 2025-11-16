@@ -24,6 +24,9 @@ router.get('/orders', authMiddleware, paymentController.getUserOrders);
 // Get user subscriptions
 router.get('/subscriptions', authMiddleware, paymentController.getUserSubscriptions);
 
+// Download subscription data
+router.get('/subscriptions/:subscriptionId/download', authMiddleware, paymentController.downloadSubscriptionData);
+
 // Cancel subscription
 router.delete('/subscriptions/:subscriptionId', authMiddleware, paymentController.cancelSubscription);
 

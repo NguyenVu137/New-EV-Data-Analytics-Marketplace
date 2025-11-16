@@ -272,6 +272,11 @@ class PaymentService {
             model: db.Dataset,
             as: 'dataset',
             attributes: ['id', 'name', 'data_type', 'region']
+          },
+          {
+            model: db.Order,
+            as: 'order',
+            attributes: ['id', 'amount', 'status']
           }
         ],
         order: [['endDate', 'ASC']]
@@ -313,6 +318,42 @@ class PaymentService {
       return { success: true };
     } catch (error) {
       console.error('[PaymentService] Error cancelling subscription:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Download dữ liệu từ subscription
+   */
+  async downloadSubscriptionData(subscriptionId, userId) {
+    try {
+      const subscription = await db.Subscription.findByPk(subscriptionId, {
+        include: [
+          {
+            model: db.Dataset,
+            as: 'dataset',
+            attributes: ['id', 'name', 'description']
+          }
+        ]
+      });
+
+      if (!subscription) {
+        throw new Error('Subscription không tồn tại');
+      }
+
+      if (subscription.userId !== userId) {
+        throw new Error('Không có quyền truy cập dữ liệu này');
+      }
+
+      // Mock CSV data - in production, fetch actual dataset data
+      const csvHeader = 'Dataset Name,Package Type,Start Date,End Date\n';
+      const csvRow = `"${subscription.dataset?.name || 'Dataset'}","${subscription.packageType}","${subscription.startDate}","${subscription.endDate}"\n`;
+      const csvData = csvHeader + csvRow;
+
+      console.log(`[PaymentService] Data downloaded: ${subscriptionId}`);
+      return csvData;
+    } catch (error) {
+      console.error('[PaymentService] Error downloading data:', error.message);
       throw error;
     }
   }
