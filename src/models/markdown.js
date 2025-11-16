@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Markdown.belongsTo(models.User, { foreignKey: 'providerId' })
     }
   };
   Markdown.init({
@@ -23,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Markdown',
+    tableName: 'markdowns'
   });
   return Markdown;
 };
