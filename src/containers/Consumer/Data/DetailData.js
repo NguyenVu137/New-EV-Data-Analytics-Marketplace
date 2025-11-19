@@ -4,6 +4,8 @@ import HomeHeader from '../../HomePage/HomeHeader';
 import './DetailData.scss';
 import { LANGUAGES } from '../../../utils';
 import { getDetailInforData } from '../../../services/userService';
+import moment from 'moment';
+import DataUseRights from './DataUseRights';
 
 class DetailData extends Component {
 
@@ -62,13 +64,29 @@ class DetailData extends Component {
                             </div>
                         </div>
                     </div>
-                    <div className="data-price">
 
+                    <div className="data-price">
+                        <div className="content-left">
+                            <DataUseRights
+                                dataIdFromParent={detailData && detailData.id ? detailData.id : -1}
+                            />
+                        </div>
+                        <div className="content-right">
+                            <div className="provider-card">
+                                <div className="avatar" style={{ backgroundImage: `url(${detailData && detailData.image ? detailData.image : ''})` }} />
+                                <div className="info">
+                                    <div className="name">{language === LANGUAGES.VI ? nameVi : nameEn}</div>
+                                    {detailData && detailData.email && <div className="email">{detailData.email}</div>}
+                                    {detailData && detailData.createdAt && <div className="joined">{moment(detailData.createdAt).format('LL')}</div>}
+                                    {detailData && detailData.positionData && <div className="role">{language === LANGUAGES.VI ? detailData.positionData.valueVi : detailData.positionData.valueEn}</div>}
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                     <div className="detail-infor-data">
                         {detailData && detailData.Markdown && detailData.Markdown.contentHTML &&
-                            <div dangerouslySetInnerHTML={{ __html: detailData.Markdown.contentHTML }}>
-                                
+                            <div className="content-html" dangerouslySetInnerHTML={{ __html: detailData.Markdown.contentHTML }}>
                             </div>
                         }
                     </div>

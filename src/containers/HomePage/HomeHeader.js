@@ -5,7 +5,10 @@ import { FormattedMessage } from 'react-intl';
 import { LANGUAGES } from '../../utils';
 import { withRouter } from 'react-router';
 import { changeLanguageApp } from '../../store/actions/appActions';
+import { processLogout } from '../../store/actions';
 import logo from '../../assets/logo.jpg';
+import * as actions from "../../store/actions";
+
 
 class HomeHeader extends Component {
 
@@ -19,8 +22,23 @@ class HomeHeader extends Component {
             this.props.history.push(`/home`)
         }
     }
+
+    returnToLogin = () => {
+        if (this.props.history) {
+            this.props.history.push(`/login`)
+        }
+    }
+
+    returnToLogout = () => {
+        if (this.props.history) {
+            this.props.history.push(`/logout`)
+        }
+    }
     render() {
+        const { processLogout } = this.props;
+        let isLoggedIn = this.props.isLoggedIn;
         let language = this.props.language;
+        console.log('check props: ', this.props)
         return (
             <React.Fragment>
                 <div className="home-header-container">
@@ -52,6 +70,7 @@ class HomeHeader extends Component {
                             <div className="support"><i className="fa-solid fa-circle-question"></i><FormattedMessage id="homeheader.support" /></div>
                             <div className={language === LANGUAGES.VI ? 'language-vi active' : 'language-vi'}><span onClick={() => this.changeLanguage(LANGUAGES.VI)}>VN</span></div>
                             <div className={language === LANGUAGES.EN ? 'language-en active' : 'language-en'}><span onClick={() => this.changeLanguage(LANGUAGES.EN)}>EN</span></div>
+                            <div className="login" onClick={isLoggedIn === true ? () => processLogout() : () => this.returnToLogin()}><i className={isLoggedIn === true ? "fa-solid fa-arrow-right-from-bracket" : "fa-solid fa-user"}></i></div>
                         </div>
                     </div>
                 </div>
@@ -107,6 +126,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
+        processLogout: () => dispatch(actions.processLogout()),
         changeLanguageAppRedux: (language) => dispatch(changeLanguageApp(language))
     };
 };

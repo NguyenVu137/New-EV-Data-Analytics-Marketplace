@@ -296,3 +296,26 @@ export const fetchAllScheduleTime = () => {
         }
     }
 }
+
+export const fetchDataCodes = () => {
+    return async (dispatch, getState) => {
+        try {
+            let res = await getAllCodeService("DATA");
+            if (res && res.errCode === 0) {
+                dispatch({
+                    type: actionTypes.FETCH_ALLCODE_DATA_SUCCESS,
+                    data: res.data
+                })
+            } else {
+                dispatch({
+                    type: actionTypes.FETCH_ALLCODE_DATA_FAILED
+                })
+            }
+        } catch (e) {
+            console.log('FETCH_ALLCODE_DATA_FAILED: ', e)
+            dispatch({
+                type: actionTypes.FETCH_ALLCODE_DATA_FAILED
+            })
+        }
+    }
+}

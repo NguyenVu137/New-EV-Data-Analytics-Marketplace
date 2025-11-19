@@ -1,0 +1,91 @@
+.data-use-rights-container {
+    background: #fff;
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+
+    .data-use-rights-content {
+        .header {
+            .title {
+                font-size: 16px;
+                font-weight: 700;
+                color: #0b5d67;
+            }
+            .subtitle {
+                font-size: 13px;
+                color: #6b7280;
+                margin-top: 4px;
+            }
+            margin-bottom: 12px;
+        }
+
+        .select-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            select {
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                padding: 10px 12px;
+                border: 1px solid #e5e7eb;
+                border-radius: 6px;
+                min-width: 240px;
+                background-color: #ffffff;
+                color: #0b3a44;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: 0 2px 6px rgba(11,61,68,0.03);
+            }
+        }
+    }
+
+    .all-available-data {
+        margin-top: 18px;
+
+        .text-use-rights {
+            margin: 6px 0 10px 0;
+            color: #374151;
+            font-weight: 600;
+
+            span {
+                text-transform: uppercase;
+                margin-left: 8px;
+                font-size: 12px;
+                color: #6b7280;
+                font-weight: 500;
+            }
+        }
+
+        .data-content {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+
+            button {
+                padding: 10px 14px;
+                border: none;
+                outline: none;
+                background-color: #06b6d4;
+                min-width: 140px;
+                border-radius: 8px;
+                font-weight: 700;
+                color: #ffffff;
+                transition: background-color .15s ease, transform .08s ease;
+
+                &:hover {
+                    background-color: #0891b2;
+                    transform: translateY(-2px);
+                }
+
+                &.disabled {
+                    opacity: 0.6;
+                    pointer-events: none;
+                    background-color: #94a3b8;
+                }
+            }
+        }
+    }
+}
+ 

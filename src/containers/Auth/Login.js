@@ -15,6 +15,7 @@ class Login extends Component {
         this.state = {
             username: '',
             password: '',
+            roleId: '',
             isShowPassword: false,
             errMessage: ''
         }
@@ -34,7 +35,8 @@ class Login extends Component {
 
     handleLogin = async () => {
         this.setState({
-            errMessage: ''
+            errMessage: '',
+            roleId: this.state.roleId
         })
 
         try {
@@ -45,6 +47,9 @@ class Login extends Component {
                 })
             }
             if (data && data.errCode === 0) {
+                if (data.user.roleId === 'R3') {
+                    this.returnToHome();
+                }
                 this.props.userLoginSuccess(data)
             }
         } catch (error) {
@@ -69,9 +74,22 @@ class Login extends Component {
             this.handleLogin();
         }
     }
+
+    returnToHome = () => {
+        if (this.props.history) {
+            this.props.history.push(`/home`)
+        }
+    }
+
+    returnToRegister = () => {
+        if (this.props.history) {
+            this.props.history.push(`/register`)
+        }
+    }
+
     render() {
         //JSX
-
+        console.log('check state', this.state)
 
         return (
             <div className="login-background">
@@ -79,7 +97,7 @@ class Login extends Component {
                     <div className="login-content row">
                         <div className="col-12 text-login">Login</div>
                         <div className="col-12 form-group login-input">
-                            <label>Username:</label>
+                            <label>User name:</label>
                             <input type="text" className="form-control" placeholder="Enter your username"
                                 value={this.state.username}
                                 onChange={(event => this.handleOnChangeUsername(event))} />
@@ -105,7 +123,9 @@ class Login extends Component {
                             <button className="btn-login" onClick={() => { this.handleLogin() }}>Login</button>
                         </div>
                         <div className="col-12">
-                            <span className="forgot-password">Forgot your password?</span>
+                            <span className="forgot-password col-12 text-left">Forgot your password?</span>
+                            <span className="register col-12 text-right ml-5" onClick={() => this.returnToRegister()}>Register a new account</span>
+
                             <div>
                                 <div className="col-12 text-center mt-3">
                                     <span className="text-other-login">Or Login with:</span>

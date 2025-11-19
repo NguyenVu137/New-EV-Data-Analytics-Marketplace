@@ -53,8 +53,14 @@
             }
 
             .forgot-password {
-                font-size: 12px;
+                cursor: pointer;
+                font-size: 13px;
             }
+            .register {
+                cursor: pointer;
+                font-size: 13px;
+            }
+
 
             .social-login {
                 display: flex;

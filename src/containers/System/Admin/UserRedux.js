@@ -146,7 +146,6 @@ class UserRedux extends Component {
                 avatar: this.state.avatar
             })
         }
-
     }
 
     onChangeInput = (event, id) => {
