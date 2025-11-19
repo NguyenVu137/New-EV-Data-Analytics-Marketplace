@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
+            Dataset.belongsTo(models.User, { foreignKey: 'providerId', as: 'providerData' })
+            Dataset.belongsTo(models.Allcode, { foreignKey: 'dataType', targetKey: 'keyMap', as: 'dataTypeData' })
         }
     };
     Dataset.init({
@@ -26,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         sequelize,
         modelName: 'Dataset',
+        tableName: 'datasets',
     }
 
     );

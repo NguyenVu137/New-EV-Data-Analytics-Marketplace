@@ -1,3 +1,4 @@
+import { raw } from "body-parser";
 import db from "../models/index";
 require('dotenv').config();
 import _ from 'lodash';
@@ -67,6 +68,22 @@ let saveDetailInforData = (inputData) => {
                         description: inputData.description,
                         dataId: inputData.dataId
                     })
+                    // create a Dataset record linked to provider (dataId) when creating markdown
+                    try {
+                        await db.Dataset.create({
+                            dataType: inputData.dataType ? inputData.dataType : null,
+                            dataName: inputData.dataName ? inputData.dataName : (inputData.description ? inputData.description.substring(0, 120) : ''),
+                            formatCsv: inputData.formatCsv ? inputData.formatCsv : null,
+                            formatHTML: inputData.formatHTML ? inputData.formatHTML : null,
+                            basicPrice: inputData.basicPrice ? inputData.basicPrice : null,
+                            standardPrice: inputData.standardPrice ? inputData.standardPrice : null,
+                            premiumPrice: inputData.premiumPrice ? inputData.premiumPrice : null,
+                            valueVi: inputData.valueVi ? inputData.valueVi : (inputData.description ? inputData.description : ''),
+                            providerId: inputData.dataId
+                        })
+                    } catch (e) {
+                        console.log('create Dataset error: ', e);
+                    }
                 } else if (inputData.action === "EDIT") {
                     let dataMarkdown = await db.Markdown.findOne({
                         where: { dataId: inputData.dataId },
@@ -79,6 +96,36 @@ let saveDetailInforData = (inputData) => {
                         dataMarkdown.dataId = inputData.dataId;
                         dataMarkdown.updateAt = new Date();
                         await dataMarkdown.save();
+                    }
+                    // update or create Dataset for this provider and dataType
+                    try {
+                        if (inputData.dataType) {
+                            let dataset = await db.Dataset.findOne({ where: { providerId: inputData.dataId, dataType: inputData.dataType }, raw: false });
+                            if (dataset) {
+                                dataset.dataName = inputData.dataName ? inputData.dataName : (inputData.description ? inputData.description.substring(0, 120) : dataset.dataName);
+                                dataset.formatCsv = inputData.formatCsv ? inputData.formatCsv : dataset.formatCsv;
+                                dataset.formatHTML = inputData.formatHTML ? inputData.formatHTML : dataset.formatHTML;
+                                dataset.basicPrice = inputData.basicPrice ? inputData.basicPrice : dataset.basicPrice;
+                                dataset.standardPrice = inputData.standardPrice ? inputData.standardPrice : dataset.standardPrice;
+                                dataset.premiumPrice = inputData.premiumPrice ? inputData.premiumPrice : dataset.premiumPrice;
+                                dataset.valueVi = inputData.valueVi ? inputData.valueVi : dataset.valueVi;
+                                await dataset.save();
+                            } else {
+                                await db.Dataset.create({
+                                    dataType: inputData.dataType,
+                                    dataName: inputData.dataName ? inputData.dataName : (inputData.description ? inputData.description.substring(0, 120) : ''),
+                                    formatCsv: inputData.formatCsv ? inputData.formatCsv : null,
+                                    formatHTML: inputData.formatHTML ? inputData.formatHTML : null,
+                                    basicPrice: inputData.basicPrice ? inputData.basicPrice : null,
+                                    standardPrice: inputData.standardPrice ? inputData.standardPrice : null,
+                                    premiumPrice: inputData.premiumPrice ? inputData.premiumPrice : null,
+                                    valueVi: inputData.valueVi ? inputData.valueVi : (inputData.description ? inputData.description : ''),
+                                    providerId: inputData.dataId
+                                })
+                            }
+                        }
+                    } catch (e) {
+                        console.log('update/create Dataset error: ', e);
                     }
                 }
 
@@ -142,16 +189,16 @@ let getDetailDataById = (inputId) => {
 }
 
 let bulkCreateSchedule = (data) => {
-    return new Promise(async(resolve, reject)=> {
+    return new Promise(async (resolve, reject) => {
         try {
-            if(!data.arrSchedule || !data.dataId || !data.formatedDate) {
+            if (!data.arrSchedule || !data.dataId || !data.formatedDate) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing required param!'
                 })
             } else {
                 let schedule = data.arrSchedule;
-                if(schedule && schedule.length > 0) {
+                if (schedule && schedule.length > 0) {
                     schedule = schedule.map(item => {
                         item.maxNumber = MAX_NUMBER_SCHEDULE;
                         return item;
@@ -160,26 +207,18 @@ let bulkCreateSchedule = (data) => {
 
                 //get all existing data
                 let existing = await db.Schedule.findAll({
-                    where: { dataId: data.dataId, date: data.formatedDate},
-                    attributes: ['timeType', 'date','dataId', 'maxNumber'],
+                    where: { dataId: data.dataId, date: data.formatedDate },
+                    attributes: ['timeType', 'date', 'dataId', 'maxNumber'],
                     raw: true
                 });
 
-                //convert date
-                if (existing && existing.length > 0) {
-                    existing = existing.map(item => {
-                        item.date = new Date(item.date).getTime();
-                        return item;
-                    })
-                }
-
                 //compare different
-                let toCreate = _.differenceWith(schedule, existing, (a,b) => {
-                    return a.timeType === b.timeType && a.date === b.date;
+                let toCreate = _.differenceWith(schedule, existing, (a, b) => {
+                    return a.timeType === b.timeType && +a.date === +b.date;
                 });
 
                 //create data
-                if ( toCreate && toCreate.length > 0) {
+                if (toCreate && toCreate.length > 0) {
                     await db.Schedule.bulkCreate(toCreate);
                 }
 
@@ -194,10 +233,46 @@ let bulkCreateSchedule = (data) => {
     })
 }
 
+let getDataTypeById = (dataId, dataType) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!dataId || !dataType) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameter!'
+                })
+            } else {
+                let  dataType = await db.Dataset.findAll({
+                    where: {
+                        id: dataId,
+                        dataType: dataType
+                    },
+                    include:[
+                        {model: db.Allcode, as: 'dataTypeData', attributes: ['valueEn', 'valueVi']}
+                    ],
+                    raw: false,
+                    nest: true
+                })
+
+                if (!dataType)  dataType = [];
+
+                resolve({
+                    errCode: 0,
+                    data: dataType
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
 module.exports = {
     getTopDataHome: getTopDataHome,
     getAllDatas: getAllDatas,
     saveDetailInforData: saveDetailInforData,
     getDetailDataById: getDetailDataById,
-    bulkCreateSchedule: bulkCreateSchedule
+    bulkCreateSchedule: bulkCreateSchedule,
+    getDataTypeById: getDataTypeById
 }

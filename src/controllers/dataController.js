@@ -67,10 +67,24 @@ let bulkCreateSchedule = async (req, res) => {
     }
 }
 
+let getDataTypeById = async (req, res) => {
+    try {
+        let infor = await dataService.getDataTypeById(req.query.dataId, req.query.dataType);
+        return res.status(200).json(infor);
+    } catch (e) {
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server'
+        })
+    }
+}
+
 module.exports = {
     getTopDataHome: getTopDataHome,
     getAllDatas: getAllDatas,
     postInforDatas: postInforDatas,
     getDetailDataById: getDetailDataById,
-    bulkCreateSchedule: bulkCreateSchedule
+    bulkCreateSchedule: bulkCreateSchedule,
+    getDataTypeById: getDataTypeById
 }
