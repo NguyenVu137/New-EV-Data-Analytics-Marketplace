@@ -1,0 +1,5 @@
+CREATE DATABASE IF NOT EXISTS `user-service-db`;
+CREATE DATABASE IF NOT EXISTS `dataset-service-db`;
+CREATE DATABASE IF NOT EXISTS `payment-service-db`;
+CREATE DATABASE IF NOT EXISTS `analytics-service-db`;
+SHOW DATABASES;

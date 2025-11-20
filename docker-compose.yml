@@ -1,0 +1,148 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  db-mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    command: --max_allowed_packet=64M
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - microservices-network
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    image: api-gateway:latest
+    ports:
+      - "6969:6969"
+    environment:
+      - NODE_ENV=development
+      - PORT=6969
+      - USER_SERVICE_URL=http://user-service:7001
+      - DATASET_SERVICE_URL=http://dataset-service:7002
+      - PAYMENT_SERVICE_URL=http://payment-service:7003
+      - ANALYTICS_SERVICE_URL=http://analytics-service:7004
+    depends_on:
+      - user-service
+      - dataset-service
+      - payment-service
+      - analytics-service
+    volumes:
+      - ./api-gateway:/app
+      - /app/node_modules
+    networks:
+      - microservices-network
+
+  # User Service
+  user-service:
+    build: ./user-service
+    image: user-service:latest
+    ports:
+      - "7001:7001"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db-mysql
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=123456
+      - DB_DATABASE_NAME=user-service-db
+      - DB_DIALECT=mysql
+      - PORT=7001
+    depends_on:
+      db-mysql:
+        condition: service_healthy
+    volumes:
+      - ./user-service:/app
+      - /app/node_modules
+    networks:
+      - microservices-network
+
+  # Dataset Service
+  dataset-service:
+    build: ./dataset-service
+    image: dataset-service:latest
+    ports:
+      - "7002:7002"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db-mysql
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=123456
+      - DB_DATABASE_NAME=dataset-service-db
+      - DB_DIALECT=mysql
+      - PORT=7002
+    depends_on:
+      db-mysql:
+        condition: service_healthy
+    volumes:
+      - ./dataset-service:/app
+      - /app/node_modules
+    networks:
+      - microservices-network
+
+  # Payment Service
+  payment-service:
+    build: ./payment-service
+    image: payment-service:latest
+    ports:
+      - "7003:7003"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db-mysql
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=123456
+      - DB_DATABASE_NAME=payment-service-db
+      - DB_DIALECT=mysql
+      - PORT=7003
+    depends_on:
+      db-mysql:
+        condition: service_healthy
+    volumes:
+      - ./payment-service:/app
+      - /app/node_modules
+    networks:
+      - microservices-network
+
+  # Analytics Service
+  analytics-service:
+    build: ./analytics-service
+    image: analytics-service:latest
+    ports:
+      - "7004:7004"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db-mysql
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=123456
+      - DB_DATABASE_NAME=analytics-service-db
+      - DB_DIALECT=mysql
+      - PORT=7004
+      - DATASET_SERVICE_URL=http://dataset-service:7002
+    depends_on:
+      db-mysql:
+        condition: service_healthy
+    volumes:
+      - ./analytics-service:/app
+      - /app/node_modules
+    networks:
+      - microservices-network
+
+volumes:
+  db_data:
+
+networks:
+  microservices-network:
+    driver: bridge

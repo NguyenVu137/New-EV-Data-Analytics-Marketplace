@@ -1,0 +1,30 @@
+{
+  "name": "payment-service",
+  "version": "1.0.0",
+  "description": "Payment microservice - Manages orders and payments",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "nodemon --exec babel-node src/server.js",
+    "dev": "babel-node src/server.js",
+    "build": "babel src -d build --copy-files",
+    "migrate": "sequelize-cli db:migrate",
+    "migrate:undo": "sequelize-cli db:migrate:undo:all"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "mysql2": "^2.2.5",
+    "sequelize": "^6.6.2",
+    "dotenv": "^8.2.0",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.5",
+    "@babel/node": "^7.12.10",
+    "@babel/preset-env": "^7.28.5",
+    "nodemon": "^2.0.7",
+    "sequelize-cli": "^6.2.0"
+  }
+}

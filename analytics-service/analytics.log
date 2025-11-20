@@ -1,0 +1,119 @@
+
+> analytics-service@1.0.0 start F:\XDPMHDT\test new ev data\microservices\analytics-service
+> nodemon --exec babel-node src/server.js
+
+[33m[nodemon] 2.0.22[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,json[39m
+[32m[nodemon] starting `babel-node src/server.js`[39m
+events.js:353
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::7004
+    at Server.setupListenHandle [as _listen2] (net.js:1318:16)
+    at listenInCluster (net.js:1366:12)
+    at Server.listen (net.js:1452:7)
+    at Function.listen (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\express\lib\application.js:635:24)
+    at Object.<anonymous> (F:\XDPMHDT\test new ev data\microservices\analytics-service\src\/server.js:73:5)
+    at Module._compile (internal/modules/cjs/loader.js:1068:30)
+    at Module._compile (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\pirates\lib\index.js:129:24)
+    at Module._extensions..js (internal/modules/cjs/loader.js:1097:10)
+    at Object.newLoader [as .js] (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\pirates\lib\index.js:134:7)
+    at Module.load (internal/modules/cjs/loader.js:933:32)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (net.js:1345:8)
+    at processTicksAndRejections (internal/process/task_queues.js:82:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 7004
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `babel-node src/server.js`[39m
+events.js:353
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::7004
+    at Server.setupListenHandle [as _listen2] (net.js:1318:16)
+    at listenInCluster (net.js:1366:12)
+    at Server.listen (net.js:1452:7)
+    at Function.listen (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\express\lib\application.js:635:24)
+    at Object.<anonymous> (F:\XDPMHDT\test new ev data\microservices\analytics-service\src\/server.js:73:5)
+    at Module._compile (internal/modules/cjs/loader.js:1068:30)
+    at Module._compile (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\pirates\lib\index.js:129:24)
+    at Module._extensions..js (internal/modules/cjs/loader.js:1097:10)
+    at Object.newLoader [as .js] (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\pirates\lib\index.js:134:7)
+    at Module.load (internal/modules/cjs/loader.js:933:32)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (net.js:1345:8)
+    at processTicksAndRejections (internal/process/task_queues.js:82:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 7004
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `babel-node src/server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `babel-node src/server.js`[39m
+events.js:353
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::7004
+    at Server.setupListenHandle [as _listen2] (net.js:1318:16)
+    at listenInCluster (net.js:1366:12)
+    at Server.listen (net.js:1452:7)
+    at Function.listen (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\express\lib\application.js:635:24)
+    at Object.<anonymous> (F:\XDPMHDT\test new ev data\microservices\analytics-service\src\/server.js:73:5)
+    at Module._compile (internal/modules/cjs/loader.js:1068:30)
+    at Module._compile (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\pirates\lib\index.js:129:24)
+    at Module._extensions..js (internal/modules/cjs/loader.js:1097:10)
+    at Object.newLoader [as .js] (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\pirates\lib\index.js:134:7)
+    at Module.load (internal/modules/cjs/loader.js:933:32)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (net.js:1345:8)
+    at processTicksAndRejections (internal/process/task_queues.js:82:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 7004
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `babel-node src/server.js`[39m
+events.js:353
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::7004
+    at Server.setupListenHandle [as _listen2] (net.js:1318:16)
+    at listenInCluster (net.js:1366:12)
+    at Server.listen (net.js:1452:7)
+    at Function.listen (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\express\lib\application.js:635:24)
+    at Object.<anonymous> (F:\XDPMHDT\test new ev data\microservices\analytics-service\src\/server.js:73:5)
+    at Module._compile (internal/modules/cjs/loader.js:1068:30)
+    at Module._compile (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\pirates\lib\index.js:129:24)
+    at Module._extensions..js (internal/modules/cjs/loader.js:1097:10)
+    at Object.newLoader [as .js] (F:\XDPMHDT\test new ev data\microservices\analytics-service\node_modules\pirates\lib\index.js:134:7)
+    at Module.load (internal/modules/cjs/loader.js:933:32)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (net.js:1345:8)
+    at processTicksAndRejections (internal/process/task_queues.js:82:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 7004
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting child process[39m
+[32m[nodemon] starting `babel-node src/server.js`[39m
