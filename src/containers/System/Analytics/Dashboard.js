@@ -37,7 +37,7 @@ const Dashboard = () => {
     useEffect(() => {
         const recalculateAnalytics = async () => {
             try {
-                const backendBase = 'http://localhost:6969';
+                const backendBase = process.env.REACT_APP_BACKEND_URL || 'http://localhost:6969';
                 const apiUrl = `${backendBase}/api/recalculate-analytics`;
                 console.log('[Dashboard] Triggering analytics recalculation...');
                 
@@ -69,8 +69,8 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchMonths = async () => {
             try {
-                // Use backend API port 6969, not frontend port 3000
-                const backendBase = 'http://localhost:6969';
+                // Use backend API URL from REACT_APP_BACKEND_URL env variable
+                const backendBase = process.env.REACT_APP_BACKEND_URL || 'http://localhost:6969';
                 const apiUrl = `${backendBase}/api/get-available-months`;
                 console.log('[Dashboard] Fetching months from:', apiUrl);
                 

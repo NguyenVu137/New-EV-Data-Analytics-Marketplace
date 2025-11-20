@@ -1,4 +1,10 @@
 import axios from '../axios';
+
+/**
+ * User Service - All requests go through API Gateway (port 6969)
+ * which routes them to User Microservice (port 7001)
+ */
+
 const handleLoginApi = (userEmail, userPassword) => {
     return axios.post('/api/login', { email: userEmail, password: userPassword });
 }
@@ -21,27 +27,31 @@ const deleteUserService = (userId) => {
 }
 
 const editUserService = (inputData) => {
-    return axios.put('api/edit-user', inputData)
+    return axios.put('/api/edit-user', inputData)
 }
 
 const getAllCodeService = (inputType) => {
     return axios.get(`/api/allcode?type=${inputType}`);
 }
 
+/**
+ * Legacy endpoints - kept for backward compatibility
+ * These should be migrated to dataset service
+ */
 const getTopDataHomeService = (limit) => {
-    return axios.get(`/api/top-data-home?limit=${limit}`)
+    return axios.get(`/api/datasets?limit=${limit}`)
 }
 
 const getAllDatas = () => {
-    return axios.get(`/api/get-all-datas`)
+    return axios.get(`/api/datasets`)
 }
 
 const saveDetailDataService = (data) => {
-    return axios.post('/api/save-infor-datas', data);
+    return axios.post('/api/datasets', data);
 }
 
 const getDetailInforData = (inputId) => {
-    return axios.get(`/api/get-detail-data-by-id?id=${inputId}`)
+    return axios.get(`/api/datasets/${inputId}`)
 }
 
 const saveBulkScheduleData = (data) => {

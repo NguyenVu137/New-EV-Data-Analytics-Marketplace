@@ -1,12 +1,23 @@
 import axios from 'axios';
 
+// API Gateway (routes all requests)
+const GATEWAY_URL = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:6969';
+
+// Individual Microservices (for direct calls if needed)
+const SERVICES = {
+    USER_SERVICE: process.env.REACT_APP_USER_SERVICE_URL || 'http://localhost:7001',
+    DATASET_SERVICE: process.env.REACT_APP_DATASET_SERVICE_URL || 'http://localhost:7002',
+    PAYMENT_SERVICE: process.env.REACT_APP_PAYMENT_SERVICE_URL || 'http://localhost:7003',
+    ANALYTICS_SERVICE: process.env.REACT_APP_ANALYTICS_SERVICE_URL || 'http://localhost:7004'
+};
+
 /**
- * Main Backend Axios Instance
- * Backend runs on port 6969
- * Supports environment variable override for different environments
+ * Main Backend Axios Instance (uses API Gateway)
+ * API Gateway routes all requests to appropriate microservices
+ * Gateway runs on port 6969
  */
 const instance = axios.create({
-    baseURL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:6969',
+    baseURL: GATEWAY_URL,
     timeout: 10000, // 10 second timeout
     headers: {
         'Content-Type': 'application/json'
@@ -26,7 +37,8 @@ instance.interceptors.response.use(
             // Server responded with error
             console.error('API Error:', {
                 status: error.response.status,
-                message: error.response.data?.message || error.message
+                message: error.response.data?.message || error.message,
+                endpoint: error.config?.url
             });
         } else if (error.request) {
             // Request made but no response
@@ -49,10 +61,13 @@ instance.interceptors.request.use(
             config.headers.Authorization = `Bearer ${token}`;
         }
         
-        // Add userId header for payment API calls
+        // Add userId header for API calls
         const userId = localStorage.getItem('userId');
         if (userId) {
             config.headers['x-user-id'] = userId;
+            console.log('[Axios] Added x-user-id header:', userId, 'for endpoint:', config.url);
+        } else {
+            console.log('[Axios] No userId in localStorage for endpoint:', config.url);
         }
         
         return config;
@@ -62,4 +77,6 @@ instance.interceptors.request.use(
     }
 );
 
+// Export axios instances
 export default instance;
+export { GATEWAY_URL, SERVICES };

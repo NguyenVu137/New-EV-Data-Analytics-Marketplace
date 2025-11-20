@@ -35,37 +35,6 @@ export const fetchAnalyticsError = (error) => {
 };
 
 /**
- * Mock Analytics Data - For Testing
- * Replace with actual API data when backend is ready
- */
-const MOCK_ANALYTICS_DATA = {
-    overview: {
-        averageSoC: 75,
-        totalCharges: 245,
-        co2Reduced: 48,
-        batteryHealth: 92,
-        socTrend: 5,
-        chargeTrend: 12,
-        co2Trend: 8,
-        healthTrend: -2,
-        totalRange: 15420,
-        efficiency: 5.8
-    },
-    batteryStats: {
-        timestamps: ['Cell 1', 'Cell 2', 'Cell 3', 'Cell 4', 'Cell 5'],
-        values: [92, 88, 85, 90, 87]
-    },
-    socStats: {
-        timestamps: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
-        values: [45, 52, 68, 75, 82, 78, 65]
-    },
-    chargingStats: {
-        timestamps: ['2025-11-08', '2025-11-09', '2025-11-10', '2025-11-11', '2025-11-12'],
-        values: [3, 5, 4, 6, 7]
-    }
-};
-
-/**
  * Fetch Analytics - Thunk Action (UPDATED for Monthly View)
  * 
  * Fetches analytics data from backend for a specific month
@@ -127,13 +96,11 @@ export const fetchAnalytics = (filters = {}) => {
                 }
 
                 if (!analyticsData || typeof analyticsData !== 'object' || Object.keys(analyticsData).length === 0) {
-                    console.warn('[Analytics] API returned empty data');
-                    analyticsData = MOCK_ANALYTICS_DATA;
+                    throw new Error('API returned empty data');
                 }
             } catch (apiError) {
-                console.warn('[Analytics] API call failed:', apiError.message);
-                // Use mock data as fallback
-                analyticsData = MOCK_ANALYTICS_DATA;
+                console.error('[Analytics] API call failed:', apiError.message);
+                throw apiError;
             }
 
             if (!analyticsData || typeof analyticsData !== 'object') {

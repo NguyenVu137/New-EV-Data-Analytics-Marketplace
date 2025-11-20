@@ -110,9 +110,9 @@ const PaymentPage = () => {
     // Memoized dataset validation
     const isValidDataset = useMemo(() => {
         return dataset && 
-               dataset.id && 
-               dataset.name &&
-               (dataset.basic_price || 
+            dataset.id && 
+            dataset.name &&
+            (dataset.basic_price || 
                 dataset.standard_price || 
                 dataset.premium_price);
     }, [dataset]);

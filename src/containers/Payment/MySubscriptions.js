@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { fetchUserSubscriptions, cancelSubscription } from '../../store/actions/paymentActions';
 import Navbar from '../../components/Navbar';
 import HomeFooter from '../HomePage/HomeFooter';
@@ -10,11 +11,20 @@ import './MySubscriptions.scss';
  */
 const MySubscriptions = () => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const { subscriptions, loading, isLoggedIn } = useSelector(state => ({
     subscriptions: state.payment?.subscriptions || [],
     loading: state.payment?.loading,
     isLoggedIn: state.user?.isLoggedIn
   }));
+
+  // Check login khi vào trang
+  useEffect(() => {
+    if (!isLoggedIn) {
+      history.push('/login');
+      return;
+    }
+  }, [isLoggedIn, history]);
 
   useEffect(() => {
     if (isLoggedIn) {

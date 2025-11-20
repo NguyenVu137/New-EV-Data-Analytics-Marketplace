@@ -10,6 +10,7 @@ import './PurchaseHistory.scss';
 class PurchaseHistory extends React.Component {
     constructor(props) {
         super(props);
+        this._isMounted = true;
         this.state = {
             purchases: [],
             isLoading: true,
@@ -19,18 +20,49 @@ class PurchaseHistory extends React.Component {
     }
 
     componentDidMount() {
-        this.fetchPurchaseHistory();
+        // Check on mount, may be too early due to Redux persist rehydration
+        if (this.props.isLoggedIn && this.props.userInfo?.user?.id) {
+            this.fetchPurchaseHistory();
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        // Re-check when props change (Redux rehydration complete)
+        if (this.props.isLoggedIn && this.props.userInfo?.user?.id) {
+            // Only fetch if userId changed (i.e., after Redux rehydration)
+            if (prevProps.userInfo?.user?.id !== this.props.userInfo?.user?.id) {
+                this.fetchPurchaseHistory();
+            }
+        }
+    }
+
+    componentWillUnmount() {
+        // Cleanup: prevent state updates on unmounted component
+        this._isMounted = false;
     }
 
     fetchPurchaseHistory = async () => {
         try {
             this.setState({ isLoading: true, error: null });
-            console.log('[PurchaseHistory] Fetching subscriptions...');
+            const userId = this.props.userInfo?.user?.id;
+            
+            if (!userId) {
+                this.setState({
+                    error: 'Vui lòng đăng nhập',
+                    isLoading: false,
+                });
+                return;
+            }
+            
+            console.log('[PurchaseHistory] Fetching subscriptions for userId:', userId);
             
             // Use axios instance with auth middleware
-            const response = await axiosInstance.get('/api/subscriptions');
+            // Pass userId as query param as backup for header
+            const response = await axiosInstance.get(`/api/subscriptions?userId=${userId}`);
             
             console.log('[PurchaseHistory] Response:', response);
+
+            if (!this._isMounted) return;
 
             if (response.success) {
                 this.setState({
@@ -44,6 +76,8 @@ class PurchaseHistory extends React.Component {
                 });
             }
         } catch (error) {
+            if (!this._isMounted) return;
+            
             console.error('[PurchaseHistory] Error fetching purchase history:', error);
             this.setState({
                 error: error.response?.data?.message || 'Error loading purchase history',
@@ -55,11 +89,15 @@ class PurchaseHistory extends React.Component {
     handleDownloadData = async (subscriptionId, datasetName) => {
         try {
             this.setState({ cancelingId: subscriptionId });
-            console.log('[PurchaseHistory] Downloading data for subscription:', subscriptionId);
+            const userId = this.props.userInfo?.user?.id;
             
-            const response = await axiosInstance.get(`/api/subscriptions/${subscriptionId}/download`, {
+            console.log('[PurchaseHistory] Downloading data for subscription:', subscriptionId, 'userId:', userId);
+            
+            const response = await axiosInstance.get(`/api/subscriptions/${subscriptionId}/download?userId=${userId}`, {
                 responseType: 'blob'
             });
+            
+            if (!this._isMounted) return;
             
             // Create blob and download
             const url = window.URL.createObjectURL(new Blob([response]));
@@ -72,10 +110,14 @@ class PurchaseHistory extends React.Component {
             
             toast.success('Tải dữ liệu thành công!');
         } catch (error) {
+            if (!this._isMounted) return;
+            
             console.error('[PurchaseHistory] Error downloading data:', error);
             toast.error('Không thể tải dữ liệu');
         } finally {
-            this.setState({ cancelingId: null });
+            if (this._isMounted) {
+                this.setState({ cancelingId: null });
+            }
         }
     };
 

@@ -1,8 +1,13 @@
 import axios from '../axios';
 
+/**
+ * Dataset Service - All requests go through API Gateway (port 6969)
+ * which routes them to Dataset Microservice (port 7002)
+ */
+
 const DatasetService = {
     async getDatasetById(id) {
-        // Call backend API (http://localhost:6974/api/datasets/:id)
+        // Call backend API via axios configured with REACT_APP_BACKEND_URL env variable
         const response = await axios.get(`/api/datasets/${id}`);
         // Normalize payload so components always receive expected fields
         const payload = response.data || {};
@@ -35,6 +40,26 @@ const DatasetService = {
         const response = await axios.get('/api/datasets/search', {
             params: { q: query }
         });
+        return response.data;
+    },
+
+    async createDataset(data) {
+        const response = await axios.post('/api/datasets', data);
+        return response.data;
+    },
+
+    async updateDataset(id, data) {
+        const response = await axios.put(`/api/datasets/${id}`, data);
+        return response.data;
+    },
+
+    async deleteDataset(id) {
+        const response = await axios.delete(`/api/datasets/${id}`);
+        return response.data;
+    },
+
+    async getDatasetStats() {
+        const response = await axios.get('/api/datasets/stats');
         return response.data;
     }
 };

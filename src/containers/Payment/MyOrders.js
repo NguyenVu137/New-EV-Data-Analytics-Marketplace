@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { fetchUserOrders } from '../../store/actions/paymentActions';
 import Navbar from '../../components/Navbar';
 import HomeFooter from '../HomePage/HomeFooter';
@@ -10,13 +11,24 @@ import './MyOrders.scss';
  */
 const MyOrders = () => {
   const dispatch = useDispatch();
-  const { orders, loading, page, limit, totalPages } = useSelector(state => ({
+  const history = useHistory();
+  
+  const { orders, loading, page, limit, totalPages, isLoggedIn } = useSelector(state => ({
     orders: state.payment?.orders || [],
     loading: state.payment?.loading,
     page: state.payment?.page || 1,
     limit: state.payment?.limit || 10,
-    totalPages: state.payment?.totalPages || 0
+    totalPages: state.payment?.totalPages || 0,
+    isLoggedIn: state.user?.isLoggedIn
   }));
+
+  // Check login khi vào trang
+  useEffect(() => {
+    if (!isLoggedIn) {
+      history.push('/login');
+      return;
+    }
+  }, [isLoggedIn, history]);
 
   useEffect(() => {
     dispatch(fetchUserOrders(page, limit));

@@ -25,7 +25,7 @@ class ModalEditUser extends Component {
             this.setState({
                 id: user.id,
                 email: user.email,
-                password: 'hardcode',
+                password: '',  // Keep empty - users should change via password reset
                 firstName: user.firstName,
                 lastName: user.lastName,
                 address: user.address

@@ -50,27 +50,43 @@ class Login extends Component {
 
     processLogin = () => {
         const { username, password } = this.state;
-
         const { adminLoginSuccess, adminLoginFail } = this.props;
-        let loginBody = {
-            username: 'admin',
-            password: '123456'
-        }
-        //sucess
-        let adminInfo = {
-            "tlid": "0",
-            "tlfullname": "Administrator",
-            "custype": "A",
-            "accessToken": "eyJhbGciOiJIU"
+
+        if (!username || !password) {
+            this.setState({ loginError: 'Please enter username and password' });
+            return;
         }
 
-        adminLoginSuccess(adminInfo);
-        this.refresh();
-        this.redirectToSystemPage();
+        let loginBody = {
+            username: username,
+            password: password
+        }
+
         try {
+            // Call real backend login API
             adminService.login(loginBody)
+                .then(response => {
+                    if (response && response.data) {
+                        // Real admin data from backend
+                        let adminInfo = {
+                            "tlid": response.data.id,
+                            "tlfullname": response.data.firstName + ' ' + response.data.lastName,
+                            "custype": response.data.roleId,
+                            "accessToken": response.data.accessToken || "token"
+                        }
+                        adminLoginSuccess(adminInfo);
+                        this.refresh();
+                        this.redirectToSystemPage();
+                    }
+                })
+                .catch(err => {
+                    console.log('Login failed:', err);
+                    this.setState({ loginError: 'Invalid username or password' });
+                    adminLoginFail();
+                })
         } catch (e) {
             console.log('error login : ', e)
+            adminLoginFail();
         }
 
     }

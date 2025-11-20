@@ -1,10 +1,34 @@
 import React, { useState } from 'react';
 import { Card, Button, Modal } from 'antd';
+import { useHistory } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import './DatasetDetail.css';
 
 const DatasetDetail = ({ dataset, onPurchase }) => {
     const [selectedPriceType, setSelectedPriceType] = useState('basic');
     const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+    const history = useHistory();
+    
+    // Get login state from Redux
+    const { isLoggedIn } = useSelector(state => ({
+        isLoggedIn: state.user?.isLoggedIn
+    }));
+
+    const handlePurchaseClick = () => {
+        // Check if user is logged in
+        if (!isLoggedIn) {
+            // Store dataset info for after login
+            sessionStorage.setItem('pendingPurchase', JSON.stringify({
+                datasetId: dataset.id,
+                packageType: selectedPriceType
+            }));
+            // Redirect to login
+            history.push('/login');
+            return;
+        }
+        // If already logged in, show purchase modal
+        setShowPurchaseModal(true);
+    };
 
     const handlePurchase = () => {
         if (onPurchase) {
@@ -19,14 +43,34 @@ const DatasetDetail = ({ dataset, onPurchase }) => {
 
     const formatDate = (dateStr) => {
         if (!dateStr) return 'N/A';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        try {
+            let date;
+            if (typeof dateStr === 'string') {
+                // Try ISO format first
+                date = new Date(dateStr);
+                // If that failed, it might be already formatted
+                if (isNaN(date.getTime())) {
+                    // Return pre-formatted string as-is
+                    return dateStr;
+                }
+            } else {
+                date = new Date(dateStr);
+            }
+            
+            // If valid date, format it
+            if (!isNaN(date.getTime())) {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${day}/${month}/${year} ${hours}:${minutes}`;
+            }
+            return 'N/A';
+        } catch (e) {
+            console.error('formatDate error:', e, 'dateStr:', dateStr);
+            return 'N/A';
+        }
     };
 
     const formatCurrency = (v, suffix = '') => {
@@ -60,7 +104,7 @@ const DatasetDetail = ({ dataset, onPurchase }) => {
                         </tr>
                         <tr>
                             <td className="label">Ngày đăng tải:</td>
-                            <td>{dataset.upload_date}</td>
+                            <td>{formatDate(dataset.createdAt || dataset.upload_date)}</td>
                         </tr>
                         <tr>
                             <td className="label">Loại định dạng:</td>
@@ -94,7 +138,7 @@ const DatasetDetail = ({ dataset, onPurchase }) => {
                     </tbody>
                 </table>
                 <div className="actions">
-                    <Button type="primary" onClick={() => setShowPurchaseModal(true)}>
+                    <Button type="primary" onClick={handlePurchaseClick}>
                         Mua ngay
                     </Button>
                 </div>
