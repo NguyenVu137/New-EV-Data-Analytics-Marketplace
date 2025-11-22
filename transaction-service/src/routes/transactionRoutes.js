@@ -1429,6 +1429,41 @@ router.get('/check-permission/:datasetId', auth, async (req, res) => {
     }
 });
 
+// Get user purchases (only successful payments) with dataset info
+router.get('/purchases', auth, async (req, res) => {
+    try {
+        const purchases = await Transaction.findAll({
+            where: { consumer_id: req.user.id, payment_status_code: 'P2' },
+            order: [['created_at', 'DESC']]
+        });
+
+        const enriched = await Promise.all(purchases.map(async (t) => {
+            let dataset = null;
+            try {
+                const ds = await datasetService.get(`/api/datasets/${t.data_source_id}`);
+                if (ds && ds.errCode === 0) dataset = ds.data;
+            } catch (err) {
+                console.error('Failed to load dataset for purchase', t.data_source_id, err.message || err);
+            }
+
+            return {
+                id: t.id,
+                amount: t.amount,
+                type_code: t.type_code,
+                payment_status_code: t.payment_status_code,
+                payment_method: t.payment_method,
+                created_at: t.created_at,
+                dataset
+            };
+        }));
+
+        res.json({ errCode: 0, data: enriched });
+    } catch (error) {
+        console.error('Get purchases error:', error);
+        res.status(500).json({ errCode: -1, message: 'Failed to get purchases' });
+    }
+});
+
 // Payment callback (from gateway)
 router.post('/callback', async (req, res) => {
     try {
