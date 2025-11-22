@@ -43,7 +43,9 @@
         },
         "consumer": {
             "purchases": "Giao dịch",
-            "my-purchases": "Lịch sử mua"
+            "my-purchases": "Lịch sử mua hàng",
+            "analytics": "Phân tích dữ liệu",
+            "ev-analytics": "Dashboard EV Analytics"
         }
     },
     "manage-user": {

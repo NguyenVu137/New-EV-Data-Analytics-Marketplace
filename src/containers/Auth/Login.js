@@ -38,15 +38,17 @@ class Login extends Component {
         }
 
         try {
-            const data = await handleLoginApi(email, password);
-            if (data && data.errCode !== 0) {
-                this.setState({ errMessage: data.errMessage || data.message });
+            const response = await handleLoginApi(email, password);
+            if (response && response.errCode !== 0) {
+                this.setState({ errMessage: response.errMessage || response.message });
             }
-            if (data && data.errCode === 0) {
-                this.props.userLoginSuccess(data);
-                localStorage.setItem('token', data.token);
+            if (response && response.errCode === 0) {
+                // Backend trả về { errCode, message, data: { user, token } }
+                const { user, token } = response.data;
+                this.props.userLoginSuccess(response.data); // Gửi { user, token } vào Redux
+                localStorage.setItem('token', token);
                 // Redirect theo role
-                const role = data.user.roleId;
+                const role = user.roleId;
                 switch (role) {
                     case 'R1': this.props.navigate('/system/user-manage'); break;
                     case 'R2': this.props.navigate('/system/manage-data'); break;

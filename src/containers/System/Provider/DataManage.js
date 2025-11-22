@@ -153,6 +153,11 @@ class DataManage extends Component {
             api_url, basicPrice, standardPrice, premiumPrice, status_code,
             selectedFiles, metadata } = this.state;
 
+        // Nếu đang sửa dataset bị từ chối (S3), khi cập nhật sẽ chuyển về trạng thái chờ duyệt (S1)
+        let newStatus = status_code;
+        if (action === CRUD_ACTIONS.EDIT && status_code === 'S3') {
+            newStatus = 'S1';
+        }
         const datasetData = {
             title,
             description,
@@ -162,7 +167,7 @@ class DataManage extends Component {
             basicPrice: parseFloat(basicPrice) || 0,
             standardPrice: parseFloat(standardPrice) || 0,
             premiumPrice: parseFloat(premiumPrice) || 0,
-            status_code: status_code
+            status_code: newStatus
         };
 
         // Lọc metadata có key và value
@@ -176,8 +181,32 @@ class DataManage extends Component {
                 res = await this.props.updateDataset(editId, datasetData, selectedFiles, validMetadata);
             }
 
-            if (res && res.success) {
+            if (res && res.success && res.data) {
                 this.showNotification(res.message, 'success');
+                // Cập nhật lại state với dữ liệu mới nhất từ API, giữ form ở trạng thái chỉnh sửa
+                const d = res.data;
+                this.setState({
+                    title: d.title || '',
+                    description: d.description || '',
+                    category_code: d.category_code || '',
+                    format_code: d.format_code || '',
+                    api_url: d.api_url || '',
+                    basicPrice: d.basicPrice || 0,
+                    standardPrice: d.standardPrice || 0,
+                    premiumPrice: d.premiumPrice || 0,
+                    status_code: d.status_code || '',
+                    existingFiles: d.files || [],
+                    metadata: Array.isArray(d.metadata) && d.metadata.length > 0
+                        ? d.metadata.map(m => ({ key: m.key, value: m.value }))
+                        : [{ key: '', value: '' }],
+                    selectedFiles: [],
+                    action: CRUD_ACTIONS.EDIT,
+                    editId: d.id
+                });
+                await this.props.fetchAllDatasets();
+            } else if (res && res.success) {
+                this.showNotification(res.message, 'success');
+                await this.props.fetchAllDatasets();
                 this.handleCancel();
             } else {
                 this.showNotification(res?.message || 'Có lỗi xảy ra', 'error');
@@ -241,12 +270,10 @@ class DataManage extends Component {
     }
 
     getStatusBadge = (status_code) => {
-        const statusConfig = {
-            'PENDING': { text: 'Chờ duyệt', class: 'badge-warning' },
-            'APPROVED': { text: 'Đã duyệt', class: 'badge-success' },
-            'REJECTED': { text: 'Từ chối', class: 'badge-danger' }
-        };
-        const config = statusConfig[status_code] || statusConfig['PENDING'];
+        // Map status_code (S1, S2, S3) to label and class
+        let config = { text: 'Chờ duyệt', class: 'badge-warning' };
+        if (status_code === 'S2') config = { text: 'Đã duyệt', class: 'badge-success' };
+        else if (status_code === 'S3') config = { text: 'Từ chối', class: 'badge-danger' };
         return <span className={`badge ${config.class}`}>{config.text}</span>;
     }
 
@@ -514,7 +541,7 @@ class DataManage extends Component {
                                                     <td>{item.basicPrice || 0} / {item.standardPrice || 0} / {item.premiumPrice || 0}</td>
                                                     <td>{this.getStatusBadge(item.status_code)}</td>
                                                     <td>
-                                                        {item.status_code !== 'APPROVED' && (
+                                                        {item.status_code !== 'S2' ? (
                                                             <>
                                                                 <button
                                                                     className="btn btn-sm btn-warning mr-1"
@@ -527,8 +554,7 @@ class DataManage extends Component {
                                                                     <i className="fa-solid fa-trash"></i>
                                                                 </button>
                                                             </>
-                                                        )}
-                                                        {item.status_code === 'APPROVED' && (
+                                                        ) : (
                                                             <span className="text-muted">Đã duyệt</span>
                                                         )}
                                                     </td>

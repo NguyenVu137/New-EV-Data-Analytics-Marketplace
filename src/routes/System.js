@@ -11,6 +11,7 @@ import MarketAnalyticsDashboard from '../containers/System/Admin/MarketAnalytics
 import ManagePayouts from '../containers/System/Admin/ManagePayouts.js';
 import PurchaseDataset from '../containers/System/PurchaseDataset.js';
 import ProviderPayout from '../containers/System/ProviderPayout.js';
+import Dashboard from '../containers/System/Analytics/Dashboard.js';
 class System extends Component {
     render() {
         const { systemMenuPath, isLoggedIn } = this.props;
@@ -25,6 +26,7 @@ class System extends Component {
                             <RoleRoute path="/system/manage-data" allowedRoles={['R1', 'R2']} component={DataManage} />
                             <RoleRoute path="/system/manage-censor" allowedRoles={['R1']} component={DataApproval} />
                             <RoleRoute path="/system/analyticsdashboard" allowedRoles={['R1']} component={MarketAnalyticsDashboard} />
+                            <RoleRoute path="/system/ev-analytics" allowedRoles={['R1', 'R2', 'R3']} component={Dashboard} />
                             <RoleRoute path="/system/manage-payouts" allowedRoles={['R1']} component={ManagePayouts} />
                             <RoleRoute path="/system/my-purchases" allowedRoles={['R3']} component={PurchaseDataset} />
                             <RoleRoute path="/system/my-payouts" allowedRoles={['R2']} component={ProviderPayout} />

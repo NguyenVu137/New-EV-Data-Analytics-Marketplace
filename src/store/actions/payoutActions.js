@@ -3,10 +3,13 @@ import {
     getMyPayoutsService,
     getBalanceService,
     requestWithdrawService,
+    getWithdrawalHistoryService,
     getPendingPayoutsService,
     processPayoutService,
     getPayoutStatisticsService
-} from '../../services/transactionService';
+} from '../../services/payoutService';
+
+import axios from '../../axios';
 
 //  GET MY PAYOUTS (PROVIDER) 
 export const getMyPayouts = (status = null, limit = 50, offset = 0) => {
@@ -98,6 +101,8 @@ export const requestWithdraw = (payoutIds, bankInfo) => {
         dispatch(requestWithdrawStart());
 
         try {
+            console.log('🟡 Redux action - payoutIds:', payoutIds);
+            console.log('🟡 Redux action - bankInfo:', bankInfo);
             const res = await requestWithdrawService(payoutIds, bankInfo);
 
             if (res && res.errCode === 0) {
@@ -132,6 +137,50 @@ export const requestWithdrawSuccess = (data) => ({
 
 export const requestWithdrawFailed = (error) => ({
     type: actionTypes.REQUEST_WITHDRAW_FAILED,
+    payload: error
+});
+
+//  GET WITHDRAWAL HISTORY (PROVIDER) - MỚI
+export const getWithdrawalHistory = (limit = 50, offset = 0) => {
+    return async (dispatch) => {
+        dispatch(getWithdrawalHistoryStart());
+
+        try {
+            const res = await axios.get(`/api/transactions/withdrawal-history?limit=${limit}&offset=${offset}`);
+
+            if (res && res.errCode === 0) {
+                dispatch(getWithdrawalHistorySuccess(res));
+                return {
+                    success: true,
+                    data: res.data,
+                    errCode: 0
+                };
+            } else {
+                dispatch(getWithdrawalHistoryFailed(res.message));
+                return { success: false, message: res.message };
+            }
+        } catch (error) {
+            dispatch(getWithdrawalHistoryFailed(error.message));
+            console.log('getWithdrawalHistory error:', error);
+            return {
+                success: false,
+                message: error.response?.data?.message || 'Server error'
+            };
+        }
+    };
+};
+
+export const getWithdrawalHistoryStart = () => ({
+    type: actionTypes.GET_WITHDRAWAL_HISTORY_START
+});
+
+export const getWithdrawalHistorySuccess = (data) => ({
+    type: actionTypes.GET_WITHDRAWAL_HISTORY_SUCCESS,
+    payload: data
+});
+
+export const getWithdrawalHistoryFailed = (error) => ({
+    type: actionTypes.GET_WITHDRAWAL_HISTORY_FAILED,
     payload: error
 });
 

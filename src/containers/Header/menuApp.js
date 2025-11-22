@@ -43,7 +43,7 @@ export const adminMenu = [
 
         ]
     },
-    
+
     { // Quản lý thanh toán
         name: 'menu.admin.payout',
         menus: [
@@ -63,7 +63,7 @@ export const providerMenu = [
 
         ]
     },
-    
+
     { // Thu nhập của Provider
         name: 'menu.provider.earnings',
         menus: [
@@ -75,8 +75,8 @@ export const providerMenu = [
 ];
 
 export const consumerMenu = [
-    { // Lịch sử mua hàng
-        name: 'menu.consumer.purchases',
+    { // Dữ liệu đã mua
+        name: 'menu.consumer.purchased-data',
         menus: [
             {
                 name: 'menu.consumer.my-purchases', link: '/system/my-purchases',

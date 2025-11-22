@@ -15,6 +15,11 @@ class HomeHeader extends Component {
     goToMyPurchases = () => {
         this.props.history.push('/my-purchases');
     };
+
+    goToAnalytics = () => {
+        this.props.history.push('/ev-analytics');
+    };
+
     handleLogout = () => {
         this.props.processLogout();
         this.props.history.push('/home');
@@ -27,6 +32,27 @@ class HomeHeader extends Component {
     handleRegister = () => {
         this.props.history.push('/Register');
     }
+
+    goToHome = () => {
+        this.props.history.push('/home');
+    };
+
+    goToDataList = () => {
+        this.props.history.push('/datasets');
+    };
+
+    goToProvider = () => {
+        this.props.history.push('/providers');
+    };
+
+    goToAbout = () => {
+        this.props.history.push('/about');
+    };
+
+    goToSupport = () => {
+        this.props.history.push('/support');
+    };
+
     render() {
         const { userInfo } = this.props;
         let language = this.props.language;
@@ -60,28 +86,33 @@ class HomeHeader extends Component {
                             )}
                         </div>
                         <div className="center-content">
-                            <div className="child-content">
+                            <div className="child-content" onClick={this.goToHome}>
                                 <div><b><FormattedMessage id="homeheader.homepage" /></b></div>
                                 <div></div>
                             </div>
-                            <div className="child-content">
+                            <div className="child-content" onClick={this.goToDataList}>
                                 <div><b><FormattedMessage id="homeheader.datalist" /></b></div>
                                 <div></div>
                             </div>
-                            <div className="child-content">
+                            <div className="child-content" onClick={this.goToProvider}>
                                 <div><b><FormattedMessage id="homeheader.provider" /></b></div>
                                 <div></div>
                             </div>
-                            <div className="child-content">
+                            <div className="child-content" onClick={this.goToAbout}>
                                 <div><b><FormattedMessage id="homeheader.about" /></b></div>
                                 <div></div>
                             </div>
                         </div>
                         <div className="right-content">
                             {this.props.isLoggedIn && (
-                                <button className="btn-purchases" onClick={this.goToMyPurchases}>
-                                    <i className="fa-solid fa-receipt"></i> Lịch sử mua
-                                </button>
+                                <>
+                                    <button className="btn-analytics" onClick={this.goToAnalytics}>
+                                        <i className="fa-solid fa-chart-line"></i> Dashboard
+                                    </button>
+                                    <button className="btn-purchases" onClick={this.goToMyPurchases}>
+                                        <i className="fa-solid fa-receipt"></i> Lịch sử mua
+                                    </button>
+                                </>
                             )}
                             {this.props.isLoggedIn ? (
                                 <button className="btn-logout" onClick={this.handleLogout}>
@@ -97,7 +128,7 @@ class HomeHeader extends Component {
                                     </button>
                                 </>
                             )}
-                            <div className="support"><i className="fa-solid fa-circle-question"></i><FormattedMessage id="homeheader.support" /></div>
+                            <div className="support" onClick={this.goToSupport}><i className="fa-solid fa-circle-question"></i><FormattedMessage id="homeheader.support" /></div>
                             <div className={language === LANGUAGES.VI ? 'language-vi active' : 'language-vi'}><span onClick={() => this.changeLanguage(LANGUAGES.VI)}>VN</span></div>
                             <div className={language === LANGUAGES.EN ? 'language-en active' : 'language-en'}><span onClick={() => this.changeLanguage(LANGUAGES.EN)}>EN</span></div>
                         </div>

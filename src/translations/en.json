@@ -34,6 +34,7 @@
             "censor": "Censors",
             "manage-censor": "Manage censors",
             "analyticsdashboard": "DashBoard",
+            "ev-analytics": "EV Analytics Dashboard",
             "payout": "Payouts",
             "manage-payouts": "Manage Payouts"
         },
@@ -43,7 +44,9 @@
         },
         "consumer": {
             "purchases": "Transactions",
-            "my-purchases": "Purchase History"
+            "my-purchases": "Purchase History",
+            "analytics": "Data Analytics",
+            "ev-analytics": "EV Analytics Dashboard"
         }
     },
     "manage-user": {

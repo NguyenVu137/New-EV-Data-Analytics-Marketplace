@@ -8,6 +8,7 @@ import adminReducer from "./adminReducer";
 import transactionReducer from './transtactionReducer';
 import analyticsReducer from './analyticsReducer';
 import payoutReducer from './payoutReducer';
+import evAnalyticsReducer from './evAnalyticsReducer';
 
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 import storage from 'redux-persist/lib/storage';
@@ -38,5 +39,6 @@ export default (history) => combineReducers({
     consumer: consumerReducer,
     transaction: transactionReducer,
     payout: payoutReducer,
-    analytics: analyticsReducer
+    analytics: analyticsReducer,
+    evAnalytics: evAnalyticsReducer
 })

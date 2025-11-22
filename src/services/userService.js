@@ -12,9 +12,9 @@ const handleRegisterApi = (data) => {
         firstName: data.firstName,
         lastName: data.lastName,
         address: data.address,
-        phoneNumber: data.phoneNumber,
+        phonenumber: data.phoneNumber, // Backend expects 'phonenumber' not 'phoneNumber'
         gender: data.gender,
-        role: data.role,
+        roleId: data.role, // Backend expects 'roleId' not 'role'
         image: data.image || null
     });
 };

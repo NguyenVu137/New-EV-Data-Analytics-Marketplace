@@ -20,7 +20,7 @@ class ManagePayouts extends Component {
             showModal: false,
             action: '', // 'approve' or 'reject'
             note: '',
-            filterStatus: 'PO2' // Default to PROCESSING
+            filterStatus: 'PENDING' // Default to PENDING
         };
     }
 
@@ -36,27 +36,26 @@ class ManagePayouts extends Component {
             console.log('Fetching payouts...');
             this.setState({ loading: true });
             const { filterStatus } = this.state;
-            
-            let url = '/api/payout/admin/pending';
-            if (filterStatus && filterStatus !== 'PO2') {
-                url = `/api/payout/admin/all?status=${filterStatus}`;
+
+            let url = '/api/transactions/payouts/pending';
+            if (filterStatus && filterStatus !== 'PENDING') {
+                url = `/api/transactions/payouts?status=${filterStatus}`;
             }
 
             console.log('Calling API:', url);
             const data = await axios.get(url);
             console.log('Payouts response:', data);
-            
-            // Backend có thể trả về { errCode: 0, data: [...] } hoặc trực tiếp [...]
+
             let payoutsData = [];
             if (data.errCode === 0) {
                 payoutsData = data.data || [];
             } else if (Array.isArray(data)) {
                 payoutsData = data;
             }
-            
-            this.setState({ 
+
+            this.setState({
                 payouts: payoutsData,
-                loading: false 
+                loading: false
             });
         } catch (error) {
             console.error('Fetch payouts error:', error);
@@ -67,7 +66,7 @@ class ManagePayouts extends Component {
 
     fetchStatistics = async () => {
         try {
-            const data = await axios.get('/api/payout/admin/statistics');
+            const data = await axios.get('/api/transactions/payouts/statistics');
             if (data.errCode === 0) {
                 this.setState({ statistics: data.data });
             }
@@ -89,19 +88,18 @@ class ManagePayouts extends Component {
         try {
             const { selectedPayout, action, note } = this.state;
 
-            // Axios interceptor đã return response.data, nên response = data trực tiếp
-            const data = await axios.post(`/api/payout/admin/process/${selectedPayout.id}`, {
+            const data = await axios.post(`/api/transactions/payouts/${selectedPayout.id}/process`, {
                 action: action,
-                note: note
+                admin_note: note
             });
 
             if (data.errCode === 0) {
                 toast.success(
-                    action === 'approve' 
-                        ? 'Đã duyệt payout thành công' 
+                    action === 'approve'
+                        ? 'Đã duyệt payout thành công'
                         : 'Đã từ chối payout'
                 );
-                
+
                 this.setState({ showModal: false, selectedPayout: null, note: '' });
                 this.fetchPayouts();
                 this.fetchStatistics();
@@ -115,11 +113,11 @@ class ManagePayouts extends Component {
     };
 
     closeModal = () => {
-        this.setState({ 
-            showModal: false, 
-            selectedPayout: null, 
+        this.setState({
+            showModal: false,
+            selectedPayout: null,
             note: '',
-            action: '' 
+            action: ''
         });
     };
 
@@ -129,17 +127,17 @@ class ManagePayouts extends Component {
         });
     };
 
-    getStatusBadge = (statusCode, statusText) => {
+    getStatusBadge = (status) => {
         const statusMap = {
-            'PO1': { class: 'warning', text: 'Chờ yêu cầu' },
-            'PO2': { class: 'info', text: 'Đang xử lý' },
-            'PO3': { class: 'success', text: 'Đã hoàn thành' },
-            'PO4': { class: 'danger', text: 'Đã từ chối' },
-            'PO5': { class: 'secondary', text: 'Đã hủy' }
+            'PENDING': { class: 'warning', text: 'Chờ duyệt' },
+            'APPROVED': { class: 'info', text: 'Đã duyệt' },
+            'COMPLETED': { class: 'success', text: 'Đã hoàn thành' },
+            'REJECTED': { class: 'danger', text: 'Đã từ chối' },
+            'CANCELLED': { class: 'secondary', text: 'Đã hủy' }
         };
 
-        const status = statusMap[statusCode] || { class: 'secondary', text: statusText };
-        return <span className={`badge badge-${status.class}`}>{status.text}</span>;
+        const statusInfo = statusMap[status] || { class: 'secondary', text: status };
+        return <span className={`badge badge-${statusInfo.class}`}>{statusInfo.text}</span>;
     };
 
     render() {
@@ -157,13 +155,13 @@ class ManagePayouts extends Component {
                     <div className="statistics-section">
                         <div className="stat-card total">
                             <div className="stat-icon">
-                                <i className="fas fa-dollar-sign"></i>
+                                <i className="fas fa-check-circle"></i>
                             </div>
                             <div className="stat-info">
-                                <div className="stat-label">Tổng đã chi</div>
+                                <div className="stat-label">Tổng đã duyệt</div>
                                 <div className="stat-value">
-                                    <NumericFormat 
-                                        value={statistics.totals.payout}
+                                    <NumericFormat
+                                        value={statistics.totalApproved || 0}
                                         displayType="text"
                                         thousandSeparator=","
                                         suffix=" VND"
@@ -174,13 +172,13 @@ class ManagePayouts extends Component {
 
                         <div className="stat-card platform">
                             <div className="stat-icon">
-                                <i className="fas fa-building"></i>
+                                <i className="fas fa-clock"></i>
                             </div>
                             <div className="stat-info">
-                                <div className="stat-label">Phí nền tảng</div>
+                                <div className="stat-label">Tổng chờ duyệt</div>
                                 <div className="stat-value">
-                                    <NumericFormat 
-                                        value={statistics.totals.platformFee}
+                                    <NumericFormat
+                                        value={statistics.totalPending || 0}
                                         displayType="text"
                                         thousandSeparator=","
                                         suffix=" VND"
@@ -191,39 +189,15 @@ class ManagePayouts extends Component {
 
                         <div className="stat-card payment">
                             <div className="stat-icon">
-                                <i className="fas fa-credit-card"></i>
+                                <i className="fas fa-times-circle"></i>
                             </div>
                             <div className="stat-info">
-                                <div className="stat-label">Phí thanh toán</div>
+                                <div className="stat-label">Tổng đã từ chối</div>
                                 <div className="stat-value">
-                                    <NumericFormat 
-                                        value={statistics.totals.paymentFee}
-                                        displayType="text"
-                                        thousandSeparator=","
-                                        suffix=" VND"
-                                    />
+                                    {statistics.totalRejected || 0} yêu cầu
                                 </div>
                             </div>
                         </div>
-
-                        {statistics.byStatus && statistics.byStatus.map((item, index) => (
-                            <div key={index} className="stat-card status-card">
-                                <div className="stat-info">
-                                    <div className="stat-label">{item.status_name}</div>
-                                    <div className="stat-value">
-                                        {item.count} yêu cầu
-                                        <div className="stat-amount">
-                                            <NumericFormat 
-                                                value={item.total_amount}
-                                                displayType="text"
-                                                thousandSeparator=","
-                                                suffix=" VND"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
                     </div>
                 )}
 
@@ -233,11 +207,10 @@ class ManagePayouts extends Component {
                         <label>Trạng thái:</label>
                         <select value={filterStatus} onChange={this.handleFilterChange}>
                             <option value="">Tất cả</option>
-                            <option value="PO1">Chờ yêu cầu</option>
-                            <option value="PO2">Đang xử lý</option>
-                            <option value="PO3">Đã hoàn thành</option>
-                            <option value="PO4">Đã từ chối</option>
-                            <option value="PO5">Đã hủy</option>
+                            <option value="PENDING">Chờ duyệt</option>
+                            <option value="APPROVED">Đã duyệt</option>
+                            <option value="COMPLETED">Đã hoàn thành</option>
+                            <option value="REJECTED">Đã từ chối</option>
                         </select>
                     </div>
                     <button className="btn-refresh" onClick={this.fetchPayouts}>
@@ -261,8 +234,7 @@ class ManagePayouts extends Component {
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Provider</th>
-                                    <th>Dataset</th>
+                                    <th>Provider ID</th>
                                     <th>Số tiền</th>
                                     <th>Thông tin NH</th>
                                     <th>Trạng thái</th>
@@ -275,63 +247,45 @@ class ManagePayouts extends Component {
                                 {payouts.map((payout, index) => (
                                     <tr key={index}>
                                         <td>#{payout.id}</td>
-                                        <td>
-                                            <div className="provider-info">
-                                                <strong>{payout.provider?.firstName} {payout.provider?.lastName}</strong>
-                                                <small>{payout.provider?.email}</small>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="dataset-info">
-                                                {payout.transaction?.dataset?.title || 'N/A'}
-                                            </div>
-                                        </td>
+                                        <td>{payout.provider_id}</td>
                                         <td>
                                             <div className="amount-breakdown">
                                                 <div className="net-amount">
                                                     <strong>
-                                                        <NumericFormat 
-                                                            value={payout.net_amount}
+                                                        <NumericFormat
+                                                            value={payout.amount || 0}
                                                             displayType="text"
                                                             thousandSeparator=","
                                                             suffix=" VND"
                                                         />
                                                     </strong>
                                                 </div>
-                                                <small className="fees">
-                                                    Platform: <NumericFormat value={payout.platform_fee} displayType="text" thousandSeparator="," /> | 
-                                                    Payment: <NumericFormat value={payout.payment_fee} displayType="text" thousandSeparator="," />
-                                                </small>
                                             </div>
                                         </td>
                                         <td>
-                                            {payout.bank_name && payout.bank_account ? (
+                                            {payout.bank_name && payout.account_number ? (
                                                 <div className="bank-info">
                                                     <strong>{payout.bank_name}</strong>
-                                                    <small>{payout.bank_account}</small>
+                                                    <small>{payout.account_number}</small>
+                                                    <small>{payout.account_holder}</small>
                                                 </div>
                                             ) : (
                                                 <span className="text-muted">Chưa có</span>
                                             )}
                                         </td>
                                         <td>
-                                            {this.getStatusBadge(
-                                                payout.payout_status_code,
-                                                language === LANGUAGES.VI 
-                                                    ? payout.payout_status?.valueVi 
-                                                    : payout.payout_status?.valueEn
-                                            )}
+                                            {this.getStatusBadge(payout.status)}
                                         </td>
                                         <td>
-                                            {moment(payout.created_at).format('DD/MM/YYYY HH:mm')}
+                                            {moment(payout.createdAt || payout.created_at).format('DD/MM/YYYY HH:mm')}
                                         </td>
                                         <td>
                                             <div className="note-cell">
-                                                {payout.note || '-'}
+                                                {payout.note || payout.admin_note || '-'}
                                             </div>
                                         </td>
                                         <td>
-                                            {(payout.payout_status_code === 'PO1' || payout.payout_status_code === 'PO2') && (
+                                            {payout.status === 'PENDING' && (
                                                 <div className="action-buttons">
                                                     <button
                                                         className="btn-approve"
@@ -349,7 +303,7 @@ class ManagePayouts extends Component {
                                                     </button>
                                                 </div>
                                             )}
-                                            {(payout.payout_status_code === 'PO3' || payout.payout_status_code === 'PO4' || payout.payout_status_code === 'PO5') && (
+                                            {(payout.status !== 'PENDING') && (
                                                 <span className="text-muted">Đã xử lý</span>
                                             )}
                                         </td>
@@ -376,20 +330,14 @@ class ManagePayouts extends Component {
                             <div className="modal-body">
                                 <div className="payout-details">
                                     <div className="detail-row">
-                                        <span className="label">Provider:</span>
-                                        <span className="value">
-                                            {selectedPayout.provider?.firstName} {selectedPayout.provider?.lastName}
-                                        </span>
-                                    </div>
-                                    <div className="detail-row">
-                                        <span className="label">Email:</span>
-                                        <span className="value">{selectedPayout.provider?.email}</span>
+                                        <span className="label">Provider ID:</span>
+                                        <span className="value">{selectedPayout.provider_id}</span>
                                     </div>
                                     <div className="detail-row">
                                         <span className="label">Số tiền:</span>
                                         <span className="value highlight">
-                                            <NumericFormat 
-                                                value={selectedPayout.net_amount}
+                                            <NumericFormat
+                                                value={selectedPayout.amount || 0}
                                                 displayType="text"
                                                 thousandSeparator=","
                                                 suffix=" VND"
@@ -402,7 +350,11 @@ class ManagePayouts extends Component {
                                     </div>
                                     <div className="detail-row">
                                         <span className="label">Số tài khoản:</span>
-                                        <span className="value">{selectedPayout.bank_account}</span>
+                                        <span className="value">{selectedPayout.account_number}</span>
+                                    </div>
+                                    <div className="detail-row">
+                                        <span className="label">Chủ tài khoản:</span>
+                                        <span className="value">{selectedPayout.account_holder}</span>
                                     </div>
                                 </div>
 
@@ -414,7 +366,7 @@ class ManagePayouts extends Component {
                                         value={note}
                                         onChange={(e) => this.setState({ note: e.target.value })}
                                         placeholder={
-                                            action === 'approve' 
+                                            action === 'approve'
                                                 ? 'Nhập ghi chú về giao dịch...'
                                                 : 'Nhập lý do từ chối yêu cầu rút tiền...'
                                         }

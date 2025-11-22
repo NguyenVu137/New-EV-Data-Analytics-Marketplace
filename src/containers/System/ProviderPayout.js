@@ -111,8 +111,10 @@ class ProviderPayout extends Component {
         this.setState({ isLoading: true });
 
         try {
+            console.log('selectedPayouts:', selectedPayouts);
+            console.log('bankInfo:', bankInfo);
             const result = await this.props.requestWithdraw(selectedPayouts, bankInfo);
-            
+
             if (result && result.success) {
                 toast.success('Yêu cầu rút tiền thành công!');
                 this.closeWithdrawModal();
@@ -132,8 +134,7 @@ class ProviderPayout extends Component {
         const statusMap = {
             available: { text: 'Có thể rút', class: 'success' },
             pending: { text: 'Chờ xử lý', class: 'warning' },
-            completed: { text: 'Đã hoàn thành', class: 'info' },
-            withdrawn: { text: 'Đã rút', class: 'secondary' },
+            completed: { text: 'Đã rút', class: 'secondary' },
             failed: { text: 'Thất bại', class: 'danger' }
         };
 
@@ -148,7 +149,7 @@ class ProviderPayout extends Component {
     calculateSelectedTotal = () => {
         const { myPayouts } = this.props;
         const { selectedPayouts } = this.state;
-        
+
         return myPayouts
             .filter(p => selectedPayouts.includes(p.id))
             .reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -162,21 +163,32 @@ class ProviderPayout extends Component {
             return myPayouts || [];
         }
 
-        return (myPayouts || []).filter(p => p.status === filterStatus);
+        // Map filterStatus to correct backend/frontend status
+        if (filterStatus === 'all') {
+            return myPayouts || [];
+        }
+        // Map filter value to backend status
+        const statusMap = {
+            pending: 'pending',
+            available: 'available',
+            completed: 'completed',
+            failed: 'failed'
+        };
+        return (myPayouts || []).filter(p => p.status === statusMap[filterStatus]);
     };
 
     render() {
-        const { 
-            balance, 
-            isLoadingBalance, 
+        const {
+            balance,
+            isLoadingBalance,
             isLoadingPayouts,
-            isWithdrawing 
+            isWithdrawing
         } = this.props;
 
-        const { 
-            activeTab, 
-            selectedPayouts, 
-            showWithdrawModal, 
+        const {
+            activeTab,
+            selectedPayouts,
+            showWithdrawModal,
             bankInfo,
             filterStatus,
             isLoading
@@ -186,9 +198,9 @@ class ProviderPayout extends Component {
         const selectedTotal = this.calculateSelectedTotal();
 
         return (
-            <LoadingOverlay 
-                active={isLoading || isLoadingBalance || isLoadingPayouts || isWithdrawing} 
-                spinner 
+            <LoadingOverlay
+                active={isLoading || isLoadingBalance || isLoadingPayouts || isWithdrawing}
+                spinner
                 text='Đang xử lý...'
             >
                 <div className="provider-payout-container">
@@ -255,14 +267,14 @@ class ProviderPayout extends Component {
 
                     {/* Tabs */}
                     <div className="pp-tabs">
-                        <button 
+                        <button
                             className={`tab ${activeTab === 'balance' ? 'active' : ''}`}
                             onClick={() => this.handleTabChange('balance')}
                         >
                             <i className="fas fa-list"></i>
                             Danh sách thanh toán
                         </button>
-                        <button 
+                        <button
                             className={`tab ${activeTab === 'history' ? 'active' : ''}`}
                             onClick={() => this.handleTabChange('history')}
                         >
@@ -284,29 +296,29 @@ class ProviderPayout extends Component {
                                             className="filter-select"
                                         >
                                             <option value="all">Tất cả trạng thái</option>
-                                            <option value="available">Có thể rút</option>
                                             <option value="pending">Chờ xử lý</option>
-                                            <option value="completed">Đã hoàn thành</option>
-                                            <option value="withdrawn">Đã rút</option>
+                                            <option value="available">Có thể rút</option>
+                                            <option value="completed">Đã rút</option>
+                                            <option value="failed">Thất bại</option>
                                         </select>
 
                                         {selectedPayouts.length > 0 && (
                                             <div className="selected-info">
-                                                Đã chọn: {selectedPayouts.length} khoản 
+                                                Đã chọn: {selectedPayouts.length} khoản
                                                 ({selectedTotal.toLocaleString()} VNĐ)
                                             </div>
                                         )}
                                     </div>
 
                                     <div className="right-actions">
-                                        <button 
+                                        <button
                                             className="btn-refresh"
                                             onClick={this.loadData}
                                         >
                                             <i className="fas fa-sync-alt"></i>
                                             Làm mới
                                         </button>
-                                        <button 
+                                        <button
                                             className="btn-withdraw"
                                             onClick={this.openWithdrawModal}
                                             disabled={selectedPayouts.length === 0}
@@ -403,7 +415,7 @@ class ProviderPayout extends Component {
                             <div className="withdraw-modal" onClick={(e) => e.stopPropagation()}>
                                 <div className="modal-header">
                                     <h3>Yêu cầu rút tiền</h3>
-                                    <button 
+                                    <button
                                         className="btn-close"
                                         onClick={this.closeWithdrawModal}
                                     >
@@ -425,7 +437,7 @@ class ProviderPayout extends Component {
 
                                     <div className="bank-info-form">
                                         <h4>Thông tin ngân hàng</h4>
-                                        
+
                                         <div className="form-group">
                                             <label>Tên ngân hàng *</label>
                                             <select
@@ -468,21 +480,18 @@ class ProviderPayout extends Component {
 
                                         <div className="info-note">
                                             <i className="fas fa-info-circle"></i>
-                                            <span>
-                                                Yêu cầu rút tiền sẽ được xử lý trong vòng 3-5 ngày làm việc
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="modal-footer">
-                                    <button 
+                                    <button
                                         className="btn-cancel"
                                         onClick={this.closeWithdrawModal}
                                     >
                                         Hủy
                                     </button>
-                                    <button 
+                                    <button
                                         className="btn-confirm"
                                         onClick={this.handleWithdraw}
                                     >
@@ -512,9 +521,9 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         getBalance: () => dispatch(actions.getBalance()),
-        getMyPayouts: (status, limit, offset) => 
+        getMyPayouts: (status, limit, offset) =>
             dispatch(actions.getMyPayouts(status, limit, offset)),
-        requestWithdraw: (payoutIds, bankInfo) => 
+        requestWithdraw: (payoutIds, bankInfo) =>
             dispatch(actions.requestWithdraw(payoutIds, bankInfo))
     };
 };

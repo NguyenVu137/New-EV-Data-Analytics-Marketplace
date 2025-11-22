@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { purchaseDataset, simulatePayment } from '../../../store/actions';
+import { createTransaction, simulatePayment } from '../../../store/actions';
 import './PaymentModal.scss';
 
 const PaymentModal = ({ isOpen, onClose, dataset, onPurchaseSuccess }) => {
@@ -43,7 +43,7 @@ const PaymentModal = ({ isOpen, onClose, dataset, onPurchaseSuccess }) => {
 
     const handlePurchase = async () => {
         try {
-            const result = await dispatch(purchaseDataset(
+            const result = await dispatch(createTransaction(
                 dataset.id,
                 selectedPackage,
                 selectedPaymentMethod
@@ -53,13 +53,15 @@ const PaymentModal = ({ isOpen, onClose, dataset, onPurchaseSuccess }) => {
 
             if (result && result.errCode === 0) {
                 alert('✅ Đơn hàng đã được tạo! Đang xử lý thanh toán...');
-                
-                // Đợi 2 giây để backend auto-complete payment
-                setTimeout(() => {
+
+                // Close modal first
+                handleClose();
+
+                // Wait for backend auto-complete (1 second) + buffer
+                setTimeout(async () => {
                     if (onPurchaseSuccess) {
-                        onPurchaseSuccess(result.data);
+                        await onPurchaseSuccess(result);
                     }
-                    handleClose();
                     alert('✅ Thanh toán thành công! Bạn có thể download dataset ngay bây giờ.');
                 }, 2000);
             } else {
@@ -76,7 +78,7 @@ const PaymentModal = ({ isOpen, onClose, dataset, onPurchaseSuccess }) => {
 
         try {
             const result = await dispatch(simulatePayment(pendingTransaction.id, 'success'));
-            
+
             console.log('Confirm payment result:', result);
 
             if (result && result.errCode === 0) {

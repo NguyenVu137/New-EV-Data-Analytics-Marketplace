@@ -15,6 +15,11 @@ import MyPurchases from './System/Consumer/MyPurchases';
 
 import { CustomToastCloseButton } from '../components/CustomToast';
 import HomePage from './HomePage/HomePage.js'
+import Dashboard from './System/Analytics/Dashboard.js';
+import AllDatasets from './Marketplace/AllDatasets.js';
+import AllProviders from './Marketplace/AllProviders.js';
+import About from './Pages/About.js';
+import Support from './Pages/Support.js';
 import CustomScrollbars from '../components/CustomScrollbars.js';
 class App extends Component {
 
@@ -46,6 +51,11 @@ class App extends Component {
                                 <Switch>
                                     <Route path={path.DETAIL_DATA} component={DatasetDetail} />
                                     <Route path={path.MY_PURCHASES} component={userIsAuthenticated(MyPurchases)} />
+                                    <Route path={path.EV_ANALYTICS} component={userIsAuthenticated(Dashboard)} />
+                                    <Route path={path.DATASETS} component={AllDatasets} />
+                                    <Route path={path.PROVIDERS} component={AllProviders} />
+                                    <Route path={path.ABOUT} component={About} />
+                                    <Route path={path.SUPPORT} component={Support} />
                                     <Route path={path.HOME} exact component={(Home)} />
                                     <Route path={path.LOGIN} component={userIsNotAuthenticated(Login)} />
                                     <Route path={path.REGISTER} component={userIsNotAuthenticated(Register)} />

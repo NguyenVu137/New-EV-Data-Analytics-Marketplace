@@ -46,9 +46,11 @@ export const fetchAllDatasets = () => {
     return async (dispatch) => {
         try {
             let res = await getAllDatasetsService();
+            // Lấy đúng mảng datasets từ res.data.datasets
+            const datasets = res && res.errCode === 0 && res.data && Array.isArray(res.data.datasets) ? res.data.datasets : [];
             if (res && res.errCode === 0) {
-                dispatch(fetchAllDatasetsSuccess(res.data));
-                return { success: true, data: res.data };
+                dispatch(fetchAllDatasetsSuccess(datasets));
+                return { success: true, data: datasets };
             } else {
                 dispatch(fetchAllDatasetsFailed());
                 return { success: false, message: res?.errMessage || 'Failed to fetch datasets' };
@@ -205,12 +207,15 @@ export const deleteFile = (fileId) => {
 
 //  ADMIN ACTIONS
 
-export const fetchAllDatasetsForAdmin = () => {
+export const fetchAllDatasetsForAdmin = (params = {}) => {
     return async (dispatch) => {
         try {
-            let res = await getAllDatasetsForAdminService();
+            // Truyền params vào service
+            let res = await getAllDatasetsForAdminService(params);
             if (res && res.errCode === 0) {
-                dispatch(fetchAllDatasetsSuccess(res.data));
+                // Backend returns { errCode: 0, data: { datasets: [...], pagination: {...} } }
+                const datasets = res.data?.datasets || res.data || [];
+                dispatch(fetchAllDatasetsSuccess(datasets));
                 return { success: true, data: res.data };
             } else {
                 dispatch(fetchAllDatasetsFailed());

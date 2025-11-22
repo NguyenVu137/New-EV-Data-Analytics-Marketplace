@@ -6,7 +6,12 @@ export const path = {
     LOG_OUT: '/logout',
     SYSTEM: '/system',
     DETAIL_DATA: '/detail-data/:id',
-    MY_PURCHASES: '/my-purchases'
+    MY_PURCHASES: '/my-purchases',
+    EV_ANALYTICS: '/ev-analytics',
+    DATASETS: '/datasets',
+    PROVIDERS: '/providers',
+    ABOUT: '/about',
+    SUPPORT: '/support'
 };
 
 export const LANGUAGES = {

@@ -130,10 +130,16 @@ const DatasetDetail = () => {
         }
     };
 
-    const handlePurchaseSuccess = (data) => {
-        console.log('Purchase success:', data);
-        alert('Mua dataset thành công!');
-        checkPermission(); // Refresh permission
+    const handlePurchaseSuccess = async (data) => {
+        console.log('Purchase success callback:', data);
+        console.log('Waiting for backend to complete payment...');
+
+        // Wait for backend auto-complete (1 second) + buffer
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // Refresh permission after purchase
+        await checkPermission();
+        console.log('Permission refreshed after purchase');
     };
 
     if (loading) return <p className="loading">Loading dataset...</p>;

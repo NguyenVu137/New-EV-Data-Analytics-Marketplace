@@ -298,7 +298,6 @@ class MarketAnalyticsDashboard extends Component {
                         📈 Thống kê thị trường dữ liệu
                     </h1>
                     <p className="dashboard-subtitle">
-                        Dữ liệu nào được quan tâm nhất trong EV Data Analytics Marketplace
                     </p>
                 </div>
 
