@@ -58,7 +58,24 @@ class ServiceClient {
     }
 
     setAuthToken(token) {
-        this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        if (!token) {
+            delete this.client.defaults.headers.common['Authorization'];
+            return;
+        }
+
+        // Nếu token đã có "Bearer " prefix, dùng luôn
+        // Nếu chưa có, thêm vào
+        const finalToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+
+        this.client.defaults.headers.common['Authorization'] = finalToken;
+
+        console.log(`[${this.serviceName}] Auth token set:`, finalToken.substring(0, 20) + '...');
+    }
+
+    // ✅ THÊM: Method để clear token
+    clearAuthToken() {
+        delete this.client.defaults.headers.common['Authorization'];
+        console.log(`[${this.serviceName}] Auth token cleared`);
     }
 }
 

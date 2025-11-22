@@ -21,7 +21,6 @@ router.patch('/:id', auth, async (req, res) => {
             });
         }
 
-        // Check ownership
         if (dataset.provider_id !== req.user.id && req.user.roleId !== 'R1') {
             return res.status(403).json({
                 errCode: 2,
@@ -30,10 +29,8 @@ router.patch('/:id', auth, async (req, res) => {
         }
 
         const DatasetMetadata = require('../models/DatasetMetadata');
-        // Nếu gửi bằng FormData, các trường sẽ nằm ở req.body (multer tự parse)
-        // Nếu có trường nào bị undefined, thử lấy từ req.body.fields (nếu có)
         let { metadata, ...updateData } = req.body;
-        // Nếu metadata là string (do FormData), parse lại
+
         if (typeof metadata === 'string') {
             try {
                 metadata = JSON.parse(metadata);
@@ -41,9 +38,9 @@ router.patch('/:id', auth, async (req, res) => {
                 metadata = [];
             }
         }
-        // Log dữ liệu nhận được để debug
+
         console.log('PATCH nhận dữ liệu:', { ...updateData, metadata });
-        // Chỉ giữ lại các trường hợp lệ cho Dataset
+
         const allowedFields = [
             'title', 'description', 'category_code', 'format_code', 'size',
             'basicPrice', 'standardPrice', 'premiumPrice', 'status_code'
@@ -67,11 +64,8 @@ router.patch('/:id', auth, async (req, res) => {
         console.log('PATCH update vào DB:', filteredUpdate);
         await dataset.update(filteredUpdate);
 
-        // Nếu có metadata thì cập nhật lại metadata
         if (Array.isArray(metadata)) {
-            // Xóa metadata cũ
             await DatasetMetadata.destroy({ where: { dataset_id: dataset.id } });
-            // Thêm metadata mới
             if (metadata.length > 0) {
                 await Promise.all(metadata.map(item => {
                     return DatasetMetadata.create({
@@ -82,7 +76,7 @@ router.patch('/:id', auth, async (req, res) => {
                 }));
             }
         }
-        // Trả về dataset đã cập nhật từ DB kèm files và metadata
+
         const files = await DatasetFile.findAll({
             where: { dataset_id: dataset.id },
             order: [['created_at', 'DESC']]
@@ -156,17 +150,13 @@ router.get('/my-datasets', auth, checkRole(['R2', 'R1']), async (req, res) => {
             order: [['created_at', 'DESC']]
         });
 
-        // Lấy files và metadata cho từng dataset
         const DatasetMetadata = require('../models/DatasetMetadata');
         const datasetsWithFiles = await Promise.all(rows.map(async (dataset) => {
-            // Lấy lại dataset mới nhất từ DB
             const freshDataset = await Dataset.findByPk(dataset.id);
-            // Lấy files
             const files = await DatasetFile.findAll({
                 where: { dataset_id: dataset.id },
                 order: [['created_at', 'DESC']]
             });
-            // Lấy metadata từ bảng DatasetMetadata
             const metadataRows = await DatasetMetadata.findAll({
                 where: { dataset_id: dataset.id }
             });
@@ -207,11 +197,9 @@ router.get('/admin/all', auth, checkRole(['R1']), async (req, res) => {
         const offset = (page - 1) * limit;
 
         let where = {};
-        // Nếu status là ALL hoặc không truyền, không lọc theo trạng thái
         if (status && status !== 'ALL') {
             where.status_code = status;
         }
-        // Nếu status là ALL, bỏ qua where.status_code
 
         const { count, rows } = await Dataset.findAndCountAll({
             where,
@@ -242,7 +230,7 @@ router.get('/admin/all', auth, checkRole(['R1']), async (req, res) => {
     }
 });
 
-// Get dataset by ID
+// Get dataset by ID - ĐẶT SAU các route cụ thể
 router.get('/:id', async (req, res) => {
     try {
         const dataset = await Dataset.findByPk(req.params.id);
@@ -252,9 +240,24 @@ router.get('/:id', async (req, res) => {
                 message: 'Dataset not found'
             });
         }
+
+        const files = await DatasetFile.findAll({
+            where: { dataset_id: dataset.id },
+            order: [['created_at', 'DESC']]
+        });
+
+        const DatasetMetadata = require('../models/DatasetMetadata');
+        const metadataRows = await DatasetMetadata.findAll({
+            where: { dataset_id: dataset.id }
+        });
+        const metadata = metadataRows.map(m => ({ key: m.key, value: m.value }));
         res.json({
             errCode: 0,
-            data: dataset
+            data: {
+                ...dataset.toJSON(),
+                files,
+                metadata
+            }
         });
     } catch (error) {
         res.status(500).json({
@@ -272,10 +275,9 @@ router.post('/', auth, checkRole(['R2']), async (req, res) => {
         const dataset = await Dataset.create({
             ...datasetData,
             provider_id: req.user.id,
-            status_code: 'S1' // Pending approval
+            status_code: 'S1'
         });
 
-        // Nếu có metadata thì lưu vào bảng dataset_metadata
         if (Array.isArray(metadata) && metadata.length > 0) {
             await Promise.all(metadata.map(item => {
                 return DatasetMetadata.create({
@@ -311,7 +313,6 @@ router.put('/:id', auth, async (req, res) => {
             });
         }
 
-        // Check ownership
         if (dataset.provider_id !== req.user.id && req.user.roleId !== 'R1') {
             return res.status(403).json({
                 errCode: 2,
@@ -323,11 +324,8 @@ router.put('/:id', auth, async (req, res) => {
         const { metadata, ...updateData } = req.body;
         await dataset.update(updateData);
 
-        // Nếu có metadata thì cập nhật lại metadata
         if (Array.isArray(metadata)) {
-            // Xóa metadata cũ
             await DatasetMetadata.destroy({ where: { dataset_id: dataset.id } });
-            // Thêm metadata mới
             if (metadata.length > 0) {
                 await Promise.all(metadata.map(item => {
                     return DatasetMetadata.create({
@@ -514,7 +512,6 @@ router.post('/upload', auth, checkRole(['R2', 'R1']), upload.array('files', 10),
         const DatasetMetadata = require('../models/DatasetMetadata');
         let { metadata, title, description, category_code, format_code, basicPrice, standardPrice, premiumPrice } = req.body;
 
-        // Parse metadata nếu là chuỗi JSON
         if (typeof metadata === 'string') {
             try {
                 metadata = JSON.parse(metadata);
@@ -523,7 +520,6 @@ router.post('/upload', auth, checkRole(['R2', 'R1']), upload.array('files', 10),
             }
         }
 
-        // Create dataset
         const dataset = await Dataset.create({
             provider_id: req.user.id,
             title,
@@ -533,12 +529,13 @@ router.post('/upload', auth, checkRole(['R2', 'R1']), upload.array('files', 10),
             basicPrice: parseFloat(basicPrice) || 0,
             standardPrice: parseFloat(standardPrice) || 0,
             premiumPrice: parseFloat(premiumPrice) || 0,
-            status_code: 'S1' // Pending
+            status_code: 'S1'
         });
 
-        // Save files
         if (req.files && req.files.length > 0) {
+            console.log('Files received for upload:', req.files.map(f => f.path));
             const filePromises = req.files.map(file => {
+                console.log(`Saving file: ${file.originalname} to ${file.path}`);
                 return DatasetFile.create({
                     dataset_id: dataset.id,
                     file_name: file.originalname,
@@ -548,9 +545,9 @@ router.post('/upload', auth, checkRole(['R2', 'R1']), upload.array('files', 10),
                 });
             });
             await Promise.all(filePromises);
+            console.log('All files saved to DB and disk.');
         }
 
-        // Save metadata
         if (Array.isArray(metadata) && metadata.length > 0) {
             await Promise.all(metadata.map(item => {
                 return DatasetMetadata.create({
@@ -575,9 +572,11 @@ router.post('/upload', auth, checkRole(['R2', 'R1']), upload.array('files', 10),
     }
 });
 
-// Download file (requires purchase permission check in gateway/middleware)
-router.get('/download/:fileId', auth, async (req, res) => {
+// ✅ FIXED: Download file - Đã fix cách truyền token
+router.get('/download/:fileId', auth, checkRole(['R2', 'R3', 'R1']), async (req, res) => {
     try {
+        console.log('[DOWNLOAD] Request from user:', req.user.id, 'for file:', req.params.fileId);
+
         const file = await DatasetFile.findByPk(req.params.fileId);
 
         if (!file) {
@@ -587,35 +586,51 @@ router.get('/download/:fileId', auth, async (req, res) => {
             });
         }
 
-        // Check purchase permission via Transaction Service
-        const ServiceClient = require('../../shared/utils/serviceClient');
-        const transactionService = new ServiceClient(
-            process.env.TRANSACTION_SERVICE_URL || 'http://transaction-service:8083',
-            'Transaction'
-        );
+        const dataset = await Dataset.findByPk(file.dataset_id);
+        const isOwner = dataset && (dataset.provider_id === req.user.id || req.user.roleId === 'R1');
 
-        const token = req.headers.authorization;
-        transactionService.setAuthToken(token);
+        if (!isOwner) {
+            const ServiceClient = require('../../shared/utils/serviceClient');
+            const transactionService = new ServiceClient(
+                process.env.TRANSACTION_SERVICE_URL || 'http://transaction-service:8083',
+                'Transaction'
+            );
 
-        try {
-            const permissionCheck = await transactionService.get(`/api/transactions/check-permission/${file.dataset_id}`);
+            // ✅ FIX: Truyền token từ header (đã có "Bearer " prefix)
+            const token = req.headers.authorization;
+            console.log('[DOWNLOAD] Forwarding auth token to transaction service');
+            transactionService.setAuthToken(token);
 
-            if (!permissionCheck.allowed) {
+            try {
+                const permissionCheck = await transactionService.get(
+                    `/api/transactions/check-permission/${file.dataset_id}`
+                );
+
+                console.log('[DOWNLOAD] Permission check result:', permissionCheck);
+
+                if (!permissionCheck || permissionCheck.errCode !== 0 || !permissionCheck.allowed) {
+                    return res.status(403).json({
+                        errCode: 3,
+                        message: 'You must purchase this dataset to download files'
+                    });
+                }
+            } catch (error) {
+                console.error('[DOWNLOAD] Permission check failed:', error.response?.data || error.message);
+
+                if (error.response?.status === 401) {
+                    return res.status(401).json({
+                        errCode: 2,
+                        message: 'Authentication failed. Please login again.'
+                    });
+                }
+
                 return res.status(403).json({
-                    errCode: 3,
-                    message: 'You must purchase this dataset to download files',
-                    data: { purchaseRequired: true }
+                    errCode: 4,
+                    message: 'Unable to verify purchase permission'
                 });
             }
-        } catch (error) {
-            console.error('❌ Permission check failed:', error);
-            return res.status(403).json({
-                errCode: 4,
-                message: 'Unable to verify purchase permission'
-            });
         }
 
-        // Check if file exists
         if (!fs.existsSync(file.file_path)) {
             return res.status(404).json({
                 errCode: 2,
@@ -623,13 +638,13 @@ router.get('/download/:fileId', auth, async (req, res) => {
             });
         }
 
-        // Send file
+        console.log('[DOWNLOAD] Sending file:', file.file_name);
         res.download(file.file_path, file.file_name);
     } catch (error) {
+        console.error('[DOWNLOAD] Error:', error);
         res.status(500).json({
             errCode: -1,
-            message: 'Failed to download file',
-            error: error.message
+            message: 'Failed to download file'
         });
     }
 });
@@ -646,7 +661,6 @@ router.delete('/files/:fileId', auth, checkRole(['R2', 'R1']), async (req, res) 
             });
         }
 
-        // Get dataset to check ownership
         const dataset = await Dataset.findByPk(file.dataset_id);
         if (dataset.provider_id !== req.user.id && req.user.roleId !== 'R1') {
             return res.status(403).json({
@@ -655,12 +669,10 @@ router.delete('/files/:fileId', auth, checkRole(['R2', 'R1']), async (req, res) 
             });
         }
 
-        // Delete physical file
         if (fs.existsSync(file.file_path)) {
             fs.unlinkSync(file.file_path);
         }
 
-        // Delete record
         await file.destroy();
 
         res.json({
@@ -688,11 +700,9 @@ router.get('/:datasetId/files', auth, async (req, res) => {
             });
         }
 
-        // Check if user has access (owner or purchased)
         const isOwner = dataset.provider_id === req.user.id || req.user.roleId === 'R1';
 
         if (!isOwner) {
-            // Check if purchased
             const ServiceClient = require('../../shared/utils/serviceClient');
             const transactionService = new ServiceClient(
                 process.env.TRANSACTION_SERVICE_URL || 'http://transaction-service:8083',
@@ -708,8 +718,7 @@ router.get('/:datasetId/files', auth, async (req, res) => {
                 if (!permissionCheck.allowed) {
                     return res.status(403).json({
                         errCode: 2,
-                        message: 'Access denied. Purchase required.',
-                        data: { purchaseRequired: true }
+                        message: 'Access denied. Purchase required.'
                     });
                 }
             } catch (error) {
@@ -720,7 +729,6 @@ router.get('/:datasetId/files', auth, async (req, res) => {
             }
         }
 
-        // Get files
         const files = await DatasetFile.findAll({
             where: { dataset_id: req.params.datasetId },
             order: [['created_at', 'DESC']]
