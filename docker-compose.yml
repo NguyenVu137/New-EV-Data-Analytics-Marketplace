@@ -1,0 +1,239 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: ev-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: auth_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    networks:
+      - microservices-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+
+  # Auth Service
+  auth-service:
+    build: ./auth-service
+    container_name: ev-auth-service
+    environment:
+      - PORT=8081
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=root123
+      - DB_NAME=auth_db
+      - JWT_SECRET=EvD4t@2025!S3cur3K3y#Xz
+      - JWT_EXPIRES_IN=7d
+      - ALLOWED_ORIGINS=
+      - URL_REACT=http://localhost:3000
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Dataset Service
+  dataset-service:
+    build: ./dataset-service
+    container_name: ev-dataset-service
+    environment:
+      - PORT=8082
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=root123
+      - DB_NAME=dataset_db
+      - JWT_SECRET=EvD4t@2025!S3cur3K3y#Xz
+      - JWT_EXPIRES_IN=7d
+      - ALLOWED_ORIGINS=
+      - MAX_FILE_SIZE=52428800
+      - UPLOAD_DIR=uploads/datasets
+    ports:
+      - "8082:8082"
+    volumes:
+      - dataset_uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Transaction Service
+  transaction-service:
+    build: ./transaction-service
+    container_name: ev-transaction-service
+    environment:
+      - PORT=8083
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=root123
+      - DB_NAME=transaction_db
+      - JWT_SECRET=EvD4t@2025!S3cur3K3y#Xz
+      - JWT_EXPIRES_IN=7d
+      - ALLOWED_ORIGINS=
+      - DATASET_SERVICE_URL=http://dataset-service:8082
+    ports:
+      - "8083:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      dataset-service:
+        condition: service_started
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Analytics Service
+  analytics-service:
+    build: ./analytics-service
+    container_name: ev-analytics-service
+    environment:
+      - PORT=8084
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=root
+      - DB_PASSWORD=root123
+      - DB_NAME=analytics_db
+      - JWT_SECRET=EvD4t@2025!S3cur3K3y#Xz
+      - JWT_EXPIRES_IN=7d
+      - ALLOWED_ORIGINS=
+      - DATASET_SERVICE_URL=http://dataset-service:8082
+      - TRANSACTION_SERVICE_URL=http://transaction-service:8083
+      - GOOGLE_GEMINI_API_KEY=AIzaSyCTudlr3RSBt4uypmNK5CV38nAvxkouSNw
+      - GEMINI_MODEL=gemini-2.5-flash
+      - AI_INSIGHTS_CACHE_DURATION=3600000
+    ports:
+      - "8084:8084"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      dataset-service:
+        condition: service_started
+      transaction-service:
+        condition: service_started
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Provider Service
+  provider-service:
+    build: ./provider-service
+    container_name: ev-provider-service
+    environment:
+      - PORT=8085
+      - NODE_ENV=development
+      - JWT_SECRET=EvD4t@2025!S3cur3K3y#Xz
+      - JWT_EXPIRES_IN=7d
+      - ALLOWED_ORIGINS=
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - DATASET_SERVICE_URL=http://dataset-service:8082
+    ports:
+      - "8085:8085"
+    depends_on:
+      - auth-service
+      - dataset-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Admin Service
+  admin-service:
+    build: ./admin-service
+    container_name: ev-admin-service
+    environment:
+      - PORT=8086
+      - NODE_ENV=development
+      - JWT_SECRET=EvD4t@2025!S3cur3K3y#Xz
+      - JWT_EXPIRES_IN=7d
+      - ALLOWED_ORIGINS=
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - DATASET_SERVICE_URL=http://dataset-service:8082
+      - TRANSACTION_SERVICE_URL=http://transaction-service:8083
+      - ANALYTICS_SERVICE_URL=http://analytics-service:8084
+    ports:
+      - "8086:8086"
+    depends_on:
+      - auth-service
+      - dataset-service
+      - transaction-service
+      - analytics-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Allcode Service
+  allcode-service:
+    build: ./allcode-service
+    container_name: ev-allcode-service
+    environment:
+      - PORT=8087
+      - NODE_ENV=development
+      - JWT_SECRET=EvD4t@2025!S3cur3K3y#Xz
+      - JWT_EXPIRES_IN=7d
+      - ALLOWED_ORIGINS=
+    ports:
+      - "8087:8087"
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: ev-api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - dataset-service
+      - transaction-service
+      - analytics-service
+      - provider-service
+      - admin-service
+      - allcode-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Frontend (React) - Chỉ dùng khi deploy production
+  frontend:
+    profiles: [ "production" ]
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: ev-frontend
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+networks:
+  microservices-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  dataset_uploads:
