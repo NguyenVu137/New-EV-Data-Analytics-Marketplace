@@ -103,8 +103,10 @@ class Register extends Component {
                 this.props.navigate('/login');
             } else {
                 this.setState({
-                    errMessage: res?.message || res?.errMessage || 'Đăng ký thất bại!'
+                    errMessage: res?.message || res?.errMessage || 'Đăng ký thành công!',
+
                 });
+
             }
         } catch (error) {
             console.error('Register error:', error);
