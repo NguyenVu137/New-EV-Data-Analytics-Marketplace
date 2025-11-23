@@ -4,11 +4,17 @@ const { auth } = require('../../shared/middleware/auth');
 const { checkRole } = require('../../shared/middleware/checkRole');
 const ServiceClient = require('../../shared/utils/serviceClient');
 
+// Fix Gemini AI: add fetch polyfill for Node <18
+global.fetch = require('node-fetch');
+global.Headers = require('node-fetch').Headers;
+global.Request = require('node-fetch').Request;
+global.Response = require('node-fetch').Response;
+
 const router = express.Router();
 const datasetService = new ServiceClient(process.env.DATASET_SERVICE_URL || 'http://dataset-service:8082', 'Dataset');
 const transactionService = new ServiceClient(process.env.TRANSACTION_SERVICE_URL || 'http://transaction-service:8083', 'Transaction');
 // Thêm dòng này vào đầu file (sau các import khác)
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const fetch = require('node-fetch');
 
 // Thêm cache variables (sau các import, trước router)
 let aiInsightsCache = null;
@@ -17,16 +23,18 @@ const CACHE_DURATION = parseInt(process.env.AI_INSIGHTS_CACHE_DURATION) || 36000
 // Market Overview
 router.get('/market-overview', auth, checkRole(['R1', 'R2']), async (req, res) => {
     try {
-        // Get total datasets from Dataset Service
-        const datasetsResponse = await datasetService.get('/api/datasets?status=S2&limit=1000');
-        const totalDatasets = datasetsResponse.data?.pagination?.total || 0;
-
+        let totalDatasets = 0;
+        try {
+            const datasetsResponse = await datasetService.get('/api/datasets?status=S2&limit=1000');
+            totalDatasets = datasetsResponse.data?.pagination?.total || 0;
+        } catch (err) {
+            console.error('DatasetService error (market-overview):', err?.message || err);
+        }
         // Aggregate from local analytics data
         const [revenueResult] = await sequelize.query(`
             SELECT COUNT(*) as totalTransactions, COALESCE(SUM(amount), 0) as totalRevenue
             FROM transactions WHERE payment_status_code = 'P2'
         `);
-
         res.json({
             errCode: 0,
             message: 'Get market overview successfully',
@@ -50,7 +58,6 @@ router.get('/market-overview', auth, checkRole(['R1', 'R2']), async (req, res) =
 router.get('/top-datasets', auth, checkRole(['R1', 'R2', 'R3']), async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 10;
-
         const [results] = await sequelize.query(`
             SELECT 
                 data_source_id as datasetId,
@@ -62,22 +69,23 @@ router.get('/top-datasets', auth, checkRole(['R1', 'R2', 'R3']), async (req, res
             ORDER BY purchaseCount DESC
             LIMIT ${limit}
         `);
-
-        // Enrich with dataset details
+        // Enrich with dataset details, always return datasetId and log errors
         const enrichedResults = await Promise.all(
             results.map(async (item) => {
+                let dataset = null;
                 try {
                     const datasetResponse = await datasetService.get(`/api/datasets/${item.datasetId}`);
-                    return {
-                        ...item,
-                        dataset: datasetResponse.data
-                    };
+                    dataset = datasetResponse.data;
                 } catch (error) {
-                    return item;
+                    console.error(`Dataset enrich error for id ${item.datasetId}:`, error?.message || error);
                 }
+                return {
+                    ...item,
+                    datasetId: item.datasetId,
+                    dataset: dataset || { id: item.datasetId, title: 'Không lấy được thông tin', category: null, provider: null }
+                };
             })
         );
-
         res.json({
             errCode: 0,
             message: 'Get top datasets successfully',
@@ -87,12 +95,13 @@ router.get('/top-datasets', auth, checkRole(['R1', 'R2', 'R3']), async (req, res
         console.error('Top datasets error:', error);
         res.status(500).json({
             errCode: -1,
-            message: 'Failed to get top datasets'
+            message: 'Failed to get top datasets',
+            error: error.message
         });
     }
 });
 
-// AI Insights - Gọi Gemini AI thật
+// AI Insights - Gọi Gemini AI qua HTTP API
 router.get('/ai-insights', auth, checkRole(['R1']), async (req, res) => {
     try {
         // Kiểm tra cache
@@ -106,16 +115,18 @@ router.get('/ai-insights', auth, checkRole(['R1']), async (req, res) => {
                 cacheAge: Math.floor((now - cacheTimestamp) / 1000)
             });
         }
-
         // Lấy dữ liệu thực từ database
-        const datasetsResponse = await datasetService.get('/api/datasets?status=S2&limit=1000');
-        const totalDatasets = datasetsResponse.data?.pagination?.total || 0;
-
+        let totalDatasets = 0;
+        try {
+            const datasetsResponse = await datasetService.get('/api/datasets?status=S2&limit=1000');
+            totalDatasets = datasetsResponse.data?.pagination?.total || 0;
+        } catch (err) {
+            console.error('DatasetService error (ai-insights):', err?.message || err);
+        }
         const [revenueResult] = await sequelize.query(`
             SELECT COUNT(*) as totalTransactions, COALESCE(SUM(amount), 0) as totalRevenue
             FROM transactions WHERE payment_status_code = 'P2'
         `);
-
         const [topDatasets] = await sequelize.query(`
             SELECT 
                 data_source_id as datasetId,
@@ -127,7 +138,6 @@ router.get('/ai-insights', auth, checkRole(['R1']), async (req, res) => {
             ORDER BY purchaseCount DESC
             LIMIT 5
         `);
-
         const [trendingData] = await sequelize.query(`
             SELECT 
                 DATE(createdAt) as date,
@@ -139,7 +149,6 @@ router.get('/ai-insights', auth, checkRole(['R1']), async (req, res) => {
             GROUP BY DATE(createdAt)
             ORDER BY date DESC
         `);
-
         const marketData = {
             totalDatasets,
             totalTransactions: parseInt(revenueResult[0]?.totalTransactions || 0),
@@ -147,88 +156,83 @@ router.get('/ai-insights', auth, checkRole(['R1']), async (req, res) => {
             topDatasets: topDatasets.slice(0, 5),
             recentTrends: trendingData.slice(0, 7)
         };
-
-        // Khởi tạo Gemini AI
-        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({
-            model: process.env.GEMINI_MODEL || "gemini-2.0-flash-exp"
-        });
-
-        const prompt = `
-Bạn là chuyên gia phân tích thị trường cho nền tảng EV Data Analytics Marketplace.
-Hãy phân tích dữ liệu sau và đưa ra insights bằng tiếng Việt:
-
-📊 TỔNG QUAN THỊ TRƯỜNG:
-- Tổng số datasets: ${marketData.totalDatasets}
-- Tổng giao dịch thành công: ${marketData.totalTransactions}
-- Tổng doanh thu: ${marketData.totalRevenue.toLocaleString('vi-VN')} VNĐ
-
-📈 XU HƯỚNG 7 NGÀY GẦN ĐÂY:
-${marketData.recentTrends.map(t => `- ${t.date}: ${t.transactions} giao dịch`).join('\n')}
-
-Trả về JSON với format (KHÔNG thêm markdown):
-{
-  "summary": "Tóm tắt 2-3 câu",
-  "keyInsights": ["Insight 1", "Insight 2", "Insight 3"],
-  "recommendations": ["Khuyến nghị 1", "Khuyến nghị 2", "Khuyến nghị 3"],
-  "trends": {
-    "growthRate": 15.5,
-    "popularCategory": "EV Data",
-    "avgTransactionValue": 500000,
-    "marketSentiment": "positive"
-  }
-}
-`;
-
-        console.log('🤖 Calling Gemini AI...');
-
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        let text = response.text();
-
-        console.log('✅ Gemini AI response received');
-
-        text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        const aiData = JSON.parse(text);
-
-        aiInsightsCache = aiData;
-        cacheTimestamp = Date.now();
-
-        res.json({
-            errCode: 0,
-            message: 'AI insights generated',
-            data: aiData,
-            cached: false,
-            generatedAt: new Date().toISOString()
-        });
-
+        // Build prompt
+        const prompt = `Bạn là chuyên gia phân tích thị trường cho nền tảng EV Data Analytics Marketplace.\nHãy phân tích dữ liệu sau và đưa ra insights bằng tiếng Việt:\n\n📊 TỔNG QUAN THỊ TRƯỜNG:\n- Tổng số datasets: ${marketData.totalDatasets}\n- Tổng giao dịch thành công: ${marketData.totalTransactions}\n- Tổng doanh thu: ${marketData.totalRevenue.toLocaleString('vi-VN')} VNĐ\n\n📈 XU HƯỚNG 7 NGÀY GẦN ĐÂY:\n${marketData.recentTrends.map(t => `- ${t.date}: ${t.transactions} giao dịch`).join('\n')}\n\nTrả lời ngắn gọn, súc tích, dễ hiểu, sử dụng bullet points và emoji phù hợp.`;
+        // Gọi Gemini AI qua HTTP
+        const GOOGLE_GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY;
+        const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-pro';
+        let aiResponse = null;
+        try {
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GOOGLE_GEMINI_API_KEY}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: 2048,
+                            topP: 0.95,
+                            topK: 40
+                        }
+                    })
+                }
+            );
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+            }
+            const data = await response.json();
+            aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+        } catch (err) {
+            console.error('Gemini API error:', err);
+        }
+        // Nếu có response từ AI thì trả về, không thì fallback
+        let result = null;
+        if (aiResponse) {
+            result = {
+                insights: aiResponse,
+                generatedAt: new Date().toISOString(),
+                dataSnapshot: {
+                    totalDatasets: marketData.totalDatasets,
+                    totalTransactions: marketData.totalTransactions,
+                    totalRevenue: marketData.totalRevenue
+                }
+            };
+            aiInsightsCache = result;
+            cacheTimestamp = Date.now();
+            return res.json({
+                errCode: 0,
+                message: 'AI insights generated',
+                data: result,
+                cached: false
+            });
+        } else {
+            // Fallback nếu AI lỗi
+            result = {
+                insights: '**Không thể lấy dữ liệu AI. Dưới đây là dữ liệu mẫu:**\n- Thị trường đang trong giai đoạn phát triển với xu hướng tích cực.\n- Số lượng giao dịch đang tăng đều.\n- Datasets về EV đang được quan tâm.\n- Người dùng ưa chuộng dữ liệu chất lượng cao.',
+                generatedAt: new Date().toISOString(),
+                dataSnapshot: {
+                    totalDatasets: marketData.totalDatasets,
+                    totalTransactions: marketData.totalTransactions,
+                    totalRevenue: marketData.totalRevenue
+                }
+            };
+            return res.json({
+                errCode: 0,
+                message: 'AI insights generated (fallback)',
+                data: result,
+                cached: false,
+                error: 'Gemini API error or no response.'
+            });
+        }
     } catch (error) {
         console.error('❌ AI Insights Error:', error);
-
-        res.json({
-            errCode: 0,
-            message: 'AI insights generated (fallback)',
-            data: {
-                summary: 'Thị trường đang trong giai đoạn phát triển với xu hướng tích cực.',
-                keyInsights: [
-                    'Số lượng giao dịch đang tăng đều',
-                    'Datasets về EV đang được quan tâm',
-                    'Người dùng ưa chuộng dữ liệu chất lượng cao'
-                ],
-                recommendations: [
-                    'Tập trung vào chất lượng datasets',
-                    'Tối ưu chiến lược giá cả',
-                    'Đẩy mạnh marketing'
-                ],
-                trends: {
-                    growthRate: 15.5,
-                    popularCategory: 'EV Data',
-                    avgTransactionValue: 500000,
-                    marketSentiment: 'positive'
-                }
-            },
-            error: error.message,
-            fallback: true
+        return res.status(500).json({
+            errCode: -1,
+            message: 'Failed to get AI insights',
+            error: error.message
         });
     }
 });
@@ -236,9 +240,13 @@ Trả về JSON với format (KHÔNG thêm markdown):
 // Category Statistics
 router.get('/categories', auth, checkRole(['R1', 'R2', 'R3']), async (req, res) => {
     try {
-        const datasetsResponse = await datasetService.get('/api/datasets?status=S2&limit=1000');
-        const datasets = datasetsResponse.data?.datasets || [];
-
+        let datasets = [];
+        try {
+            const datasetsResponse = await datasetService.get('/api/datasets?status=S2&limit=1000');
+            datasets = datasetsResponse.data?.datasets || [];
+        } catch (err) {
+            console.error('DatasetService error (categories):', err?.message || err);
+        }
         // Group by category
         const categoryStats = datasets.reduce((acc, dataset) => {
             const category = dataset.category_code || 'UNKNOWN';
@@ -249,7 +257,6 @@ router.get('/categories', auth, checkRole(['R1', 'R2', 'R3']), async (req, res) 
             acc[category].datasets.push(dataset.id);
             return acc;
         }, {});
-
         res.json({
             errCode: 0,
             data: Object.values(categoryStats)
@@ -274,10 +281,10 @@ router.get('/packages', auth, checkRole(['R1', 'R2']), async (req, res) => {
             WHERE payment_status_code = 'P2'
             GROUP BY type_code
         `);
-
         res.json({
             errCode: 0,
-            data: results
+            message: 'Get package statistics successfully',
+            data: results || []
         });
     } catch (error) {
         res.status(500).json({
@@ -302,10 +309,10 @@ router.get('/trending', auth, checkRole(['R1', 'R2']), async (req, res) => {
             GROUP BY DATE(createdAt)
             ORDER BY date DESC
         `);
-
         res.json({
             errCode: 0,
-            data: results
+            message: 'Get trending statistics successfully',
+            data: results || []
         });
     } catch (error) {
         res.status(500).json({

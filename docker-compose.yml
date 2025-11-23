@@ -117,7 +117,7 @@ services:
       - ALLOWED_ORIGINS=
       - DATASET_SERVICE_URL=http://dataset-service:8082
       - TRANSACTION_SERVICE_URL=http://transaction-service:8083
-      - GOOGLE_GEMINI_API_KEY=AIzaSyCTudlr3RSBt4uypmNK5CV38nAvxkouSNw
+      - GOOGLE_GEMINI_API_KEY=AIzaSyAbzrJE8uxszSr0P83h5QjMKEOnJMuGqvs
       - GEMINI_MODEL=gemini-2.5-flash
       - AI_INSIGHTS_CACHE_DURATION=3600000
     ports:
